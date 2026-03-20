@@ -1,0 +1,39 @@
+{
+  "featureId": "embedding-pipeline",
+  "reviewedAt": "2026-03-20T15:30:00.000Z",
+  "commitId": "2bf1f00",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of the embedding pipeline. Clean architecture with EmbeddingProvider trait, OpenAI-compatible provider, batched embedding, typed error handling, and vector storage integration. 21 tests covering all expected behaviors. API key is stored as a private field and sanitize_error_message() truncates/cleans error bodies. Code is well-structured with clear separation of concerns. Two non-blocking issues identified: (1) EmbeddingProviderConfig derives Debug which could leak the api_key field if the struct is ever logged with {:?}, and (2) sanitize_error_message doesn't specifically strip API key patterns — it only normalizes characters and truncates.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/embedding/provider.rs",
+        "line": 57,
+        "severity": "non_blocking",
+        "description": "EmbeddingProviderConfig derives Debug, which includes the private api_key field in debug output. If the config is ever formatted with {:?} (e.g., via tracing macros, anyhow context chains, or accidental debug logging), the API key would be exposed. Recommend implementing a custom Debug that redacts the api_key field (e.g., showing 'api_key: [REDACTED]'). The feature description explicitly requires 'Never log API keys.'"
+      },
+      {
+        "file": "crates/vera-core/src/embedding/provider.rs",
+        "line": 359,
+        "severity": "non_blocking",
+        "description": "sanitize_error_message() strips non-ASCII-graphic characters and truncates to 500 chars, but does not specifically detect and remove API key patterns (e.g., 'sk-...', 'Bearer ...'). If an API error response echoes back the authorization header or key, the sanitized message would still contain it. Low risk in practice since API error bodies rarely echo credentials, but a regex strip for common key patterns would be more defensive."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "Worker used #[allow(async_fn_in_trait)] for the EmbeddingProvider trait. This is a pragmatic choice since the trait is only used with generics (not dyn), but AGENTS.md doesn't document a convention for async traits in Rust. Future workers may use different approaches (e.g., async-trait crate, manual Future return types).",
+      "evidence": "crates/vera-core/src/embedding/provider.rs:46 — #[allow(async_fn_in_trait)] on EmbeddingProvider trait. No mention of async trait convention in AGENTS.md."
+    },
+    {
+      "area": "conventions",
+      "observation": "The Debug derive on types containing secrets is a latent security risk. AGENTS.md says 'NEVER log, print, or expose API keys in any output' but doesn't provide guidance on how to handle Debug derives on structs containing secrets (e.g., custom Debug impl with redaction).",
+      "evidence": "crates/vera-core/src/embedding/provider.rs:57 — #[derive(Debug, Clone)] on EmbeddingProviderConfig which contains a private api_key: String field."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The embedding-pipeline feature is well-implemented and passes review. The implementation covers all expected behaviors: provider abstraction (EmbeddingProvider trait), OpenAI-compatible provider (OpenAiProvider), batched embedding (configurable batch size), env var config (EMBEDDING_MODEL_BASE_URL/ID/KEY), typed error handling (auth/connection/rate-limit/api/response errors), API key protection (private field, sanitized errors), and retry logic (exponential backoff, auth errors not retried). 21 tests verify all feature requirements including vector storage integration, NN search, non-zero vectors, and error propagation. Two non-blocking issues flagged: (1) Debug derive on EmbeddingProviderConfig could leak api_key, (2) sanitize_error_message could be more aggressive about stripping key patterns. Code quality is good — 459 lines for provider.rs (within budget), clean module structure, and proper use of thiserror/anyhow conventions."
+}

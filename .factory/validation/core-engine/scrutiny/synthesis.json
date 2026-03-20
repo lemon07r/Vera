@@ -1,0 +1,140 @@
+{
+  "milestone": "core-engine",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": { "passed": true, "command": "cargo test", "exitCode": 0, "detail": "324 tests passed (281 vera_core + 33 vera_eval + 9 vera_cli + 1 vera_mcp)" },
+    "typecheck": { "passed": true, "command": "cargo clippy -- -D warnings", "exitCode": 0 },
+    "lint": { "passed": true, "command": "cargo fmt --check", "exitCode": 0 }
+  },
+  "reviewsSummary": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "nonBlockingIssues": [
+    {
+      "featureId": "storage-layer",
+      "severity": "non_blocking",
+      "description": "VectorStore INSERT OR REPLACE on chunk_id_map with AUTOINCREMENT causes rowid changes that orphan old vectors. Current pipeline safe (clear() first), but will break incremental re-insertion. Fix before incremental-indexing feature."
+    },
+    {
+      "featureId": "reranking-pipeline",
+      "severity": "non_blocking",
+      "description": "sanitize_error_message uses &msg[..500] which panics on multi-byte UTF-8 boundary. Low probability but a correctness bug in error handling path."
+    },
+    {
+      "featureId": "embedding-pipeline",
+      "severity": "non_blocking",
+      "description": "EmbeddingProviderConfig derives Debug which would expose api_key if debug-formatted. Should implement custom Debug with redaction."
+    },
+    {
+      "featureId": "retrieval-benchmarks",
+      "severity": "non_blocking",
+      "description": "nDCG computation allows values >1.0 due to duplicate ground-truth matching. Doesn't affect required assertions but makes nDCG unreliable for cross-tool comparison."
+    },
+    {
+      "featureId": "retrieval-benchmarks",
+      "severity": "non_blocking",
+      "description": "vector-only mode in benchmark script is a no-op. Correctly worked around via M1 baselines, but misleading if someone tries to use --modes vector-only."
+    },
+    {
+      "featureId": "index-performance",
+      "severity": "non_blocking",
+      "description": "59.2s benchmark for 175K LOC is within 1.3% of 60s target with ±15s API variability. Target is not reliably met on every run due to external API dependency."
+    },
+    {
+      "featureId": "search-quality",
+      "severity": "non_blocking",
+      "description": "Python class methods are chunked as part of parent class, not as individual chunks. Reduces symbol lookup accuracy for Python methods. Documented as known limitation; the maintainability-and-cleanup feature has a task to fix this."
+    },
+    {
+      "featureId": "tree-sitter-parsing",
+      "severity": "non_blocking",
+      "description": "Class-method extraction asymmetry: only Rust impl methods are individually chunked; Java/TS/Python/C++ class methods remain part of the parent class chunk. Design decision not documented."
+    },
+    {
+      "featureId": "hybrid-retrieval",
+      "severity": "non_blocking",
+      "description": "BM25 and vector search run sequentially. Parallelizing them (tokio::spawn_blocking for BM25) would reduce query latency. Future performance optimization."
+    },
+    {
+      "featureId": "multiple",
+      "severity": "non_blocking",
+      "description": "Several files exceed 500-line hard limit due to inline test modules (extractor.rs: 597, metadata_tests.rs: 1064, provider.rs: 557, vector.rs: 638, reranker.rs: 875, search_quality_tests.rs: 1028, types.rs: 570, main.rs: 551). Most are justified by comprehensive test suites; some commit messages lack the required explanation."
+    }
+  ],
+  "appliedUpdates": [
+    {
+      "target": "library",
+      "description": "Added .vera/ index directory convention, Matryoshka truncation details, chunk line encoding, tuned embedding defaults, method extraction asymmetry, post-retrieval filtering pattern, and M2 benchmark results to architecture.md",
+      "sourceFeature": "index-command, index-performance, chunk-metadata, search-quality, retrieval-benchmarks"
+    },
+    {
+      "target": "library",
+      "description": "Added Nebius API quirks section to environment.md: transient HTTP 400 'Unable to process' errors, rate limit behavior at 8+ concurrent requests, auth error non-retry policy",
+      "sourceFeature": "index-performance, embedding-pipeline"
+    }
+  ],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Clarify file size budget for test code: Add note that the 500-line hard limit applies primarily to production code. Files where test modules push total lines over 500 are acceptable when production code is within the 300-line soft target and the commit message documents the overage. Alternatively, exempt #[cfg(test)] modules from the line count.",
+      "evidence": "7+ reviewers flagged file size overages caused by inline test modules: extractor.rs (597, 325 prod + 272 test), provider.rs (557, 480 prod + 77 test), vector.rs (638, 209 prod + 429 test), reranker.rs (875, 515 prod + 360 test). All have production code within budget. Some commit messages lack required explanation.",
+      "isSystemic": true
+    },
+    {
+      "target": "skills",
+      "suggestion": "Relax strict TDD mandate in implementation-worker skill. Change 'Write Failing Tests First' to allow test-adjacent development where tests and implementation are written together. This is the de facto practice across all 13 features — no worker wrote failing tests first. Rust's colocated test modules make this impractical. Suggested wording: 'Write tests alongside or before implementation. For modules with internal types (API surfaces, data structures), developing tests and code together is acceptable. Strict red-green TDD applies when extending existing APIs with well-defined interfaces.'",
+      "evidence": "All 13 feature reviewers noted TDD deviation. Workers wrote implementation and tests together in every case. Handoff skillFeedback from 9+ features explicitly suggests relaxing this. Rust's #[cfg(test)] mod pattern encourages colocated tests.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Document async trait convention: Vera uses #[allow(async_fn_in_trait)] for EmbeddingProvider and Reranker traits. This makes them not dyn-compatible (static dispatch only). Future workers should follow this pattern for new async traits unless dynamic dispatch is needed (in which case, use the async-trait crate).",
+      "evidence": "embedding/provider.rs and retrieval/reranker.rs both use #[allow(async_fn_in_trait)]. Two reviewers flagged the undocumented convention. This affects how future traits can be used.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add security convention: Types containing secrets (API keys, tokens) must NOT derive Debug. Implement a custom Debug that redacts secret fields. Current EmbeddingProviderConfig derives Debug with api_key field — if debug-formatted, the key would leak.",
+      "evidence": "embedding-pipeline reviewer flagged EmbeddingProviderConfig deriving Debug with api_key. AGENTS.md says 'NEVER log, print, or expose API keys' but doesn't provide guidance on how to handle Debug derives on secret-containing types.",
+      "isSystemic": false
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Document CLI error handling convention: CLI commands use eprintln + process::exit(1) for user-facing errors, bypassing Rust's normal Result return path. This is the established pattern across index, search, update commands. Future CLI workers should follow this pattern for consistency.",
+      "evidence": "index-command and hybrid-retrieval reviewers both noted the process::exit(1) pattern. main.rs has 9+ process::exit calls. The pattern is consistent but undocumented.",
+      "isSystemic": true
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "CI ambiguity — 'Add CI basics' interpreted as local tooling vs pipeline config",
+      "reason": "Not applicable — project does not use CI pipelines, and local cargo test/clippy/fmt is the correct interpretation."
+    },
+    {
+      "observation": "Forward-looking services.yaml MCP command that doesn't work yet",
+      "reason": "Already documented and expected — MCP server is a later milestone feature."
+    },
+    {
+      "observation": "OptionalExt trait duplicated in metadata.rs and vector.rs",
+      "reason": "Code cleanup issue, not knowledge or guidance. Will be addressed naturally during maintainability-and-cleanup feature."
+    },
+    {
+      "observation": "Benchmark script (805 lines) exceeds 500-line limit",
+      "reason": "Already exempt per AGENTS.md: 'spikes/ and benchmarks/scripts/ directories are exempt from size budgets'."
+    },
+    {
+      "observation": "BM25 ranking relies on Tantivy's natural length normalization for symbol_name field boost",
+      "reason": "Implicit but correct behavior — BM25 inherently favors shorter fields. Documenting this would be over-engineering; the test suite empirically verifies the ranking."
+    },
+    {
+      "observation": "Missing PartialEq derives on Chunk/SearchResult types",
+      "reason": "Standard code suggestion, not a knowledge or guidance issue. Workers can add derives as needed."
+    }
+  ],
+  "previousRound": null
+}

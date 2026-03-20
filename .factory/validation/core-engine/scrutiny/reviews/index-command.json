@@ -1,0 +1,62 @@
+{
+  "featureId": "index-command",
+  "reviewedAt": "2026-03-20T15:30:00.000Z",
+  "commitId": "2bf57151514d5fa2081df7d9eec9e10eb4e719ba",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of `vera index <path>` CLI command. The pipeline orchestrator in pipeline.rs cleanly coordinates file discovery, parsing, chunking, embedding, and storage. All required error handling scenarios are implemented: invalid path (non-zero exit), empty repo (graceful zero-count summary), binary files (skipped via discovery), and permission errors (continue + report in parse_errors). Human-readable and JSON output modes work correctly. 10 comprehensive tests cover all expected behaviors. Index artifacts (.vera/metadata.db, vectors.db, bm25/) are properly created and verified in tests. Code quality is good with proper use of anyhow/thiserror error chains, structured tracing, and serde serialization.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/indexing/pipeline.rs",
+        "line": 87,
+        "severity": "non_blocking",
+        "description": "The `index_repository` function is ~80-90 lines (from fn signature to closing brace), which is at or slightly over the 80-line hard limit per AGENTS.md. The coding conventions require a comment explaining why for functions over 80 lines. As a pipeline orchestrator with inherently sequential stages, it's reasonable, but the explanatory comment is missing."
+      },
+      {
+        "file": "crates/vera-core/src/indexing/pipeline.rs",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "pipeline.rs is 315 lines, slightly over the 300-line soft budget. Acceptable for a module with IndexSummary types, pipeline logic, helper functions, and test module declaration, but worth noting."
+      },
+      {
+        "file": "crates/vera-cli/src/main.rs",
+        "line": 106,
+        "severity": "non_blocking",
+        "description": "The `run_index` function mixes two error handling strategies: it returns `anyhow::Result<()>` but most error paths call `process::exit(1)` directly. This bypasses Rust's normal cleanup (Drop impls) and makes the function's error contract confusing. Consider either always returning errors and letting main() handle exit codes, or not returning Result at all. This is a common CLI pattern and not a bug, but it means future code relying on RAII cleanup could be surprised."
+      },
+      {
+        "file": "crates/vera-core/src/indexing/pipeline_tests.rs",
+        "line": 207,
+        "severity": "non_blocking",
+        "description": "The `index_permission_error_continues` test only asserts `summary.files_parsed >= 1` without verifying that the unreadable file was specifically recorded in `parse_errors` (e.g., asserting `summary.parse_errors.len() >= 1` or checking that the error contains the expected filename). A more specific assertion would strengthen the test."
+      },
+      {
+        "file": "crates/vera-cli/src/main.rs",
+        "line": 108,
+        "severity": "non_blocking",
+        "description": "Path validation is duplicated: `run_index` validates path existence and is_dir before calling `index_repository`, which also validates the same conditions. The CLI-level check is intentional (to exit before requiring API credentials), but creates redundancy. A comment explaining this design choice would improve readability. The existing code comment ('Validate path early — before requiring API credentials.') does partially explain this."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "New `.vera/` index directory convention introduced by this feature. Index artifacts (metadata.db, vectors.db, bm25/) are stored in `.vera/` inside the indexed repository root. This is a key storage convention that other features (search, update, stats) will depend on, but it's only documented implicitly via the code constants. AGENTS.md and library/architecture.md don't mention the `.vera/` convention.",
+      "evidence": "crates/vera-core/src/indexing/pipeline.rs:59-63 defines INDEX_DIR_NAME='.vera', METADATA_DB='metadata.db', VECTOR_DB='vectors.db', BM25_SUBDIR='bm25'. .gitignore was updated to exclude .vera/."
+    },
+    {
+      "area": "skills",
+      "observation": "Worker acknowledged TDD deviation in skillFeedback.suggestedChanges: 'for a pipeline orchestrator that wires together existing modules, it was more practical to write the implementation alongside the tests since the types (IndexSummary, etc.) needed to exist first.' This is a reasonable deviation — strict TDD for orchestrators that define new types is impractical. The skill could note this exception.",
+      "evidence": "Handoff skillFeedback.followedProcedure=true with suggestedChanges noting the deviation. Skill SKILL.md Step 2 says 'Write Failing Tests First' without exceptions for type-defining orchestrator modules."
+    },
+    {
+      "area": "conventions",
+      "observation": "The CLI error handling pattern uses `process::exit(1)` within functions that return `anyhow::Result<()>`. This pattern was established by this feature and subsequently followed by later features (run_search). If this is the intended CLI error handling convention, it should be documented so future workers follow the same approach consistently.",
+      "evidence": "crates/vera-cli/src/main.rs:110-115, 126-134, 139-143, 151-155 all use eprintln + process::exit(1) pattern inside a function returning Result."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. The index-command feature is well-implemented with comprehensive error handling, clean pipeline architecture, and thorough test coverage (10 tests covering all required scenarios). All expectedBehavior criteria are met: successful indexing with summary, disk artifact creation, invalid path/empty repo/binary/permission error handling. Non-blocking issues: index_repository function is at the 80-line hard limit without an explanatory comment, pipeline.rs slightly over 300-line soft budget, mixed error handling pattern in CLI layer (process::exit vs Result), and the permission error test could be more specific in its assertions. Three shared state observations noted: undocumented .vera/ directory convention, TDD deviation for orchestrator modules, and CLI error handling pattern."
+}

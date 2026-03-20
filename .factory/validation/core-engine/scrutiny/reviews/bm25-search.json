@@ -1,0 +1,45 @@
+{
+  "featureId": "bm25-search",
+  "reviewedAt": "2026-03-20T16:10:00.000Z",
+  "commitId": "55cfddf",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Clean, well-structured BM25 standalone search module. Two public functions: search_bm25 (convenience wrapper that opens stores from disk) and search_bm25_with_stores (reusable, testable with pre-opened stores). Correctly uses the existing Bm25Index and MetadataStore APIs. Results hydrated with full chunk metadata and returned sorted by BM25 score descending. Proper error handling with anyhow::Context, structured tracing logs, no unwraps in production code. Over-fetching candidates (2x limit) is a sensible strategy to compensate for potential missing metadata entries. 13 comprehensive unit tests using in-memory stores cover all expected behaviors from the feature spec. File is 399 lines, under the 500-line hard limit. All verification steps (cargo test, clippy, fmt) passed.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/retrieval/bm25.rs",
+        "line": 342,
+        "severity": "non_blocking",
+        "description": "Test 'multiple_results_from_same_file' asserts auth_results.len() >= 1, but the test name and intent suggests verifying multiple results from the same file. The assertion should be >= 2 to actually test the advertised behavior. As-is, a single result would pass the test, weakening its value."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/bm25.rs",
+        "line": 360,
+        "severity": "non_blocking",
+        "description": "Test 'search_across_languages' uses OR logic (has_python || has_go) to verify cross-language search. A stronger test would assert that results span at least 2 distinct languages, since the test name promises cross-language coverage. The current assertion would pass even if only one language is represented."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/bm25.rs",
+        "line": 52,
+        "severity": "non_blocking",
+        "description": "No query escaping/sanitization before passing to Tantivy's QueryParser. Tantivy supports special syntax (AND, OR, NOT, field:value, grouping with parentheses). Code search queries often contain special characters like colons, angle brackets, or parentheses. This could cause unexpected parse behavior or errors for some user queries. Consider using QueryParser::parse_query_lenient() or escaping special characters for robustness — but this is acceptable for the current feature scope."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The implementation-worker skill mandates strict TDD: 'Write Failing Tests First' (Step 2) before implementation (Step 3). The worker wrote implementation and tests in the same file simultaneously (created bm25.rs with both code and #[cfg(test)] mod tests in one shot), then ran tests. This is idiomatic Rust practice and pragmatic, but deviates from strict TDD ordering. The skill's handoff claims followedProcedure: true with no deviations, which is technically inaccurate. Consider whether the skill's TDD mandate should be softened for Rust's colocated test pattern, or whether the skill should explicitly note that in-file tests can be written alongside implementation.",
+      "evidence": "Transcript skeleton shows a single Create tool call for bm25.rs containing both implementation and tests, followed by cargo test. No prior step created failing tests separately. Skill Step 2 says: 'Write tests that describe the expected behavior' before Step 3: 'Write the Rust code'."
+    },
+    {
+      "area": "conventions",
+      "observation": "The implementation relies on Tantivy's natural BM25 scoring for the 'exact matches rank higher' requirement, without explicit field boosting. This works because BM25's length normalization favors shorter fields (symbol_name) over longer fields (content). While effective, this is an implicit behavior not documented anywhere — future maintainers or feature builders may not understand why exact matches rank higher or how to preserve this property when modifying the BM25 schema.",
+      "evidence": "bm25.rs search_bm25_with_stores delegates to Bm25Index.search which uses QueryParser over [content, symbol_name] fields with default BM25 scoring. No explicit boost factors. Tests verify the ranking works empirically."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The BM25 standalone search feature passes review. The implementation is clean, correctly uses existing storage APIs, and is well-tested with 13 unit tests covering all expected behaviors (keyword search, score ordering, exact match ranking, metadata hydration, limits, empty results, cross-language support). Three non-blocking issues identified: two weak test assertions and a lack of query escaping for Tantivy special syntax. No blocking issues. The feature meets all requirements: BM25 search returns results for known keywords, results are ranked by score descending, exact identifier matches rank highest, and results include full chunk metadata."
+}

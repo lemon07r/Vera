@@ -1,0 +1,56 @@
+{
+  "featureId": "project-scaffold",
+  "reviewedAt": "2026-03-20T15:10:00.000Z",
+  "commitId": "be129e8",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid scaffold implementation. All three required crates (vera-core, vera-cli, vera-mcp) are created with correct workspace structure. vera-core has all five submodules (parsing, indexing, retrieval, storage, embedding) plus shared types and config. Dependencies align with ADR decisions (tree-sitter 0.26, rusqlite 0.32 bundled, tantivy 0.25, clap 4). The CLI has well-designed subcommands (index, search, update, stats) with appropriate flags (--json, --lang, --limit, --path). 24 new tests cover CLI parsing, type serialization, language detection, and config defaults. All verification checks pass (build, test, clippy, fmt). Code is clean, well-documented, and follows project conventions. File sizes are well within budget (types.rs 256 lines, main.rs 158 lines).",
+    "issues": [
+      {
+        "file": "crates/vera-core/Cargo.toml",
+        "line": 11,
+        "severity": "non_blocking",
+        "description": "vera-core (library crate) depends on tokio with 'full' features via workspace. Library crates typically let the final binary decide runtime features. This pulls in the entire tokio runtime as a transitive dependency for any consumer. Consider using only the tokio features vera-core actually needs (e.g., 'rt', 'time') or making tokio optional. Not blocking since all consumers are in the same workspace."
+      },
+      {
+        "file": "crates/vera-core/src/types.rs",
+        "line": 29,
+        "severity": "non_blocking",
+        "description": "Chunk and SearchResult types derive Serialize/Deserialize/Debug/Clone but not PartialEq/Eq. Future test assertions comparing chunks or search results will need manual field comparisons. Consider adding PartialEq derive — the f64 'score' field on SearchResult is the only tricky one (could use a wrapper or separate PartialEq for Chunk only)."
+      },
+      {
+        "file": "crates/vera-core/src/types.rs",
+        "line": 64,
+        "severity": "non_blocking",
+        "description": "Language enum has from_extension() but no FromStr implementation. The CLI's --lang filter accepts a string, so a FromStr impl (or a from_name() method) will be needed when search is implemented. Not blocking for scaffold."
+      },
+      {
+        "file": "crates/vera-cli/src/main.rs",
+        "line": 63,
+        "severity": "non_blocking",
+        "description": "main() is synchronous (not async) but tokio is a dependency. This is fine for the scaffold since commands are stubs, but the eventual implementation will need #[tokio::main] for async operations (embedding API calls, etc.). Just noting for future workers."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "Worker deviated from implementation-worker skill Step 2 ('Write Failing Tests First') by writing tests alongside implementation code for the scaffold feature. Worker's skillFeedback correctly notes this deviation is justified: scaffold features have no behavioral logic to test first. The skill could add a note that strict TDD applies to features with behavioral logic, not structural scaffolds.",
+      "evidence": "Handoff skillFeedback.suggestedChanges: 'The implementation-worker skill says write failing tests first but for a scaffold feature (no logic to test beyond parsing/serialization), writing tests alongside the code makes more sense. Could add a note that TDD is for features with behavioral logic, not structural scaffolds.'"
+    },
+    {
+      "area": "conventions",
+      "observation": "The feature description mentions 'Add CI basics (cargo test, clippy, fmt)' which was interpreted as ensuring these commands work, not setting up a CI pipeline (e.g., GitHub Actions). This interpretation is reasonable given the verification steps only test local command execution. However, AGENTS.md doesn't clarify whether 'CI basics' means local tooling or pipeline config. Future features may need to add actual CI configuration.",
+      "evidence": "Feature description: 'Add CI basics (cargo test, clippy, fmt)'. No .github/workflows/ or equivalent CI config was created. Verification steps only check local cargo commands."
+    },
+    {
+      "area": "conventions",
+      "observation": "services.yaml references a 'vera mcp --port 3200' command but the scaffold's CLI only has index/search/update/stats subcommands — no 'mcp' subcommand. This is expected since MCP server is a later feature, but it means services.yaml has a forward-looking command that doesn't work yet.",
+      "evidence": "services.yaml mcp.start: 'VERA_LOG=info cargo run -- mcp --port 3200'. crates/vera-cli/src/main.rs Commands enum has: Index, Search, Update, Stats (no Mcp variant)."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The project-scaffold feature is well-implemented and passes review. All three workspace crates are correctly structured with appropriate module boundaries matching ADR architecture decisions. Dependencies are properly managed via workspace-level declarations. The CLI interface is thoughtfully designed with subcommands and filters that align with the project roadmap. 24 tests provide good coverage of the scaffold's types, config, and CLI parsing. All four verification criteria (build, test, clippy, fmt) pass. Four non-blocking issues noted: tokio 'full' on library crate, missing PartialEq derives, no Language::FromStr, and sync main. Three shared state observations noted around skill TDD guidance for scaffolds, CI ambiguity, and forward-looking services.yaml entry."
+}

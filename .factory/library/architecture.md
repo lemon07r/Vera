@@ -63,6 +63,48 @@ Key insights from competitor baseline benchmarking (21 tasks, 4 repos):
 3. Hybrid BM25+vector is clearly justified: lexical is fast for identifiers, vector catches semantics.
 4. Reranking is likely the key to MRR improvement over vector-only (high recall, poor MRR suggests ranking issue).
 
+## M2 Core Engine Implementation Details
+
+### Index Storage Convention
+- Index artifacts are stored in `.vera/` inside the indexed repository root
+- Files: `metadata.db` (SQLite, chunk metadata + file hashes), `vectors.db` (sqlite-vec, embeddings), `bm25/` (Tantivy index directory)
+- `.vera/` is gitignored in the project root
+
+### Matryoshka Vector Truncation
+- Qwen3-Embedding-8B produces 4096-dim vectors natively
+- Vera truncates to 1024-dim at index time using Matryoshka truncation (first N dimensions)
+- This reduces vector storage by 4× with minimal retrieval quality impact
+- Query embeddings are also truncated to match stored dimensions
+- **Dimension mismatch footgun:** If old indexes exist with different dimensions (e.g., 4096-dim), vector search will fail silently or return errors. Re-index to fix.
+
+### Chunk Line Encoding
+- `line_start` and `line_end` are 1-based (converted from tree-sitter's 0-based row indices: `row + 1`)
+- `line_end` is the 1-based line number of the last line of the chunk (inclusive in display, but can be used as exclusive upper bound when 0-indexed)
+- When extracting content from source: `source_lines[(line_start-1)..line_end]` gives the correct half-open range
+
+### Tuned Embedding Pipeline Defaults
+- `batch_size=64`, `max_concurrent_requests=8`, `timeout_secs=60`, `max_stored_dim=1024`
+- These were tuned via real benchmarking against Nebius API (175K LOC repo in 59.2s)
+- `max_concurrent_requests=8` balances throughput vs rate limit avoidance
+
+### Method Extraction Asymmetry
+- Rust `impl` block methods are extracted as individual chunks (via `extract_impl_methods`)
+- Java, TypeScript, Python, C++ class methods are NOT individually chunked — the entire class is one chunk
+- This means symbol lookup for class methods returns the parent class chunk
+- Large classes are split via large-symbol splitting, providing partial granularity
+
+### Post-Retrieval Filtering Pattern
+- Search filters (`--lang`, `--path`, `--type`, `--limit`) are applied post-retrieval, not within BM25/vector search
+- Over-fetch strategy: request 3× + 20 extra results from the retrieval pipeline, then filter
+- This keeps the core pipeline simple and makes filters composable
+
+### M2 Benchmark Results
+- Hybrid MRR@10: 0.60 (vs BM25-only 0.28, vector-only 0.28)
+- Reranked Precision@3: 0.245 (vs unreranked 0.137)
+- BM25 p95 latency: 3.5ms (local computation)
+- Hybrid p95 latency: 6749ms (dominated by external API round trips)
+- 175K LOC indexed in 59.2s, 1.38× size ratio
+
 ## Key Constraints
 
 - Files under 300 lines (soft), 500 lines (hard - must explain)

@@ -1,0 +1,50 @@
+{
+  "featureId": "chunk-metadata",
+  "reviewedAt": "2026-03-20T15:10:00.000Z",
+  "commitId": "4ca7317",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "The chunk-metadata feature adds a comprehensive test suite (24 tests in metadata_tests.rs) that validates metadata accuracy for all chunk fields (file_path, line_start/line_end, language, symbol_type, symbol_name) across all 8 Tier 1A languages plus Tier 0 fallback. No production code was added or modified — the metadata extraction infrastructure was already fully implemented in the preceding tree-sitter-parsing feature. The tests are well-structured with two helper functions (assert_content_matches_source, assert_chunk_metadata) and cover: 18 per-language metadata samples, line range accuracy across 4 languages, symbol name exact match across 5 languages, cross-cutting field presence checks for 10 language types, language extension detection for 25 extensions, and file_path preservation. All tests pass, clippy and fmt are clean. The feature satisfies VAL-IDX-004 requirements (10+ metadata samples validated against source).",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/parsing/metadata_tests.rs",
+        "line": 0,
+        "severity": "non_blocking",
+        "description": "File is 1064 lines, exceeding the 500-line hard review trigger from AGENTS.md. The commit message acknowledges this and justifies it (24 independent test cases with inline source samples). The justification is reasonable — test files with inline fixtures are naturally verbose, and splitting would reduce locality. However, the helpers (assert_content_matches_source, assert_chunk_metadata) and the repetitive per-language test structure suggest a macro_rules! macro could reduce boilerplate significantly (each sample test follows an identical pattern: parse source → find chunk by name → assert_chunk_metadata → assert_content_matches_source)."
+      },
+      {
+        "file": "crates/vera-core/src/parsing/metadata_tests.rs",
+        "line": 24,
+        "severity": "non_blocking",
+        "description": "The assert_content_matches_source helper uses a half-open range (line_start..line_end exclusive on end), matching the chunker's line encoding. However, the Chunk struct's doc comment says line_end is '1-based end line (inclusive)', and this helper computes `end = chunk.line_end as usize` without adding 1, creating a half-open range [start..end). This is correct because the chunker sets line_end = row + 1 (where row is 0-based), so the 1-based line_end value IS the correct exclusive upper bound for indexing. The logic is sound but subtle — a doc comment on the helper explaining this encoding would prevent future confusion."
+      },
+      {
+        "file": "crates/vera-core/src/parsing/metadata_tests.rs",
+        "line": 780,
+        "severity": "non_blocking",
+        "description": "The all_chunks_have_required_metadata_fields test asserts symbol_type.is_some() for all chunks. This correctly reflects the current implementation (gap chunks get SymbolType::Block), but could break if the implementation ever introduces chunks without symbol_type. This coupling is acceptable for a validation test but worth noting."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "Worker acknowledged the 500-line file size exceeded the hard limit in AGENTS.md and provided justification in the commit message, following the documented convention. The justification (test file with 24 independent inline samples) is reasonable. AGENTS.md currently exempts spikes/ and benchmarks/ from size budgets but not test files — this is a gap since test files with inline fixtures naturally tend to be longer.",
+      "evidence": "Commit 4ca7317 message includes: 'Note: metadata_tests.rs is 1064 lines (exceeds 500-line budget) because it contains 24 independent test cases each with inline source samples — splitting would reduce readability and violate test locality.' AGENTS.md exempts only 'spikes/ and benchmarks/scripts/ directories'."
+    },
+    {
+      "area": "skills",
+      "observation": "Worker correctly identified that 'write failing tests first' (Step 2 of the implementation-worker skill) doesn't apply when the feature is purely about validation testing of already-implemented functionality. The skill's procedure assumes new production code will be written, but this feature was a test-only deliverable since metadata extraction was already implemented in tree-sitter-parsing. The worker's suggested change to the skill is sensible: add a note about test-validation features where tests should pass from the start.",
+      "evidence": "Handoff skillFeedback.deviations[0]: 'The chunk-metadata feature's core implementation (metadata extraction) was already done as part of tree-sitter-parsing. This feature's value is the comprehensive accuracy validation test suite, not new production code.' skillFeedback.followedProcedure is true with this noted deviation."
+    },
+    {
+      "area": "knowledge",
+      "observation": "The chunk line encoding (line_start/line_end are 1-based, where line_end corresponds to the 0-based row + 1 from tree-sitter) is a subtle implementation detail that's documented in the Chunk struct but easy to misunderstand. The test helper assert_content_matches_source silently relies on this encoding without explanation. This encoding detail could be documented in architecture.md or as a code-level convention to prevent bugs in future features that consume chunk line ranges.",
+      "evidence": "chunker.rs:75 sets line_start = sym_start + 1 and line_end = sym_end + 1 (converting 0-based tree-sitter rows to 1-based). metadata_tests.rs:25 uses start = chunk.line_start.saturating_sub(1) and end = chunk.line_end to form a half-open range that works correctly but could confuse future contributors."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. The chunk-metadata feature delivers a thorough 24-test validation suite covering all required metadata fields across all Tier 1A languages and Tier 0 fallback, satisfying VAL-IDX-004. No production code changes — the metadata extraction was already implemented by the tree-sitter-parsing feature. Tests are well-structured and comprehensive. The only concerns are non-blocking: the file exceeds the 500-line size budget (justified in commit message), and a macro could reduce repetitive boilerplate. All 123 tests pass, clippy and fmt are clean."
+}

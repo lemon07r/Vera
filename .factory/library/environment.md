@@ -31,6 +31,12 @@ NEVER log, print, or commit API keys.
 - Spike `Cargo.lock` files should be gitignored (add to spike `.gitignore`). The root `Cargo.lock` IS committed (correct for the main binary project).
 - Spike build artifacts (`target/`, `node_modules/`) should be excluded via a local `.gitignore` in the spike directory.
 
+## Nebius API Quirks
+
+- **Transient HTTP 400 "Unable to process"**: Under high concurrency, the Nebius embedding API (Qwen3-Embedding-8B) returns HTTP 400 with body containing "Unable to process". This must be treated as a transient rate-limit error and retried with exponential backoff, not as a permanent client error. The code handles this in `embedding/provider.rs`.
+- **Rate limits at 8+ concurrent requests**: With `max_concurrent_requests=8` and `batch_size=64`, occasional rate limit (429) errors occur. The pipeline uses exponential backoff with jitter (up to 3 retries).
+- **Auth errors (401) should NOT be retried** — they indicate a permanent credential problem.
+
 ## Machine Specs
 
 - AMD Ryzen 5 7600X3D (12 threads)

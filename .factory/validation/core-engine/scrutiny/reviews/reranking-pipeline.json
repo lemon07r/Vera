@@ -1,0 +1,39 @@
+{
+  "featureId": "reranking-pipeline",
+  "reviewedAt": "2026-03-20T17:45:00.000Z",
+  "commitId": "7bf24ba",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of cross-encoder reranking pipeline. The Reranker trait, ApiReranker, retry logic, graceful degradation, and CLI integration are all well-structured. All 5 expected behaviors are fully covered. 26 tests provide thorough coverage including unit tests, integration tests, and degradation scenarios. Two non-blocking issues found: a potential UTF-8 panic in sanitize_error_message and file size exceeding the 500-line hard budget (875 total, 515 production).",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/retrieval/reranker.rs",
+        "line": 401,
+        "severity": "non_blocking",
+        "description": "sanitize_error_message uses `&msg[..500]` which will panic if byte index 500 falls in the middle of a multi-byte UTF-8 character. Should use `msg.char_indices().take_while(|(i, _)| *i < 500).last().map(|(i, c)| &msg[..i + c.len_utf8()]).unwrap_or(msg)` or similar safe truncation. Low probability since API error responses are typically ASCII, but this is a correctness bug in an error-handling path."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/reranker.rs",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "File is 875 lines total (515 production, 360 test). AGENTS.md specifies a 500-line hard limit that triggers mandatory explanation in commit message. While production code alone (515 lines) is barely over, the commit message does not explicitly address the overage. The module is well-organized and splitting would be artificial, but the convention should be acknowledged."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "reranker.rs exceeds 500-line hard file size budget (875 total, 515 production code) without the commit message explaining the overage as required by AGENTS.md. The convention says 'Hard review trigger: files over 500 lines (must explain in commit message)'. The module is well-organized and tests account for 360 lines, so this may warrant a clarification in AGENTS.md about whether test code counts toward the file size budget.",
+      "evidence": "wc -l reranker.rs = 875 lines. Production code ends at line 515 (cfg(test) starts at line 516). AGENTS.md says 'Hard review trigger: files over 500 lines (must explain in commit message)'. Commit message 7bf24ba does not mention the file size."
+    },
+    {
+      "area": "conventions",
+      "observation": "The #[allow(async_fn_in_trait)] pattern is used in both EmbeddingProvider and Reranker traits. The worker's skillFeedback notes this makes both traits not dyn-compatible (requiring static dispatch). This architectural constraint should be documented since it affects how future code can use these traits.",
+      "evidence": "reranker.rs:56 — #[allow(async_fn_in_trait)] on Reranker trait. Worker skillFeedback: 'The EmbeddingProvider trait uses #[allow(async_fn_in_trait)] which also applies to Reranker - worth noting that both traits are not dyn-compatible due to async methods, so generic/static dispatch is required everywhere'"
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The reranking pipeline implementation passes review. All required behaviors are implemented: reranker API integration with Qwen3-Reranker-8B, result reordering by cross-encoder scores, and complete graceful degradation (reranker unavailable → unreranked with warning, embedding unavailable → BM25-only with warning, reranker not configured → silent skip). The code is well-structured with a clean Reranker trait abstraction, proper retry logic with exponential backoff, error sanitization, and comprehensive test coverage (26 tests). Two non-blocking issues: a potential UTF-8 panic in sanitize_error_message and file size budget overage without commit message explanation."
+}

@@ -1,0 +1,45 @@
+{
+  "featureId": "hybrid-retrieval",
+  "reviewedAt": "2026-03-20T17:15:00.000Z",
+  "commitId": "3064bcd",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of hybrid BM25+vector search with RRF fusion. The core fusion logic in `fuse_rrf` is correct, well-separated from I/O for testability, and thoroughly tested with 14 unit tests covering exact score verification, edge cases, and deduplication. The CLI `vera search` command properly handles all expected behaviors: human-readable and JSON output, --limit flag, BM25 fallback when embedding API is unavailable, exit code 0 on success including no-results, and usage display for missing query arg. Graceful degradation handles all four failure mode combinations correctly. Code follows project conventions: thiserror for library errors, anyhow for application errors, structured logging via tracing, data to stdout, diagnostics to stderr. Files are within size budgets (hybrid.rs: 495 lines, main.rs: 408 lines).",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/retrieval/hybrid.rs",
+        "line": 63,
+        "severity": "non_blocking",
+        "description": "BM25 and vector search are run sequentially (BM25 sync, then vector async). Since BM25 is a synchronous blocking call, true parallelism would require tokio::spawn_blocking for BM25 while awaiting vector search concurrently. This would reduce query latency when both backends are available. Not a correctness issue — a future performance optimization."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/hybrid.rs",
+        "line": 134,
+        "severity": "non_blocking",
+        "description": "The `result_key` function uses format!(\"{}:{}:{}\", file_path, line_start, line_end) as a composite key. If a file_path contains ':' characters, this could theoretically cause hash collisions (e.g., 'a:b:1:10' is ambiguous). In practice this is extremely unlikely for source code paths, but a separator like '\\0' or a tuple key would be more robust."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/hybrid.rs",
+        "line": 80,
+        "severity": "non_blocking",
+        "description": "When falling back to BM25-only or vector-only results, the original source scores (BM25 score or cosine similarity) are preserved rather than being converted to RRF scores. This means the score semantics differ between hybrid results and fallback results. Consumers comparing scores across queries may get inconsistent values. Consider documenting this or normalizing scores in fallback mode."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The implementation-worker skill specifies strict TDD: 'Write failing tests FIRST (red), then implement (green)'. The transcript shows the worker created hybrid.rs with both implementation and tests in a single file creation, then ran tests that passed immediately. The tests were not written as failing first. The end result is well-tested (14 tests), but the strict red-green TDD cycle was not followed. The skill procedure may be too rigid for inline test modules in Rust where implementation and tests are in the same file.",
+      "evidence": "Transcript skeleton shows: Create hybrid.rs (16975 chars with tests) → cargo test retrieval::hybrid → all 14 pass immediately. No intermediate 'failing tests first' step."
+    },
+    {
+      "area": "conventions",
+      "observation": "The CLI uses process::exit(1) for error cases in run_search and run_bm25_fallback, which is consistent with existing patterns in main.rs (9 total process::exit calls). This bypasses Rust destructors but is a pre-existing pattern. AGENTS.md doesn't document the exit code convention beyond 'non-zero for errors'. The validation contract (VAL-CLI-008) specifies '0 for success, non-zero for errors' which is met.",
+      "evidence": "main.rs lines 211, 300, 316, 347 — new process::exit(1) calls follow the same pattern as existing calls at lines 121, 125, 143, 156, 167."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The hybrid-retrieval feature is well-implemented and passes review. The RRF fusion logic is mathematically correct and extensively tested with 14 unit tests covering score computation, overlapping result boosting, sort ordering, limits, k parameter effects, and deduplication. The CLI command handles all expected behaviors per the feature spec and validation contract (VAL-RET-001, VAL-CLI-002): ranked results with all required fields, exit code 0 on success including no-results, usage on missing args, and graceful BM25 fallback. Three non-blocking issues were noted: sequential execution of BM25/vector (performance optimization opportunity), theoretical key collision risk in result_key, and inconsistent score semantics between hybrid and fallback modes. All verification steps from the handoff were confirmed: 243 tests pass, clippy clean, fmt clean, manual CLI testing successful."
+}

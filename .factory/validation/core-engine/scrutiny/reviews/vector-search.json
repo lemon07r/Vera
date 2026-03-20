@@ -1,0 +1,45 @@
+{
+  "featureId": "vector-search",
+  "reviewedAt": "2026-03-20T16:20:00.000Z",
+  "commitId": "ac60f87",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of vector similarity search following the established BM25 pattern. The module (209 lines production code + 429 lines tests) provides query embedding generation with Matryoshka truncation, nearest-neighbor lookup via sqlite-vec, distance-to-similarity conversion (1/(1+d)), and full metadata hydration. Error handling uses typed VectorSearchError enum with thiserror (EmbeddingUnavailable, StorageError) — consistent with project conventions. The over-fetch strategy (max(2*limit, limit+10)) accounts for missing metadata gracefully. All four expectedBehavior criteria are met: semantic results, lexical mismatch handling, scored/ranked results, and query embedding via configured API. The 18+ tests cover distance conversion, embedding generation with truncation and error propagation, and full search pipeline including ordering, metadata, limits, multi-language, and content fidelity. The module integrates cleanly with the downstream hybrid.rs module which consumes search_vector() for RRF fusion.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/retrieval/vector.rs",
+        "line": 3,
+        "severity": "non_blocking",
+        "description": "`use anyhow::Result;` appears unused — all function signatures use explicit error types (VectorSearchError or EmbeddingError), so the anyhow::Result type alias is never referenced. Clippy did not flag this (possibly because it shadows std::result::Result benignly), so it's harmless but slightly misleading."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/vector.rs",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "File is 638 lines, exceeding the 500-line hard review trigger. However, this is properly justified: production code is only 209 lines (well under the 300-line soft target), and the remaining 429 lines are comprehensive tests. The commit message explicitly documents this. The same pattern exists in other project modules (e.g., bm25.rs, hybrid.rs with their test suites)."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/vector.rs",
+        "line": 30,
+        "severity": "non_blocking",
+        "description": "VectorSearchError::StorageError uses `#[from] anyhow::Error` which means any anyhow::Error can implicitly convert to this variant via `?`. In practice this is safely controlled since all call sites use explicit `.map_err()`, but a more specific inner error type could prevent accidental conversions. This is the same pattern used elsewhere in the project, so it's consistent."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "Worker confirmed that 'write failing tests first' (from SKILL.md Step 2) is impractical for retrieval modules where tests depend on the module's own types and functions existing. The BM25 search module (already committed) followed the same test-adjacent TDD approach. The skill's Step 2 could acknowledge that for library modules with internal types, writing tests alongside implementation is acceptable.",
+      "evidence": "Handoff skillFeedback.suggestedChanges: 'The skill says write failing tests first but for retrieval modules the pattern of writing tests and implementation together (test-adjacent TDD) is more practical since the tests depend on the module's types and functions existing. The BM25 search module that was already committed followed the same approach.'"
+    },
+    {
+      "area": "conventions",
+      "observation": "The 500-line hard budget triggers frequently for modules with comprehensive test suites inline. The project convention in AGENTS.md mentions 'must explain in commit message' for files over 500 lines but doesn't clarify whether test code counts toward the budget or if test-heavy files should be exempted. Several modules now follow this pattern (vector.rs at 638 lines, hybrid.rs tests are extensive). Clarifying in AGENTS.md that the budget applies primarily to production code, or that test code is exempt, would prevent repeated justifications.",
+      "evidence": "vector.rs: 209 lines production + 429 lines tests = 638 total. Commit message includes explicit justification. bm25.rs and storage modules follow similar test-heavy patterns."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. The vector-search implementation is well-structured, follows established project patterns (mirrors BM25 search architecture), correctly implements all four expected behaviors (semantic search, lexical mismatch handling, scored/ranked results, API-based query embedding), and has comprehensive test coverage (18 tests). No blocking issues found. Three non-blocking observations: an unused anyhow::Result import, file exceeding 500-line budget (justified by test volume), and a broad StorageError #[from] pattern (consistent with project conventions). The module integrates cleanly with the hybrid search pipeline."
+}
