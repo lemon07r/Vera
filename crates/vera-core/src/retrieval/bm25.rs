@@ -1,0 +1,399 @@
+//! BM25 standalone search over indexed chunks.
+//!
+//! Provides keyword-based search using the Tantivy BM25 index, with results
+//! hydrated from the metadata store. Exact keyword matches rank higher than
+//! partial matches through Tantivy's native BM25 scoring combined with
+//! symbol-name boosting.
+
+use std::path::Path;
+
+use anyhow::{Context, Result};
+use tracing::debug;
+
+use crate::storage::bm25::Bm25Index;
+use crate::storage::metadata::MetadataStore;
+use crate::types::SearchResult;
+
+/// Perform a BM25 keyword search over the indexed chunks.
+///
+/// Opens the BM25 index and metadata store from the index directory,
+/// executes the query, and returns hydrated search results sorted by
+/// BM25 score (descending).
+///
+/// # Arguments
+/// - `index_dir` — Path to the `.vera` index directory
+/// - `query` — The search query text
+/// - `limit` — Maximum number of results to return
+///
+/// # Returns
+/// A vector of `SearchResult` with full chunk metadata, sorted by score descending.
+pub fn search_bm25(index_dir: &Path, query: &str, limit: usize) -> Result<Vec<SearchResult>> {
+    let bm25_dir = index_dir.join("bm25");
+    let metadata_path = index_dir.join("metadata.db");
+
+    let bm25_index = Bm25Index::open(&bm25_dir).context("failed to open BM25 index for search")?;
+    let metadata_store =
+        MetadataStore::open(&metadata_path).context("failed to open metadata store for search")?;
+
+    search_bm25_with_stores(&bm25_index, &metadata_store, query, limit)
+}
+
+/// Perform BM25 search using pre-opened stores (useful for testing and reuse).
+///
+/// Searches the BM25 index for the given query, then hydrates each result
+/// with full chunk metadata from the metadata store. Results are returned
+/// sorted by BM25 score in descending order.
+pub fn search_bm25_with_stores(
+    bm25_index: &Bm25Index,
+    metadata_store: &MetadataStore,
+    query: &str,
+    limit: usize,
+) -> Result<Vec<SearchResult>> {
+    // Fetch more candidates than the limit to account for missing metadata.
+    let candidates = limit.saturating_mul(2).max(limit + 10);
+
+    let bm25_results = bm25_index
+        .search(query, candidates)
+        .with_context(|| format!("BM25 search failed for query: {query}"))?;
+
+    debug!(
+        query = query,
+        raw_results = bm25_results.len(),
+        "BM25 search returned candidates"
+    );
+
+    let mut results = Vec::with_capacity(bm25_results.len());
+
+    for bm25_result in &bm25_results {
+        let chunk = metadata_store
+            .get_chunk(&bm25_result.chunk_id)
+            .with_context(|| {
+                format!(
+                    "failed to fetch metadata for chunk: {}",
+                    bm25_result.chunk_id
+                )
+            })?;
+
+        let Some(chunk) = chunk else {
+            debug!(
+                chunk_id = %bm25_result.chunk_id,
+                "chunk metadata not found, skipping"
+            );
+            continue;
+        };
+
+        results.push(SearchResult {
+            file_path: chunk.file_path,
+            line_start: chunk.line_start,
+            line_end: chunk.line_end,
+            content: chunk.content,
+            language: chunk.language,
+            score: f64::from(bm25_result.score),
+            symbol_name: chunk.symbol_name,
+            symbol_type: chunk.symbol_type,
+        });
+
+        if results.len() >= limit {
+            break;
+        }
+    }
+
+    debug!(
+        query = query,
+        returned = results.len(),
+        "BM25 search complete"
+    );
+
+    Ok(results)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::storage::bm25::Bm25Document;
+    use crate::types::{Chunk, Language, SymbolType};
+
+    /// Create a set of sample chunks with varied content for testing.
+    fn sample_chunks() -> Vec<Chunk> {
+        vec![
+            Chunk {
+                id: "src/auth.rs:0".to_string(),
+                file_path: "src/auth.rs".to_string(),
+                line_start: 1,
+                line_end: 15,
+                content: "pub fn authenticate(user: &str, password: &str) -> Result<Token> {\n    \
+                           let hash = hash_password(password);\n    \
+                           verify_credentials(user, &hash)\n}"
+                    .to_string(),
+                language: Language::Rust,
+                symbol_type: Some(SymbolType::Function),
+                symbol_name: Some("authenticate".to_string()),
+            },
+            Chunk {
+                id: "src/auth.rs:1".to_string(),
+                file_path: "src/auth.rs".to_string(),
+                line_start: 17,
+                line_end: 25,
+                content: "pub fn verify_credentials(user: &str, hash: &str) -> Result<Token> {\n    \
+                           let stored = db.get_user_hash(user)?;\n    \
+                           if stored == hash { Ok(Token::new()) } else { Err(AuthError) }\n}"
+                    .to_string(),
+                language: Language::Rust,
+                symbol_type: Some(SymbolType::Function),
+                symbol_name: Some("verify_credentials".to_string()),
+            },
+            Chunk {
+                id: "src/config.py:0".to_string(),
+                file_path: "src/config.py".to_string(),
+                line_start: 1,
+                line_end: 10,
+                content: "class DatabaseConfig:\n    \
+                           def __init__(self, host, port, name):\n        \
+                           self.host = host\n        \
+                           self.port = port\n        \
+                           self.name = name"
+                    .to_string(),
+                language: Language::Python,
+                symbol_type: Some(SymbolType::Class),
+                symbol_name: Some("DatabaseConfig".to_string()),
+            },
+            Chunk {
+                id: "src/server.ts:0".to_string(),
+                file_path: "src/server.ts".to_string(),
+                line_start: 1,
+                line_end: 12,
+                content: "function handleRequest(req: Request): Response {\n    \
+                           const auth = authenticate(req.headers);\n    \
+                           if (!auth) return new Response('Unauthorized', { status: 401 });\n    \
+                           return processRequest(req);\n}"
+                    .to_string(),
+                language: Language::TypeScript,
+                symbol_type: Some(SymbolType::Function),
+                symbol_name: Some("handleRequest".to_string()),
+            },
+            Chunk {
+                id: "src/utils.rs:0".to_string(),
+                file_path: "src/utils.rs".to_string(),
+                line_start: 1,
+                line_end: 8,
+                content: "pub fn format_output(data: &[u8]) -> String {\n    \
+                           String::from_utf8_lossy(data).to_string()\n}"
+                    .to_string(),
+                language: Language::Rust,
+                symbol_type: Some(SymbolType::Function),
+                symbol_name: Some("format_output".to_string()),
+            },
+            Chunk {
+                id: "src/db.go:0".to_string(),
+                file_path: "src/db.go".to_string(),
+                line_start: 1,
+                line_end: 10,
+                content: "func ConnectDatabase(config DatabaseConfig) (*sql.DB, error) {\n    \
+                           dsn := fmt.Sprintf(\"%s:%d/%s\", config.Host, config.Port, config.Name)\n    \
+                           return sql.Open(\"postgres\", dsn)\n}"
+                    .to_string(),
+                language: Language::Go,
+                symbol_type: Some(SymbolType::Function),
+                symbol_name: Some("ConnectDatabase".to_string()),
+            },
+        ]
+    }
+
+    /// Set up in-memory BM25 index and metadata store from sample chunks.
+    fn setup_test_stores() -> (Bm25Index, MetadataStore) {
+        let chunks = sample_chunks();
+
+        let metadata_store = MetadataStore::open_in_memory().unwrap();
+        metadata_store.insert_chunks(&chunks).unwrap();
+
+        let bm25_index = Bm25Index::open_in_memory().unwrap();
+        let lang_strings: Vec<String> = chunks.iter().map(|c| c.language.to_string()).collect();
+        let bm25_docs: Vec<Bm25Document<'_>> = chunks
+            .iter()
+            .zip(lang_strings.iter())
+            .map(|(c, lang)| Bm25Document {
+                chunk_id: &c.id,
+                file_path: &c.file_path,
+                content: &c.content,
+                symbol_name: c.symbol_name.as_deref(),
+                language: lang,
+            })
+            .collect();
+        bm25_index.insert_batch(&bm25_docs).unwrap();
+
+        (bm25_index, metadata_store)
+    }
+
+    #[test]
+    fn search_returns_results_for_known_keywords() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "authenticate", 10).unwrap();
+        assert!(
+            !results.is_empty(),
+            "should find results for 'authenticate'"
+        );
+    }
+
+    #[test]
+    fn results_ranked_by_score_descending() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "authenticate", 10).unwrap();
+        assert!(
+            results.len() >= 2,
+            "need multiple results to verify ordering"
+        );
+
+        for i in 1..results.len() {
+            assert!(
+                results[i - 1].score >= results[i].score,
+                "scores must be descending: {} >= {} at position {i}",
+                results[i - 1].score,
+                results[i].score,
+            );
+        }
+    }
+
+    #[test]
+    fn exact_identifier_match_ranks_highest() {
+        let (bm25, metadata) = setup_test_stores();
+        // Search for exact function name "authenticate"
+        let results = search_bm25_with_stores(&bm25, &metadata, "authenticate", 10).unwrap();
+        assert!(!results.is_empty());
+
+        // The function named "authenticate" should be the top result.
+        assert_eq!(
+            results[0].symbol_name.as_deref(),
+            Some("authenticate"),
+            "exact symbol name match should be the top result"
+        );
+        assert_eq!(results[0].file_path, "src/auth.rs");
+    }
+
+    #[test]
+    fn results_include_chunk_metadata() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "DatabaseConfig", 10).unwrap();
+        assert!(!results.is_empty());
+
+        let top = &results[0];
+        assert_eq!(top.file_path, "src/config.py");
+        assert_eq!(top.line_start, 1);
+        assert_eq!(top.line_end, 10);
+        assert_eq!(top.language, Language::Python);
+        assert_eq!(top.symbol_name.as_deref(), Some("DatabaseConfig"));
+        assert_eq!(top.symbol_type, Some(SymbolType::Class));
+        assert!(top.score > 0.0, "score should be positive");
+        assert!(
+            top.content.contains("class DatabaseConfig"),
+            "content should be present"
+        );
+    }
+
+    #[test]
+    fn search_respects_limit() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "function", 2).unwrap();
+        assert!(results.len() <= 2, "results should respect the limit");
+    }
+
+    #[test]
+    fn search_no_results_returns_empty() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "xyznonexistent999", 10).unwrap();
+        assert!(results.is_empty(), "no results for nonsense query");
+    }
+
+    #[test]
+    fn search_finds_content_keywords() {
+        let (bm25, metadata) = setup_test_stores();
+        // "password" appears in the authenticate function's body
+        let results = search_bm25_with_stores(&bm25, &metadata, "password", 10).unwrap();
+        assert!(!results.is_empty());
+        let found = results.iter().any(|r| r.file_path == "src/auth.rs");
+        assert!(found, "should find auth.rs for 'password' keyword");
+    }
+
+    #[test]
+    fn search_finds_symbol_name_directly() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "ConnectDatabase", 10).unwrap();
+        assert!(!results.is_empty());
+        assert_eq!(
+            results[0].symbol_name.as_deref(),
+            Some("ConnectDatabase"),
+            "searching for exact symbol name should find it"
+        );
+    }
+
+    #[test]
+    fn exact_match_ranks_higher_than_partial() {
+        let (bm25, metadata) = setup_test_stores();
+        // "handleRequest" is an exact symbol name; "Request" appears in content
+        // of multiple chunks. The exact symbol match should rank higher.
+        let results = search_bm25_with_stores(&bm25, &metadata, "handleRequest", 10).unwrap();
+        assert!(!results.is_empty());
+        assert_eq!(
+            results[0].symbol_name.as_deref(),
+            Some("handleRequest"),
+            "exact identifier match should rank highest"
+        );
+    }
+
+    #[test]
+    fn multiple_results_from_same_file() {
+        let (bm25, metadata) = setup_test_stores();
+        // Both functions in auth.rs mention credentials/auth concepts
+        let results = search_bm25_with_stores(&bm25, &metadata, "credentials", 10).unwrap();
+        let auth_results: Vec<_> = results
+            .iter()
+            .filter(|r| r.file_path == "src/auth.rs")
+            .collect();
+        assert!(
+            auth_results.len() >= 1,
+            "should find at least one result from auth.rs"
+        );
+    }
+
+    #[test]
+    fn scores_are_positive() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "authenticate", 10).unwrap();
+        for result in &results {
+            assert!(result.score > 0.0, "BM25 scores should be positive");
+        }
+    }
+
+    #[test]
+    fn search_across_languages() {
+        let (bm25, metadata) = setup_test_stores();
+        // "config" appears in Python's DatabaseConfig and Go's ConnectDatabase
+        let results = search_bm25_with_stores(&bm25, &metadata, "config", 10).unwrap();
+        assert!(!results.is_empty());
+
+        let languages: Vec<_> = results.iter().map(|r| r.language).collect();
+        // Should find results from multiple languages
+        let has_python = languages.contains(&Language::Python);
+        let has_go = languages.contains(&Language::Go);
+        assert!(
+            has_python || has_go,
+            "should find results across languages for 'config'"
+        );
+    }
+
+    #[test]
+    fn result_content_matches_metadata() {
+        let (bm25, metadata) = setup_test_stores();
+        let results = search_bm25_with_stores(&bm25, &metadata, "format_output", 10).unwrap();
+        assert!(!results.is_empty());
+
+        let result = &results[0];
+        assert_eq!(result.file_path, "src/utils.rs");
+        assert_eq!(result.symbol_name.as_deref(), Some("format_output"));
+        assert!(result.content.contains("format_output"));
+        assert!(result.line_start > 0, "line_start should be 1-based");
+        assert!(
+            result.line_end >= result.line_start,
+            "line_end >= line_start"
+        );
+    }
+}

@@ -7,6 +7,10 @@
 //! - Cross-encoder reranking via external API
 //! - Graceful degradation when services are unavailable
 
+pub mod bm25;
+
+pub use bm25::{search_bm25, search_bm25_with_stores};
+
 #[cfg(test)]
 mod tests {
     #[test]
