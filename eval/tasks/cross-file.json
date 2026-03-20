@@ -1,0 +1,71 @@
+[
+    {
+        "id": "cross-file-001",
+        "query": "Sink trait and its implementations",
+        "category": "cross_file",
+        "repo": "ripgrep",
+        "ground_truth": [
+            {
+                "file_path": "crates/searcher/src/sink.rs",
+                "line_start": 102,
+                "line_end": 223,
+                "relevance": 2
+            },
+            {
+                "file_path": "crates/printer/src/standard.rs",
+                "line_start": 763,
+                "line_end": 870,
+                "relevance": 1
+            },
+            {
+                "file_path": "crates/printer/src/json.rs",
+                "line_start": 719,
+                "line_end": 839,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the Sink trait definition and its implementations in Standard and JSON printers across crates"
+    },
+    {
+        "id": "cross-file-002",
+        "query": "Blueprint registration and route mounting",
+        "category": "cross_file",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "src/flask/blueprints.py",
+                "line_start": 18,
+                "line_end": 128,
+                "relevance": 1
+            },
+            {
+                "file_path": "src/flask/sansio/app.py",
+                "line_start": 567,
+                "line_end": 593,
+                "relevance": 1
+            }
+        ],
+        "description": "Find blueprint class definition and where register_blueprint is called in the app"
+    },
+    {
+        "id": "cross-file-003",
+        "query": "TaskDefinition configuration across languages",
+        "category": "cross_file",
+        "repo": "turborepo",
+        "ground_truth": [
+            {
+                "file_path": "crates/turborepo-types/src/lib.rs",
+                "line_start": 750,
+                "line_end": 806,
+                "relevance": 2
+            },
+            {
+                "file_path": "packages/turbo-types/src/types/config-v2.ts",
+                "line_start": 266,
+                "line_end": 424,
+                "relevance": 1
+            }
+        ],
+        "description": "Find TaskDefinition in Rust and its equivalent Pipeline interface in TypeScript - same concept across languages"
+    }
+]

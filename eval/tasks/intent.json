@@ -1,0 +1,83 @@
+[
+    {
+        "id": "intent-001",
+        "query": "how are HTTP errors handled and returned to clients",
+        "category": "intent",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "src/flask/app.py",
+                "line_start": 830,
+                "line_end": 948,
+                "relevance": 1
+            },
+            {
+                "file_path": "src/flask/helpers.py",
+                "line_start": 281,
+                "line_end": 302,
+                "relevance": 1
+            }
+        ],
+        "description": "Find error handling logic including handle_http_exception, handle_user_exception, handle_exception, and abort"
+    },
+    {
+        "id": "intent-002",
+        "query": "session management and cookie handling",
+        "category": "intent",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "src/flask/sessions.py",
+                "line_start": 1,
+                "line_end": 385,
+                "relevance": 1
+            }
+        ],
+        "description": "Find session and cookie implementation including SecureCookieSession and SessionInterface"
+    },
+    {
+        "id": "intent-003",
+        "query": "request validation and schema enforcement",
+        "category": "intent",
+        "repo": "fastify",
+        "ground_truth": [
+            {
+                "file_path": "lib/validation.js",
+                "line_start": 1,
+                "line_end": 280,
+                "relevance": 1
+            }
+        ],
+        "description": "Find validation logic for request schemas without exact identifier names"
+    },
+    {
+        "id": "intent-004",
+        "query": "file type detection and filtering",
+        "category": "intent",
+        "repo": "ripgrep",
+        "ground_truth": [
+            {
+                "file_path": "crates/ignore/src/types.rs",
+                "line_start": 146,
+                "line_end": 310,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the file type detection system including FileTypeDef, Types, and TypesBuilder"
+    },
+    {
+        "id": "intent-005",
+        "query": "template rendering pipeline",
+        "category": "intent",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "src/flask/templating.py",
+                "line_start": 1,
+                "line_end": 212,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the Jinja2 template rendering code including Environment, DispatchingJinjaLoader, and render_template"
+    }
+]

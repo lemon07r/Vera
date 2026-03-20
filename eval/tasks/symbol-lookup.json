@@ -1,0 +1,92 @@
+[
+    {
+        "id": "symbol-lookup-001",
+        "query": "Standard struct definition",
+        "category": "symbol_lookup",
+        "repo": "ripgrep",
+        "ground_truth": [
+            {
+                "file_path": "crates/printer/src/standard.rs",
+                "line_start": 480,
+                "line_end": 484,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the Standard<W> printer struct in ripgrep's standard printer module"
+    },
+    {
+        "id": "symbol-lookup-002",
+        "query": "Searcher struct definition",
+        "category": "symbol_lookup",
+        "repo": "ripgrep",
+        "ground_truth": [
+            {
+                "file_path": "crates/searcher/src/searcher/mod.rs",
+                "line_start": 597,
+                "line_end": 625,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the Searcher struct that holds search configuration and buffers"
+    },
+    {
+        "id": "symbol-lookup-003",
+        "query": "Flask class definition",
+        "category": "symbol_lookup",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "src/flask/app.py",
+                "line_start": 109,
+                "line_end": 200,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the main Flask application class definition"
+    },
+    {
+        "id": "symbol-lookup-004",
+        "query": "Blueprint class definition",
+        "category": "symbol_lookup",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "src/flask/blueprints.py",
+                "line_start": 18,
+                "line_end": 128,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the Blueprint class in Flask's blueprints module"
+    },
+    {
+        "id": "symbol-lookup-005",
+        "query": "SearchWorker struct",
+        "category": "symbol_lookup",
+        "repo": "ripgrep",
+        "ground_truth": [
+            {
+                "file_path": "crates/core/search.rs",
+                "line_start": 230,
+                "line_end": 241,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the SearchWorker struct that executes searches over haystacks"
+    },
+    {
+        "id": "symbol-lookup-006",
+        "query": "Run struct definition",
+        "category": "symbol_lookup",
+        "repo": "turborepo",
+        "ground_truth": [
+            {
+                "file_path": "crates/turborepo-lib/src/run/mod.rs",
+                "line_start": 76,
+                "line_end": 100,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the Run struct, the main entry point for turbo run execution"
+    }
+]

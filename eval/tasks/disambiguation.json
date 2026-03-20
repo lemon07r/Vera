@@ -1,0 +1,77 @@
+[
+    {
+        "id": "disambig-001",
+        "query": "Config",
+        "category": "disambiguation",
+        "repo": "ripgrep",
+        "ground_truth": [
+            {
+                "file_path": "crates/searcher/src/searcher/mod.rs",
+                "line_start": 151,
+                "line_end": 186,
+                "relevance": 2
+            },
+            {
+                "file_path": "crates/printer/src/standard.rs",
+                "line_start": 36,
+                "line_end": 57,
+                "relevance": 1
+            },
+            {
+                "file_path": "crates/printer/src/json.rs",
+                "line_start": 25,
+                "line_end": 29,
+                "relevance": 1
+            },
+            {
+                "file_path": "crates/core/search.rs",
+                "line_start": 19,
+                "line_end": 25,
+                "relevance": 1
+            }
+        ],
+        "description": "Ambiguous query matching multiple Config types across crates (searcher, printers, core)"
+    },
+    {
+        "id": "disambig-002",
+        "query": "run",
+        "category": "disambiguation",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "src/flask/app.py",
+                "line_start": 632,
+                "line_end": 754,
+                "relevance": 2
+            },
+            {
+                "file_path": "src/flask/cli.py",
+                "line_start": 935,
+                "line_end": 994,
+                "relevance": 1
+            }
+        ],
+        "description": "Ambiguous 'run' matching Flask.run() method and CLI run_command function"
+    },
+    {
+        "id": "disambig-003",
+        "query": "TaskDefinition",
+        "category": "disambiguation",
+        "repo": "turborepo",
+        "ground_truth": [
+            {
+                "file_path": "crates/turborepo-types/src/lib.rs",
+                "line_start": 750,
+                "line_end": 806,
+                "relevance": 2
+            },
+            {
+                "file_path": "packages/turbo-types/src/types/config-v2.ts",
+                "line_start": 266,
+                "line_end": 424,
+                "relevance": 1
+            }
+        ],
+        "description": "TaskDefinition exists as both a Rust struct and TypeScript Pipeline interface representing the same concept"
+    }
+]

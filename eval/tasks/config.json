@@ -1,0 +1,62 @@
+[
+    {
+        "id": "config-001",
+        "query": "Cargo.toml workspace configuration",
+        "category": "config",
+        "repo": "ripgrep",
+        "ground_truth": [
+            {
+                "file_path": "Cargo.toml",
+                "line_start": 1,
+                "line_end": 117,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the workspace build configuration with member crates and dependencies"
+    },
+    {
+        "id": "config-002",
+        "query": "package.json dependencies and scripts",
+        "category": "config",
+        "repo": "fastify",
+        "ground_truth": [
+            {
+                "file_path": "package.json",
+                "line_start": 1,
+                "line_end": 195,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the fastify package configuration with dependencies and scripts"
+    },
+    {
+        "id": "config-003",
+        "query": "turbo.json pipeline configuration",
+        "category": "config",
+        "repo": "turborepo",
+        "ground_truth": [
+            {
+                "file_path": "turbo.json",
+                "line_start": 1,
+                "line_end": 87,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the root turbo.json with task pipeline definitions and build configuration"
+    },
+    {
+        "id": "config-004",
+        "query": "pyproject.toml build configuration",
+        "category": "config",
+        "repo": "flask",
+        "ground_truth": [
+            {
+                "file_path": "pyproject.toml",
+                "line_start": 1,
+                "line_end": 100,
+                "relevance": 1
+            }
+        ],
+        "description": "Find the Python package configuration with dependencies, entry points, and tool settings"
+    }
+]
