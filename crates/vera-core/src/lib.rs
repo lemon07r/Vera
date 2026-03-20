@@ -24,3 +24,6 @@ pub mod types;
 
 /// Configuration types and defaults.
 pub mod config;
+
+/// Index statistics collection.
+pub mod stats;

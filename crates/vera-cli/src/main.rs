@@ -1,12 +1,16 @@
 //! Vera CLI — code indexing and retrieval for AI coding agents.
 //!
-//! Usage:
-//!   vera index <path>    Index a codebase
-//!   vera search <query>  Search the index
-//!   vera update <path>   Incrementally update the index
-//!   vera stats            Show index statistics
+//! # Commands
+//!
+//! - `vera index <path>` — Index a codebase for search
+//! - `vera search <query>` — Search the indexed codebase
+//! - `vera update <path>` — Incrementally update the index
+//! - `vera stats` — Show index statistics
+//! - `vera config` — Show or set configuration values
 
-use std::path::Path;
+mod commands;
+mod helpers;
+
 use std::process;
 
 use clap::{Parser, Subcommand};
@@ -15,6 +19,15 @@ use clap::{Parser, Subcommand};
 #[command(
     name = "vera",
     about = "Evidence-backed code indexing & retrieval for AI coding agents",
+    long_about = "Vera (Vector Enhanced Relevance Agent) is a code indexing and retrieval \
+                  tool built for AI coding agents. It combines BM25 full-text search with \
+                  vector similarity search using Reciprocal Rank Fusion (RRF) and optional \
+                  cross-encoder reranking to deliver highly relevant code search results.\n\n\
+                  Quick start:\n  \
+                  vera index .          # Index current directory\n  \
+                  vera search \"auth\"    # Search for authentication code\n  \
+                  vera update .         # Update index after changes\n  \
+                  vera stats            # Show index statistics",
     version
 )]
 struct Cli {
@@ -22,6 +35,9 @@ struct Cli {
     command: Commands,
 
     /// Output results as JSON (machine-readable).
+    ///
+    /// When enabled, all data output goes to stdout as valid JSON.
+    /// Logs and diagnostics always go to stderr regardless of this flag.
     #[arg(long, global = true)]
     json: bool,
 }
@@ -29,44 +45,165 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Index a codebase for search.
+    ///
+    /// Discovers source files, parses them with tree-sitter, creates
+    /// searchable chunks, generates embeddings, and stores everything
+    /// in a local `.vera/` index directory.
+    ///
+    /// Examples:
+    ///   vera index .
+    ///   vera index /path/to/repo
+    ///   vera index . --json
+    #[command(long_about = "Index a codebase for search.\n\n\
+                      Discovers source files (respecting .gitignore), parses them with \
+                      tree-sitter for 20+ languages, creates searchable chunks at symbol \
+                      boundaries, generates embeddings via API, and stores everything in \
+                      a local `.vera/` index directory.\n\n\
+                      Requires EMBEDDING_MODEL_BASE_URL, EMBEDDING_MODEL_ID, and \
+                      EMBEDDING_MODEL_API_KEY environment variables.\n\n\
+                      Examples:\n  \
+                      vera index .                  # Index current directory\n  \
+                      vera index /path/to/repo      # Index a specific repo\n  \
+                      vera index . --json           # Output summary as JSON")]
     Index {
         /// Path to the directory to index.
         path: String,
     },
 
     /// Search the indexed codebase.
+    ///
+    /// Performs hybrid search combining BM25 keyword matching and vector
+    /// similarity, fused with Reciprocal Rank Fusion (RRF). Optional
+    /// cross-encoder reranking for improved precision.
+    ///
+    /// Examples:
+    ///   vera search "authentication logic"
+    ///   vera search "parse_config" --lang rust
+    ///   vera search "error handling" --limit 5 --json
+    #[command(long_about = "Search the indexed codebase.\n\n\
+                      Performs hybrid search combining BM25 keyword matching and vector \
+                      similarity via Reciprocal Rank Fusion (RRF). Optional cross-encoder \
+                      reranking for improved precision.\n\n\
+                      Falls back gracefully: if embedding API is unavailable, uses BM25-only \
+                      search. If reranker is unavailable, returns unreranked hybrid results.\n\n\
+                      Requires an existing index (run `vera index <path>` first).\n\n\
+                      Examples:\n  \
+                      vera search \"auth logic\"                  # Semantic search\n  \
+                      vera search \"parse_config\"                 # Symbol lookup\n  \
+                      vera search \"error handling\" --lang rust   # Filter by language\n  \
+                      vera search \"routes\" --path \"src/**/*.ts\"  # Filter by path\n  \
+                      vera search \"DB queries\" --type function   # Filter by symbol type\n  \
+                      vera search \"config\" --limit 5 --json      # JSON output, 5 results")]
     Search {
-        /// The search query.
+        /// The search query (keyword or natural language).
         query: String,
 
         /// Filter by programming language (case-insensitive).
+        ///
+        /// Restricts results to the specified language.
+        /// Supported: rust, typescript, python, go, java, c, cpp, etc.
         #[arg(long)]
         lang: Option<String>,
 
         /// Filter by file path glob pattern (e.g., "src/**/*.rs").
+        ///
+        /// Supports * (any within segment) and ** (any depth).
         #[arg(long)]
         path: Option<String>,
 
-        /// Maximum number of results to return.
+        /// Maximum number of results to return (default: 10).
         #[arg(long, short = 'n')]
         limit: Option<usize>,
 
-        /// Filter by symbol type (function, method, class, struct, enum, trait, interface, type_alias, constant, variable, module, block).
+        /// Filter by symbol type.
+        ///
+        /// Options: function, method, class, struct, enum, trait,
+        /// interface, type_alias, constant, variable, module, block.
         #[arg(long, rename_all = "snake_case")]
         r#type: Option<String>,
     },
 
     /// Incrementally update the index for changed files.
+    ///
+    /// Detects files that have been added, modified, or deleted since
+    /// the last index/update, and only re-processes changed files.
+    /// Much faster than a full re-index.
+    ///
+    /// Examples:
+    ///   vera update .
+    ///   vera update /path/to/repo --json
+    #[command(long_about = "Incrementally update the index for changed files.\n\n\
+                      Uses content hashing to detect files that have been added, modified, \
+                      or deleted since the last index/update. Only changed files are \
+                      re-processed, making updates much faster than a full re-index.\n\n\
+                      Requires EMBEDDING_MODEL_BASE_URL, EMBEDDING_MODEL_ID, and \
+                      EMBEDDING_MODEL_API_KEY environment variables.\n\n\
+                      Examples:\n  \
+                      vera update .                  # Update current directory\n  \
+                      vera update /path/to/repo      # Update a specific repo\n  \
+                      vera update . --json           # Output summary as JSON")]
     Update {
         /// Path to the directory to update.
         path: String,
     },
 
     /// Show index statistics.
+    ///
+    /// Displays file count, chunk count, index size on disk,
+    /// and language breakdown for the current index.
+    ///
+    /// Examples:
+    ///   vera stats
+    ///   vera stats --json
+    #[command(long_about = "Show index statistics.\n\n\
+                      Displays file count, chunk count, index size on disk, and a breakdown \
+                      of chunks by programming language for the current index.\n\n\
+                      Looks for the index in the current working directory (`.vera/`).\n\n\
+                      Examples:\n  \
+                      vera stats             # Human-readable stats\n  \
+                      vera stats --json      # Machine-readable JSON output")]
     Stats,
+
+    /// Show or set configuration values.
+    ///
+    /// Without arguments, shows the current configuration. Use subcommands
+    /// to get or set individual values.
+    ///
+    /// Examples:
+    ///   vera config
+    ///   vera config get retrieval.default_limit
+    ///   vera config set retrieval.default_limit 20
+    #[command(long_about = "Show or set configuration values.\n\n\
+                      Without arguments or with `show`, displays the full current \
+                      configuration as a table (or JSON with --json).\n\n\
+                      Use `get <key>` to read a specific value, or `set <key> <value>` \
+                      to update it.\n\n\
+                      Configuration keys use dot notation:\n  \
+                      indexing.max_chunk_lines       Max lines per chunk (default: 200)\n  \
+                      indexing.max_file_size_bytes   Max file size to index (default: 1000000)\n  \
+                      retrieval.default_limit        Default result count (default: 10)\n  \
+                      retrieval.rrf_k                RRF fusion constant (default: 60)\n  \
+                      retrieval.rerank_candidates    Reranker candidate count (default: 30)\n  \
+                      retrieval.reranking_enabled    Enable reranking (default: true)\n  \
+                      embedding.batch_size           Embedding batch size (default: 128)\n  \
+                      embedding.max_concurrent_requests  Concurrent API requests (default: 8)\n  \
+                      embedding.timeout_secs         API timeout (default: 60)\n  \
+                      embedding.max_retries          API retry count (default: 3)\n  \
+                      embedding.max_stored_dim       Vector dimensionality (default: 1024)\n\n\
+                      Examples:\n  \
+                      vera config                                  # Show all settings\n  \
+                      vera config show                             # Same as above\n  \
+                      vera config get retrieval.default_limit      # Get one value\n  \
+                      vera config set retrieval.default_limit 20   # Set a value\n  \
+                      vera config --json                           # JSON output")]
+    Config {
+        /// Config action: show (default), get <key>, or set <key> <value>.
+        #[arg(trailing_var_arg = true)]
+        args: Vec<String>,
+    },
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     // Initialize tracing subscriber (logs go to stderr).
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -78,10 +215,10 @@ fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    match cli.command {
+    let result = match cli.command {
         Commands::Index { path } => {
             tracing::info!(path = %path, "indexing");
-            run_index(&path, cli.json)?;
+            commands::index::run(&path, cli.json)
         }
         Commands::Search {
             query,
@@ -96,436 +233,25 @@ fn main() -> anyhow::Result<()> {
                 path_glob: path,
                 symbol_type: r#type,
             };
-            run_search(&query, limit, &filters, cli.json)?;
+            commands::search::run(&query, limit, &filters, cli.json)
         }
         Commands::Update { path } => {
             tracing::info!(path = %path, "updating");
-            run_update(&path, cli.json)?;
+            commands::update::run(&path, cli.json)
         }
         Commands::Stats => {
             tracing::info!("showing stats");
-            eprintln!("vera stats: not yet implemented");
+            commands::stats::run(cli.json)
         }
-    }
+        Commands::Config { args } => {
+            tracing::info!("config command");
+            commands::config::run(&args, cli.json)
+        }
+    };
 
-    Ok(())
-}
-
-/// Run the `vera index <path>` command.
-fn run_index(path: &str, json_output: bool) -> anyhow::Result<()> {
-    let repo_path = Path::new(path);
-
-    // Validate path early — before requiring API credentials.
-    if !repo_path.exists() {
-        eprintln!("Error: path does not exist: {path}");
+    if let Err(err) = result {
+        eprintln!("Error: {err:#}");
         process::exit(1);
-    }
-    if !repo_path.is_dir() {
-        eprintln!("Error: path is not a directory: {path}");
-        process::exit(1);
-    }
-
-    // Build the tokio runtime for async embedding calls.
-    let rt = tokio::runtime::Runtime::new()
-        .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
-
-    let config = vera_core::config::VeraConfig::default();
-
-    // Create the embedding provider from environment.
-    let provider_config = match vera_core::embedding::EmbeddingProviderConfig::from_env() {
-        Ok(cfg) => cfg,
-        Err(err) => {
-            eprintln!(
-                "Error: embedding API not configured: {err}\n\
-                 Set EMBEDDING_MODEL_BASE_URL, EMBEDDING_MODEL_ID, and \
-                 EMBEDDING_MODEL_API_KEY environment variables."
-            );
-            process::exit(1);
-        }
-    };
-    let provider_config = provider_config
-        .with_timeout(std::time::Duration::from_secs(
-            config.embedding.timeout_secs,
-        ))
-        .with_max_retries(config.embedding.max_retries);
-
-    let provider = match vera_core::embedding::OpenAiProvider::new(provider_config) {
-        Ok(p) => p,
-        Err(err) => {
-            eprintln!("Error: failed to initialize embedding provider: {err}");
-            process::exit(1);
-        }
-    };
-
-    // Run the indexing pipeline.
-    let summary = match rt.block_on(vera_core::indexing::index_repository(
-        repo_path, &provider, &config,
-    )) {
-        Ok(s) => s,
-        Err(err) => {
-            eprintln!("Error: {err:#}");
-            process::exit(1);
-        }
-    };
-
-    // Output results.
-    if json_output {
-        let json = serde_json::to_string_pretty(&summary)
-            .map_err(|e| anyhow::anyhow!("failed to serialize summary: {e}"))?;
-        println!("{json}");
-    } else {
-        print_human_summary(&summary);
-    }
-
-    Ok(())
-}
-
-/// Run the `vera update <path>` command.
-///
-/// Incrementally updates the index for changed files. Only files whose
-/// content hash has changed are re-indexed. New files are added, deleted
-/// files are removed from the index.
-fn run_update(path: &str, json_output: bool) -> anyhow::Result<()> {
-    let repo_path = Path::new(path);
-
-    // Validate path early.
-    if !repo_path.exists() {
-        eprintln!("Error: path does not exist: {path}");
-        process::exit(1);
-    }
-    if !repo_path.is_dir() {
-        eprintln!("Error: path is not a directory: {path}");
-        process::exit(1);
-    }
-
-    // Build the tokio runtime for async embedding calls.
-    let rt = tokio::runtime::Runtime::new()
-        .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
-
-    let config = vera_core::config::VeraConfig::default();
-
-    // Create the embedding provider from environment.
-    let provider_config = match vera_core::embedding::EmbeddingProviderConfig::from_env() {
-        Ok(cfg) => cfg,
-        Err(err) => {
-            eprintln!(
-                "Error: embedding API not configured: {err}\n\
-                 Set EMBEDDING_MODEL_BASE_URL, EMBEDDING_MODEL_ID, and \
-                 EMBEDDING_MODEL_API_KEY environment variables."
-            );
-            process::exit(1);
-        }
-    };
-    let provider_config = provider_config
-        .with_timeout(std::time::Duration::from_secs(
-            config.embedding.timeout_secs,
-        ))
-        .with_max_retries(config.embedding.max_retries);
-
-    let provider = match vera_core::embedding::OpenAiProvider::new(provider_config) {
-        Ok(p) => p,
-        Err(err) => {
-            eprintln!("Error: failed to initialize embedding provider: {err}");
-            process::exit(1);
-        }
-    };
-
-    // Run the incremental update pipeline.
-    let summary = match rt.block_on(vera_core::indexing::update_repository(
-        repo_path, &provider, &config,
-    )) {
-        Ok(s) => s,
-        Err(err) => {
-            eprintln!("Error: {err:#}");
-            process::exit(1);
-        }
-    };
-
-    // Output results.
-    if json_output {
-        let json = serde_json::to_string_pretty(&summary)
-            .map_err(|e| anyhow::anyhow!("failed to serialize summary: {e}"))?;
-        println!("{json}");
-    } else {
-        print_update_summary(&summary);
-    }
-
-    Ok(())
-}
-
-/// Print a human-readable summary of the update run.
-fn print_update_summary(summary: &vera_core::indexing::UpdateSummary) {
-    println!("Update complete!");
-    println!();
-    println!("  Files modified:  {}", summary.files_modified);
-    println!("  Files added:     {}", summary.files_added);
-    println!("  Files deleted:   {}", summary.files_deleted);
-    println!("  Files unchanged: {}", summary.files_unchanged);
-    println!("  Total chunks:    {}", summary.total_chunks);
-    println!("  Elapsed time:    {:.2}s", summary.elapsed_secs);
-
-    let total_changed = summary.files_modified + summary.files_added + summary.files_deleted;
-    if total_changed == 0 {
-        println!();
-        println!("  Index is up to date — no changes detected.");
-    }
-}
-
-/// Run the `vera search <query>` command.
-///
-/// Performs hybrid search (BM25 + vector via RRF fusion) with optional
-/// cross-encoder reranking. Falls back gracefully:
-/// - Embedding API unavailable → BM25-only search with warning
-/// - Reranker API unavailable → unreranked hybrid results with warning
-///
-/// Filters (--lang, --path, --type) are applied post-retrieval to narrow
-/// down results by language, file path glob, and symbol type.
-fn run_search(
-    query: &str,
-    limit: Option<usize>,
-    filters: &vera_core::types::SearchFilters,
-    json_output: bool,
-) -> anyhow::Result<()> {
-    let config = vera_core::config::VeraConfig::default();
-    let result_limit = limit.unwrap_or(config.retrieval.default_limit);
-
-    // Find the index directory (look in current working directory).
-    let cwd = std::env::current_dir()
-        .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
-    let index_dir = vera_core::indexing::index_dir(&cwd);
-
-    if !index_dir.exists() {
-        eprintln!(
-            "Error: no index found in current directory.\n\
-             Run `vera index <path>` first to create an index."
-        );
-        process::exit(1);
-    }
-
-    // Build the tokio runtime for async embedding/reranker calls.
-    let rt = tokio::runtime::Runtime::new()
-        .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
-
-    // Create the embedding provider from environment.
-    let provider_config = match vera_core::embedding::EmbeddingProviderConfig::from_env() {
-        Ok(cfg) => cfg,
-        Err(err) => {
-            // Embedding not configured — fall back to BM25-only.
-            eprintln!(
-                "Warning: embedding API not configured ({err}), falling back to BM25-only search."
-            );
-            return run_bm25_fallback(&index_dir, query, result_limit, filters, json_output);
-        }
-    };
-    let provider_config = provider_config
-        .with_timeout(std::time::Duration::from_secs(
-            config.embedding.timeout_secs,
-        ))
-        .with_max_retries(config.embedding.max_retries);
-
-    let provider = match vera_core::embedding::OpenAiProvider::new(provider_config) {
-        Ok(p) => p,
-        Err(err) => {
-            eprintln!(
-                "Warning: failed to initialize embedding provider ({err}), \
-                 falling back to BM25-only search."
-            );
-            return run_bm25_fallback(&index_dir, query, result_limit, filters, json_output);
-        }
-    };
-
-    // Wrap with query embedding cache for fast repeated queries.
-    let provider = vera_core::embedding::CachedEmbeddingProvider::new(provider, 512);
-
-    // Create the reranker from environment (optional).
-    let reranker = if config.retrieval.reranking_enabled {
-        match vera_core::retrieval::RerankerConfig::from_env() {
-            Ok(reranker_config) => {
-                let reranker_config = reranker_config
-                    .with_timeout(std::time::Duration::from_secs(30))
-                    .with_max_retries(2);
-                match vera_core::retrieval::ApiReranker::new(reranker_config) {
-                    Ok(r) => Some(r),
-                    Err(err) => {
-                        eprintln!(
-                            "Warning: failed to initialize reranker ({err}), \
-                             search will proceed without reranking."
-                        );
-                        None
-                    }
-                }
-            }
-            Err(err) => {
-                tracing::debug!(error = %err, "reranker not configured, skipping reranking");
-                None
-            }
-        }
-    } else {
-        None
-    };
-
-    // Fetch more candidates when filters are active to ensure enough results survive.
-    let fetch_limit = if filters.is_empty() {
-        result_limit
-    } else {
-        result_limit.saturating_mul(3).max(result_limit + 20)
-    };
-
-    // Run hybrid search with optional reranking.
-    let stored_dim = config.embedding.max_stored_dim;
-    let rrf_k = config.retrieval.rrf_k;
-    let rerank_candidates = config.retrieval.rerank_candidates;
-
-    let results = if let Some(ref reranker) = reranker {
-        // Hybrid search + reranking.
-        match rt.block_on(vera_core::retrieval::search_hybrid_reranked(
-            &index_dir,
-            &provider,
-            reranker,
-            query,
-            fetch_limit,
-            rrf_k,
-            stored_dim,
-            rerank_candidates.max(fetch_limit),
-        )) {
-            Ok(r) => r,
-            Err(err) => {
-                eprintln!("Error: search failed: {err:#}");
-                process::exit(1);
-            }
-        }
-    } else {
-        // Hybrid search without reranking.
-        match rt.block_on(vera_core::retrieval::search_hybrid(
-            &index_dir,
-            &provider,
-            query,
-            fetch_limit,
-            rrf_k,
-            stored_dim,
-        )) {
-            Ok(r) => r,
-            Err(err) => {
-                eprintln!("Error: search failed: {err:#}");
-                process::exit(1);
-            }
-        }
-    };
-
-    // Apply post-retrieval filters.
-    let results = vera_core::retrieval::apply_filters(results, filters, result_limit);
-
-    output_results(&results, json_output);
-    Ok(())
-}
-
-/// BM25-only fallback when embedding API is unavailable.
-fn run_bm25_fallback(
-    index_dir: &Path,
-    query: &str,
-    limit: usize,
-    filters: &vera_core::types::SearchFilters,
-    json_output: bool,
-) -> anyhow::Result<()> {
-    // Fetch more candidates when filters are active.
-    let fetch_limit = if filters.is_empty() {
-        limit
-    } else {
-        limit.saturating_mul(3).max(limit + 20)
-    };
-
-    let results = match vera_core::retrieval::search_bm25(index_dir, query, fetch_limit) {
-        Ok(r) => r,
-        Err(err) => {
-            eprintln!("Error: BM25 search failed: {err:#}");
-            process::exit(1);
-        }
-    };
-
-    let results = vera_core::retrieval::apply_filters(results, filters, limit);
-    output_results(&results, json_output);
-    Ok(())
-}
-
-/// Output search results in human-readable or JSON format.
-fn output_results(results: &[vera_core::types::SearchResult], json_output: bool) {
-    if json_output {
-        let json = serde_json::to_string_pretty(results)
-            .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
-        println!("{json}");
-    } else if results.is_empty() {
-        println!("No results found.");
-    } else {
-        for (i, result) in results.iter().enumerate() {
-            println!(
-                "{}. {} (lines {}-{}, {})",
-                i + 1,
-                result.file_path,
-                result.line_start,
-                result.line_end,
-                result.language,
-            );
-            if let Some(ref name) = result.symbol_name {
-                if let Some(ref stype) = result.symbol_type {
-                    println!("   {stype} {name}");
-                } else {
-                    println!("   {name}");
-                }
-            }
-            println!("   score: {:.6}", result.score);
-
-            // Show a preview of the content (first 3 lines).
-            let preview: String = result
-                .content
-                .lines()
-                .take(3)
-                .map(|l| format!("   │ {l}"))
-                .collect::<Vec<_>>()
-                .join("\n");
-            println!("{preview}");
-            println!();
-        }
-    }
-}
-
-/// Print a human-readable summary of the indexing run.
-fn print_human_summary(summary: &vera_core::indexing::IndexSummary) {
-    println!("Indexing complete!");
-    println!();
-    println!("  Files parsed:        {}", summary.files_parsed);
-    println!("  Chunks created:      {}", summary.chunks_created);
-    println!("  Embeddings generated: {}", summary.embeddings_generated);
-    println!("  Elapsed time:        {:.2}s", summary.elapsed_secs);
-
-    // Report skipped files if any.
-    let skipped_total = summary.binary_skipped + summary.large_skipped + summary.error_skipped;
-    if skipped_total > 0 {
-        println!();
-        println!("  Skipped files:");
-        if summary.binary_skipped > 0 {
-            println!("    Binary:     {}", summary.binary_skipped);
-        }
-        if summary.large_skipped > 0 {
-            println!("    Too large:  {}", summary.large_skipped);
-        }
-        if summary.error_skipped > 0 {
-            println!("    Read errors: {}", summary.error_skipped);
-        }
-    }
-
-    // Report parse errors if any.
-    if !summary.parse_errors.is_empty() {
-        println!();
-        println!("  Parse errors ({}):", summary.parse_errors.len());
-        for err in &summary.parse_errors {
-            println!("    {}: {}", err.file_path, err.error);
-        }
-    }
-
-    // Special message for empty repos.
-    if summary.files_parsed == 0 && summary.chunks_created == 0 {
-        println!();
-        println!("  No source files found to index.");
     }
 }
 
@@ -641,5 +367,87 @@ mod tests {
     fn cli_parses_json_flag() {
         let cli = Cli::parse_from(["vera", "--json", "stats"]);
         assert!(cli.json);
+    }
+
+    #[test]
+    fn cli_parses_config_command() {
+        let cli = Cli::parse_from(["vera", "config"]);
+        assert!(matches!(cli.command, Commands::Config { args } if args.is_empty()));
+    }
+
+    #[test]
+    fn cli_parses_config_show() {
+        let cli = Cli::parse_from(["vera", "config", "show"]);
+        match cli.command {
+            Commands::Config { args } => {
+                assert_eq!(args, vec!["show".to_string()]);
+            }
+            _ => panic!("expected Config command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_config_get() {
+        let cli = Cli::parse_from(["vera", "config", "get", "retrieval.default_limit"]);
+        match cli.command {
+            Commands::Config { args } => {
+                assert_eq!(
+                    args,
+                    vec!["get".to_string(), "retrieval.default_limit".to_string()]
+                );
+            }
+            _ => panic!("expected Config command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_config_set() {
+        let cli = Cli::parse_from(["vera", "config", "set", "retrieval.default_limit", "20"]);
+        match cli.command {
+            Commands::Config { args } => {
+                assert_eq!(
+                    args,
+                    vec![
+                        "set".to_string(),
+                        "retrieval.default_limit".to_string(),
+                        "20".to_string()
+                    ]
+                );
+            }
+            _ => panic!("expected Config command"),
+        }
+    }
+
+    #[test]
+    fn config_get_known_keys() {
+        let config = vera_core::config::VeraConfig::default();
+        assert!(commands::config::get_config_value(&config, "indexing.max_chunk_lines").is_some());
+        assert!(commands::config::get_config_value(&config, "retrieval.default_limit").is_some());
+        assert!(commands::config::get_config_value(&config, "retrieval.rrf_k").is_some());
+        assert!(
+            commands::config::get_config_value(&config, "retrieval.reranking_enabled").is_some()
+        );
+        assert!(commands::config::get_config_value(&config, "embedding.batch_size").is_some());
+        assert!(commands::config::get_config_value(&config, "embedding.max_stored_dim").is_some());
+    }
+
+    #[test]
+    fn config_get_unknown_key_returns_none() {
+        let config = vera_core::config::VeraConfig::default();
+        assert!(commands::config::get_config_value(&config, "nonexistent.key").is_none());
+    }
+
+    #[test]
+    fn config_values_match_defaults() {
+        let config = vera_core::config::VeraConfig::default();
+        let val = commands::config::get_config_value(&config, "retrieval.default_limit").unwrap();
+        assert_eq!(val, serde_json::json!(10));
+
+        let val = commands::config::get_config_value(&config, "indexing.max_chunk_lines").unwrap();
+        assert_eq!(val, serde_json::json!(200));
+
+        let val =
+            commands::config::get_config_value(&config, "retrieval.reranking_enabled").unwrap();
+        assert_eq!(val, serde_json::json!(true));
     }
 }

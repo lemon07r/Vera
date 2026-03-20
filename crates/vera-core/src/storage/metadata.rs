@@ -237,6 +237,17 @@ impl MetadataStore {
         Ok(files)
     }
 
+    /// Count distinct files in the index.
+    pub fn file_count(&self) -> Result<u64> {
+        let count: i64 = self
+            .conn
+            .query_row("SELECT COUNT(DISTINCT file_path) FROM chunks", [], |row| {
+                row.get(0)
+            })
+            .context("failed to count files")?;
+        Ok(count as u64)
+    }
+
     /// Get language breakdown (language -> chunk count).
     pub fn language_stats(&self) -> Result<Vec<(String, u64)>> {
         let mut stmt = self
