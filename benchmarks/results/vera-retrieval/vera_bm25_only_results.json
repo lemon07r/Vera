@@ -1,0 +1,330 @@
+{
+  "tool_name": "vera-bm25-only",
+  "mode": "bm25-only",
+  "per_task": [
+    {
+      "task_id": "config-001",
+      "category": "config",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 3.4669740016397554,
+      "result_count": 20
+    },
+    {
+      "task_id": "config-002",
+      "category": "config",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 2.963665501738433,
+      "result_count": 20
+    },
+    {
+      "task_id": "config-004",
+      "category": "config",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 2.9324964998522773,
+      "result_count": 20
+    },
+    {
+      "task_id": "cross-file-001",
+      "category": "cross_file",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.06666666666666667,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 3.0381270007637795,
+      "result_count": 20
+    },
+    {
+      "task_id": "cross-file-002",
+      "category": "cross_file",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 3.001462002430344,
+      "result_count": 20
+    },
+    {
+      "task_id": "disambig-001",
+      "category": "disambiguation",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.5,
+        "mrr": 0.14285714285714285,
+        "ndcg": 0.18216449358756576,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 2.947414501250023,
+      "result_count": 20
+    },
+    {
+      "task_id": "disambig-002",
+      "category": "disambiguation",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.5,
+        "recall_at_10": 0.5,
+        "mrr": 0.5,
+        "ndcg": 0.23981246656813146,
+        "precision_at_3": 0.3333333333333333
+      },
+      "latency_ms": 2.856448001693934,
+      "result_count": 20
+    },
+    {
+      "task_id": "intent-001",
+      "category": "intent",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.07142857142857142,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 3.142018504149746,
+      "result_count": 20
+    },
+    {
+      "task_id": "intent-002",
+      "category": "intent",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.09090909090909091,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 2.96116599929519,
+      "result_count": 20
+    },
+    {
+      "task_id": "intent-003",
+      "category": "intent",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 3.317575501569081,
+      "result_count": 20
+    },
+    {
+      "task_id": "intent-004",
+      "category": "intent",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.07142857142857142,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 3.1214294976962265,
+      "result_count": 20
+    },
+    {
+      "task_id": "intent-005",
+      "category": "intent",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.1,
+        "ndcg": 0.2890648263178879,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 2.864713504095562,
+      "result_count": 20
+    },
+    {
+      "task_id": "symbol-lookup-001",
+      "category": "symbol_lookup",
+      "retrieval_metrics": {
+        "recall_at_1": 1.0,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0,
+        "precision_at_3": 0.3333333333333333
+      },
+      "latency_ms": 2.871771499485476,
+      "result_count": 20
+    },
+    {
+      "task_id": "symbol-lookup-002",
+      "category": "symbol_lookup",
+      "retrieval_metrics": {
+        "recall_at_1": 1.0,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0,
+        "precision_at_3": 0.3333333333333333
+      },
+      "latency_ms": 2.9264905024319887,
+      "result_count": 20
+    },
+    {
+      "task_id": "symbol-lookup-003",
+      "category": "symbol_lookup",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.25,
+        "ndcg": 0.43067655807339306,
+        "precision_at_3": 0.0
+      },
+      "latency_ms": 3.2822739995026495,
+      "result_count": 20
+    },
+    {
+      "task_id": "symbol-lookup-004",
+      "category": "symbol_lookup",
+      "retrieval_metrics": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575,
+        "precision_at_3": 0.3333333333333333
+      },
+      "latency_ms": 2.9394199991656933,
+      "result_count": 20
+    },
+    {
+      "task_id": "symbol-lookup-005",
+      "category": "symbol_lookup",
+      "retrieval_metrics": {
+        "recall_at_1": 1.0,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0,
+        "precision_at_3": 0.3333333333333333
+      },
+      "latency_ms": 2.7025265007978305,
+      "result_count": 20
+    }
+  ],
+  "per_category": {
+    "config": {
+      "retrieval": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_p50_ms": 2.963665501738433,
+      "latency_p95_ms": 3.416643151649623,
+      "task_count": 3
+    },
+    "cross_file": {
+      "retrieval": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.03333333333333333,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
+      },
+      "latency_p50_ms": 3.0197945015970618,
+      "latency_p95_ms": 3.0362937508471077,
+      "task_count": 2
+    },
+    "disambiguation": {
+      "retrieval": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.25,
+        "recall_at_10": 0.5,
+        "mrr": 0.3214285714285714,
+        "ndcg": 0.2109884800778486,
+        "precision_at_3": 0.16666666666666666
+      },
+      "latency_p50_ms": 2.9019312514719786,
+      "latency_p95_ms": 2.9428661762722186,
+      "task_count": 2
+    },
+    "intent": {
+      "retrieval": {
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.2,
+        "mrr": 0.06675324675324676,
+        "ndcg": 0.05781296526357758,
+        "precision_at_3": 0.0
+      },
+      "latency_p50_ms": 3.1214294976962265,
+      "latency_p95_ms": 3.282464102085214,
+      "task_count": 5
+    },
+    "symbol_lookup": {
+      "retrieval": {
+        "recall_at_1": 0.6,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.75,
+        "ndcg": 0.8123212623289702,
+        "precision_at_3": 0.26666666666666666
+      },
+      "latency_p50_ms": 2.9264905024319887,
+      "latency_p95_ms": 3.2137031994352583,
+      "task_count": 5
+    }
+  },
+  "aggregate": {
+    "retrieval": {
+      "recall_at_1": 0.17647058823529413,
+      "recall_at_5": 0.3235294117647059,
+      "recall_at_10": 0.4117647058823529,
+      "mrr": 0.28195823784059076,
+      "ndcg": 0.2807440057716727,
+      "precision_at_3": 0.0980392156862745
+    },
+    "performance": {
+      "latency_p50_ms": 2.982712001539767,
+      "latency_p95_ms": 3.4940316501888447,
+      "latency_p99_ms": 3.7869362915807874,
+      "latency_max_ms": 3.8838530017528683,
+      "latency_min_ms": 2.6869170033023693,
+      "total_queries": 34
+    },
+    "task_count": 17
+  }
+}
