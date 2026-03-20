@@ -82,3 +82,6 @@ fn parse_with_treesitter(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod metadata_tests;
