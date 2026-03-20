@@ -9,7 +9,12 @@ Architectural decisions, patterns, and conventions for Vera.
 
 ## Decided (updated as ADRs are finalized)
 
-(To be populated by workers after Milestone 1 spikes)
+### ADR-001: Implementation Language → Rust
+- Rust chosen over TypeScript/Bun based on spike benchmarks
+- 1.6–1.8× faster tree-sitter parsing, 10× faster cold start vs Bun
+- Single binary distribution (~10-15MB estimated) vs 32MB+ node_modules
+- Superior ecosystem: `ignore` crate, Tantivy, Lance, Clap
+- See `docs/adr/001-implementation-language.md` for full evidence
 
 ## Baseline Findings from M1 Competitor Benchmarks
 
