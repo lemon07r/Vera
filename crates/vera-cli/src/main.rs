@@ -44,6 +44,27 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Start the MCP (Model Context Protocol) server.
+    ///
+    /// Runs a JSON-RPC 2.0 server over stdio for AI agent integration.
+    /// The server exposes tools: search_code, index_project, update_project, get_stats.
+    ///
+    /// Examples:
+    ///   vera mcp
+    #[command(long_about = "Start the MCP (Model Context Protocol) server.\n\n\
+                      Runs a JSON-RPC 2.0 server over stdio, enabling AI coding agents \
+                      to use Vera's indexing and search capabilities.\n\n\
+                      The server reads JSON-RPC messages from stdin and writes responses \
+                      to stdout. Logs go to stderr.\n\n\
+                      Exposed tools:\n  \
+                      search_code     — Hybrid search with filters\n  \
+                      index_project   — Index a project directory\n  \
+                      update_project  — Incremental index update\n  \
+                      get_stats       — Index statistics\n\n\
+                      Examples:\n  \
+                      vera mcp                       # Start MCP server on stdio")]
+    Mcp,
+
     /// Index a codebase for search.
     ///
     /// Discovers source files, parses them with tree-sitter, creates
@@ -216,6 +237,11 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
+        Commands::Mcp => {
+            tracing::info!("starting MCP server");
+            commands::mcp::run();
+            Ok(())
+        }
         Commands::Index { path } => {
             tracing::info!(path = %path, "indexing");
             commands::index::run(&path, cli.json)

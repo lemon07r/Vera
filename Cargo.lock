@@ -2651,6 +2651,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "vera-core",
+ "vera-mcp",
 ]
 
 [[package]]
