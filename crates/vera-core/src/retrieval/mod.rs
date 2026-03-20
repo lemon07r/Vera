@@ -8,13 +8,7 @@
 //! - Graceful degradation when services are unavailable
 
 pub mod bm25;
+pub mod vector;
 
 pub use bm25::{search_bm25, search_bm25_with_stores};
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn module_loads() {
-        // Placeholder: will be replaced with real retrieval tests.
-    }
-}
+pub use vector::{VectorSearchError, search_vector, search_vector_with_stores};
