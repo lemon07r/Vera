@@ -68,7 +68,7 @@ With `--json`, search returns an array of context capsules:
     "line_start": 42,
     "line_end": 68,
     "content": "pub fn authenticate(...) { ... }",
-    "language": "Rust",
+    "language": "rust",
     "score": 0.847,
     "symbol_name": "authenticate",
     "symbol_type": "function"
