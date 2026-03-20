@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "date": "2026-03-20",
+    "machine": "AMD Ryzen 5 7600X3D (12 threads), 30GB RAM, Arch Linux",
+    "rust_version": "1.94.0",
+    "bun_version": "1.3.11",
+    "node_version": "25.8.1",
+    "tree_sitter_rust_crate": "0.24.7 (language grammar 0.23.3)",
+    "tree_sitter_node_binding": "0.22.4 (language grammar 0.23.x)"
+  },
+  "parse_benchmarks": [
+    {
+      "file": "ripgrep/crates/core/flags/defs.rs",
+      "language": "Rust",
+      "lines": 7779,
+      "bytes": 235435,
+      "iterations": 20,
+      "rust_avg_ms": 16.877,
+      "bun_avg_ms": 29.672,
+      "rust_speedup": 1.76
+    },
+    {
+      "file": "fastify/test/hooks.test.js",
+      "language": "JavaScript",
+      "lines": 3578,
+      "bytes": 92404,
+      "iterations": 20,
+      "rust_avg_ms": 10.373,
+      "bun_avg_ms": 17.875,
+      "rust_speedup": 1.72
+    },
+    {
+      "file": "turborepo/crates/turborepo-engine/src/builder.rs",
+      "language": "Rust",
+      "lines": 4945,
+      "bytes": 172957,
+      "iterations": 20,
+      "rust_avg_ms": 14.010,
+      "bun_avg_ms": 22.765,
+      "rust_speedup": 1.63
+    }
+  ],
+  "walk_benchmarks": [
+    {
+      "directory": "turborepo",
+      "total_files_expected": "~5700",
+      "iterations": 10,
+      "rust_avg_ms": 38.667,
+      "rust_files": 5818,
+      "bun_avg_ms": 17.563,
+      "bun_files": 5419,
+      "note": "Rust ignore crate walks more files (hidden/dotfiles included with hidden=false); Bun Glob skips dotfiles. File counts not directly comparable."
+    },
+    {
+      "directory": "ripgrep",
+      "total_files_expected": "~220",
+      "iterations": 10,
+      "rust_avg_ms": 1.442,
+      "rust_files": 247,
+      "bun_avg_ms": 0.666,
+      "bun_files": 209,
+      "note": "Same caveat on dot-file handling. Both are fast for small repos."
+    }
+  ],
+  "cold_start": {
+    "invocations": 100,
+    "rust_avg_ms": 0.510,
+    "bun_avg_ms": 5.090,
+    "node_avg_ms": 35.520,
+    "rust_speedup_vs_bun": 9.98,
+    "rust_speedup_vs_node": 69.65
+  },
+  "binary_size": {
+    "rust_spike_parse": "2.6 MB",
+    "rust_spike_walk": "3.1 MB",
+    "rust_spike_startup": "444 KB",
+    "rust_total_approx": "6.1 MB",
+    "ts_bun_node_modules": "32 MB",
+    "ts_bun_source": "<10 KB",
+    "note": "Rust produces a single self-contained binary. TS/Bun requires node_modules (32MB) plus Bun runtime (~100MB). For distribution, Bun can compile to a single binary via 'bun build --compile' (~60-80MB typical)."
+  }
+}

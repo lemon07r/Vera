@@ -1,0 +1,21 @@
+{
+  "name": "language-spike-ts-bun",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "parse": "bun run src/parse.ts",
+    "walk": "bun run src/walk.ts",
+    "startup": "bun run src/startup.ts"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-rust": "^0.23.2",
+    "tree-sitter-javascript": "^0.23.1",
+    "tree-sitter-python": "^0.23.6"
+  },
+  "trustedDependencies": [
+    "tree-sitter-javascript",
+    "tree-sitter-python",
+    "tree-sitter-rust"
+  ]
+}
