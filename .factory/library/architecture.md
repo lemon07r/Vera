@@ -151,6 +151,32 @@ Key insights from competitor baseline benchmarking (21 tasks, 4 repos):
 - The service handles BM25 fallback, embedding provider setup, reranker creation, and filter application
 - Note: `execute_search()` creates a new tokio runtime per call — acceptable for CLI, suboptimal for high-throughput MCP use
 
+## Local Inference (v1.1)
+
+### Models
+- Embedding: jina-embeddings-v5-text-nano-retrieval (239M params, 768-dim, ONNX format)
+  - Task-specific retrieval variant with query/document prefixes
+  - HuggingFace repo: jinaai/jina-embeddings-v5-text-nano-retrieval (onnx/ subfolder)
+  - Last-token pooling, normalize output
+- Reranker: jina-reranker-v2-base-multilingual (278M params, ONNX format)
+  - Cross-encoder architecture, query+doc pair → relevance score
+  - HuggingFace repo: jinaai/jina-reranker-v2-base-multilingual
+  - sigmoid on logits for score
+
+### Design
+- All local code gated by `#[cfg(feature = "local")]` Cargo feature
+- ONNX Runtime via `ort` crate v2
+- HuggingFace `tokenizers` crate for local tokenization
+- Models stored in ~/.vera/models/ (override via VERA_MODEL_DIR)
+- Atomic download: write to .tmp then rename
+- Index metadata stores model_name + embedding_dim for mismatch detection
+- API mode: 4096-dim (Qwen3-8B), Local mode: 768-dim (Jina v5 nano)
+- Indexes are model-specific — cannot mix API and local vectors
+
+### Nebius API Rate Limits (from benchmarks)
+- Daily embedding quota exhausted after ~600 files across 3 repos
+- Cooldowns of 90-180s don't help — limit is daily, not per-minute
+
 ## Key Constraints
 
 - Files under 300 lines (soft), 500 lines (hard - must explain)

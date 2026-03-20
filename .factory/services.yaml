@@ -1,7 +1,9 @@
 commands:
   build: cargo build
   build-release: cargo build --release
+  build-local: cargo build --release --features local
   test: cargo test
+  test-local: cargo test --features local
   test-verbose: cargo test -- --nocapture
   clippy: cargo clippy -- -D warnings
   fmt: cargo fmt --check

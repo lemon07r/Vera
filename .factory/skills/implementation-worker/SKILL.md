@@ -1,10 +1,11 @@
 ---
 name: implementation-worker
 description: |
-  Implements Rust production code for the Vera CLI tool. Handles Milestone 2-3 features:
-  tree-sitter parsing, AST chunking, indexing, retrieval pipeline, CLI commands, MCP server,
-  and incremental indexing. Use when the task requires writing or modifying Rust source code,
-  adding CLI commands, or building production pipeline components.
+  Implements Rust production code for the Vera CLI tool. Handles tree-sitter parsing,
+  AST chunking, indexing, retrieval pipeline, CLI commands, MCP server, incremental indexing,
+  language support expansion, local inference integration, and repo cleanup tasks.
+  Use when the task requires writing or modifying Rust source code, adding CLI commands,
+  building pipeline components, or reorganizing the repository.
 ---
 
 # Implementation Worker
