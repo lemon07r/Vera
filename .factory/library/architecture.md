@@ -42,6 +42,13 @@ Architectural decisions, patterns, and conventions for Vera.
 - Sliding-window as Tier 0 fallback for unsupported languages
 - See `docs/adr/004-chunking-strategy.md` for full evidence
 
+### ADR-000: Decision Summary
+- All 5 major architecture questions decided: language, storage, embedding, chunking, retrieval pipeline shape
+- Retrieval pipeline: BM25 (Tantivy) + Vector (sqlite-vec) → RRF fusion → Reranking (Qwen3-Reranker)
+- 2 open questions remain: pipeline parameters (tune in M2), graph-lite scope (defer to M2/M3)
+- 13 prior assumptions validated, 2 invalidated (LanceDB, sliding-window role), 7 hypothetical
+- See `docs/adr/000-decision-summary.md` for full decision matrix and assumption categorization
+
 ## Baseline Findings from M1 Competitor Benchmarks
 
 Key insights from competitor baseline benchmarking (21 tasks, 4 repos):
