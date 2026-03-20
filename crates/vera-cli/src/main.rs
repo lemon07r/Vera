@@ -86,8 +86,8 @@ fn main() -> anyhow::Result<()> {
             limit,
         } => {
             tracing::info!(query = %query, "searching");
-            let _ = (lang, path, limit); // Will be used in implementation
-            eprintln!("vera search: not yet implemented (query: {query})");
+            let _ = (lang, path); // Filters implemented in a later feature
+            run_search(&query, limit, cli.json)?;
         }
         Commands::Update { path } => {
             tracing::info!(path = %path, "updating");
@@ -169,6 +169,143 @@ fn run_index(path: &str, json_output: bool) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+/// Run the `vera search <query>` command.
+///
+/// Performs hybrid search (BM25 + vector via RRF fusion) over the index
+/// in the current directory. Falls back to BM25-only if the embedding
+/// API is unavailable.
+fn run_search(query: &str, limit: Option<usize>, json_output: bool) -> anyhow::Result<()> {
+    let config = vera_core::config::VeraConfig::default();
+    let result_limit = limit.unwrap_or(config.retrieval.default_limit);
+
+    // Find the index directory (look in current working directory).
+    let cwd = std::env::current_dir()
+        .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
+    let index_dir = vera_core::indexing::index_dir(&cwd);
+
+    if !index_dir.exists() {
+        eprintln!(
+            "Error: no index found in current directory.\n\
+             Run `vera index <path>` first to create an index."
+        );
+        process::exit(1);
+    }
+
+    // Build the tokio runtime for async embedding calls.
+    let rt = tokio::runtime::Runtime::new()
+        .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
+
+    // Create the embedding provider from environment.
+    let provider_config = match vera_core::embedding::EmbeddingProviderConfig::from_env() {
+        Ok(cfg) => cfg,
+        Err(err) => {
+            // Embedding not configured — fall back to BM25-only.
+            eprintln!(
+                "Warning: embedding API not configured ({err}), falling back to BM25-only search."
+            );
+            return run_bm25_fallback(&index_dir, query, result_limit, json_output);
+        }
+    };
+    let provider_config = provider_config
+        .with_timeout(std::time::Duration::from_secs(
+            config.embedding.timeout_secs,
+        ))
+        .with_max_retries(config.embedding.max_retries);
+
+    let provider = match vera_core::embedding::OpenAiProvider::new(provider_config) {
+        Ok(p) => p,
+        Err(err) => {
+            eprintln!(
+                "Warning: failed to initialize embedding provider ({err}), \
+                 falling back to BM25-only search."
+            );
+            return run_bm25_fallback(&index_dir, query, result_limit, json_output);
+        }
+    };
+
+    // Run hybrid search.
+    let stored_dim = config.embedding.max_stored_dim;
+    let rrf_k = config.retrieval.rrf_k;
+
+    let results = match rt.block_on(vera_core::retrieval::search_hybrid(
+        &index_dir,
+        &provider,
+        query,
+        result_limit,
+        rrf_k,
+        stored_dim,
+    )) {
+        Ok(r) => r,
+        Err(err) => {
+            eprintln!("Error: search failed: {err:#}");
+            process::exit(1);
+        }
+    };
+
+    output_results(&results, json_output);
+    Ok(())
+}
+
+/// BM25-only fallback when embedding API is unavailable.
+fn run_bm25_fallback(
+    index_dir: &Path,
+    query: &str,
+    limit: usize,
+    json_output: bool,
+) -> anyhow::Result<()> {
+    let results = match vera_core::retrieval::search_bm25(index_dir, query, limit) {
+        Ok(r) => r,
+        Err(err) => {
+            eprintln!("Error: BM25 search failed: {err:#}");
+            process::exit(1);
+        }
+    };
+
+    output_results(&results, json_output);
+    Ok(())
+}
+
+/// Output search results in human-readable or JSON format.
+fn output_results(results: &[vera_core::types::SearchResult], json_output: bool) {
+    if json_output {
+        let json = serde_json::to_string_pretty(results)
+            .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
+        println!("{json}");
+    } else if results.is_empty() {
+        println!("No results found.");
+    } else {
+        for (i, result) in results.iter().enumerate() {
+            println!(
+                "{}. {} (lines {}-{}, {})",
+                i + 1,
+                result.file_path,
+                result.line_start,
+                result.line_end,
+                result.language,
+            );
+            if let Some(ref name) = result.symbol_name {
+                if let Some(ref stype) = result.symbol_type {
+                    println!("   {stype} {name}");
+                } else {
+                    println!("   {name}");
+                }
+            }
+            println!("   score: {:.6}", result.score);
+
+            // Show a preview of the content (first 3 lines).
+            let preview: String = result
+                .content
+                .lines()
+                .take(3)
+                .map(|l| format!("   │ {l}"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            println!("{preview}");
+            println!();
+        }
+    }
 }
 
 /// Print a human-readable summary of the indexing run.
