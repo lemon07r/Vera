@@ -41,6 +41,8 @@ pub fn execute_search(
             }
         };
 
+    let mut stored_dim = config.embedding.max_stored_dim;
+
     // Check metadata mismatch
     let metadata_path = index_dir.join("metadata.db");
     if let Ok(metadata_store) = crate::storage::metadata::MetadataStore::open(&metadata_path) {
@@ -58,6 +60,9 @@ pub fn execute_search(
                     model_name
                 );
             }
+            if let Ok(dim) = s_dim.parse::<usize>() {
+                stored_dim = dim;
+            }
         }
     }
 
@@ -71,7 +76,6 @@ pub fn execute_search(
             None
         });
 
-    let stored_dim = config.embedding.max_stored_dim;
     let rrf_k = config.retrieval.rrf_k;
     let rerank_candidates = config.retrieval.rerank_candidates;
 

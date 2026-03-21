@@ -23,14 +23,15 @@ Vera is a code indexing and retrieval tool built for AI coding agents. It combin
 ```sh
 vera index .                    # Index current directory
 vera index /path/to/repo        # Index a specific path
+vera index --local .            # Index using local models (no API key needed)
 vera index . --json             # JSON output summary
 ```
-Creates a `.vera/` directory with the search index. Requires `EMBEDDING_MODEL_BASE_URL`, `EMBEDDING_MODEL_ID`, and `EMBEDDING_MODEL_API_KEY` environment variables.
+Creates a `.vera/` directory with the search index. Requires `EMBEDDING_MODEL_BASE_URL`, `EMBEDDING_MODEL_ID`, and `EMBEDDING_MODEL_API_KEY` environment variables for API mode, or you can use the `--local` flag (or `VERA_LOCAL=1` env var) for local inference (no API key needed).
 
 ### Search
 ```sh
 vera search "authentication logic"           # Semantic search
-vera search "parse_config"                   # Symbol lookup
+vera search --local "parse_config"           # Search using local models
 vera search "error handling" --lang rust     # Filter by language
 vera search "routes" --path "src/**/*.ts"    # Filter by path glob
 vera search "handler" --type function        # Filter by symbol type
@@ -41,6 +42,7 @@ Searches run from the directory containing `.vera/`. Combine filters freely.
 ### Update index (after code changes)
 ```sh
 vera update .                   # Re-index only changed files
+vera update --local .           # Update using local models
 vera update . --json            # JSON output summary
 ```
 Detects added, modified, and deleted files via content hashing. Much faster than full re-index.
