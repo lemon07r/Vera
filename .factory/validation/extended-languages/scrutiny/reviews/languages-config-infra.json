@@ -1,0 +1,45 @@
+{
+  "featureId": "languages-config-infra",
+  "reviewedAt": "2026-03-21T00:31:48.527737Z",
+  "commitId": "cd25aa2",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "SQL/HCL/Protobuf support was added, but the feature does not fully satisfy the extended-languages contract: HCL extraction is too coarse and the documentation update required by VAL-LANG-019 is incomplete.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/parsing/extractor.rs",
+        "line": 72,
+        "severity": "blocking",
+        "description": "`classify_hcl()` maps every HCL/Terraform `block` to `SymbolType::Struct`, so `resource`, `data`, `variable`, `output`, and `module` are not distinguished as required by the feature description and VAL-LANG-015. The generic name extraction path only looks for `name`/`declarator` fields and identifier-like nodes, and the only HCL test just asserts non-empty output, so this contract gap is neither implemented nor validated."
+      },
+      {
+        "file": "README.md",
+        "line": 8,
+        "severity": "blocking",
+        "description": "README.md still advertises support for 'Rust, Python, TypeScript, Go, Java, C/C++, and more' instead of listing all 21+ supported languages. VAL-LANG-019 explicitly requires the full language list."
+      },
+      {
+        "file": "SKILL.md",
+        "line": 5,
+        "severity": "blocking",
+        "description": "SKILL.md says Vera parses '21+ languages with tree-sitter' but does not enumerate the supported languages, so the feature does not meet VAL-LANG-019's requirement that SKILL.md list all 21+ languages."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The implementation-worker skill says to write failing tests first, but this feature's transcript shows baseline testing/dependency work before any failing-test step, and the new extractor tests are only smoke tests. If shallow extractor tests are acceptable, the skill/AGENTS guidance should say so; otherwise the current guidance is not being enforced and contract gaps can slip through.",
+      "evidence": "implementation-worker/SKILL.md:40-47 requires failing tests first; the transcript skeleton shows baseline `cargo test` before adding tests; `crates/vera-core/src/parsing/extractor.rs:1399-1434` only asserts non-empty output for HCL/SQL/Protobuf."
+    },
+    {
+      "area": "knowledge",
+      "observation": "The repo now has a custom workaround for tree-sitter grammar version/linkage conflicts (git-sourced HCL grammar plus vendored SQL/Protobuf parsers compiled in build.rs), but that pattern is not documented in AGENTS.md or the library. Future language-support work is likely to rediscover the same compatibility problem.",
+      "evidence": "`crates/vera-core/Cargo.toml:53` uses a git-sourced `tree-sitter-hcl`; `crates/vera-core/build.rs:1-29` compiles local SQL/Protobuf parsers; commit `cd25aa2` vendors `crates/tree-sitter-sql/` and `crates/tree-sitter-proto/`; the handoff/transcript describe this as a response to tree-sitter linkage conflicts."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Fail: HCL/Terraform extraction does not implement the required per-block typing, and neither README.md nor SKILL.md lists the full supported-language set required by VAL-LANG-019."
+}

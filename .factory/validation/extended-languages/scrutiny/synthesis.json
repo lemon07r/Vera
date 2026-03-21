@@ -1,0 +1,59 @@
+{
+  "milestone": "extended-languages",
+  "round": 2,
+  "status": "pass",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "cargo test --manifest-path /home/lamim/Development/Tools/Vera/Cargo.toml",
+      "exitCode": 0
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "cargo clippy --manifest-path /home/lamim/Development/Tools/Vera/Cargo.toml -- -D warnings",
+      "exitCode": 0
+    },
+    "lint": {
+      "passed": true,
+      "command": "cargo fmt --all --manifest-path /home/lamim/Development/Tools/Vera/Cargo.toml --check",
+      "exitCode": 0
+    }
+  },
+  "reviewsSummary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "failedFeatures": [],
+    "reviewedFeatures": [
+      "languages-scrutiny-fixes"
+    ],
+    "resolvedPreviousFailures": [
+      "languages-new-popular",
+      "languages-config-infra"
+    ]
+  },
+  "blockingIssues": [],
+  "nonBlockingIssues": [
+    {
+      "featureId": "languages-scrutiny-fixes",
+      "severity": "non_blocking",
+      "description": "`patch_scala.rs` is a tracked repo-root scratch file unrelated to the feature and should be removed in a follow-up cleanup."
+    },
+    {
+      "featureId": "languages-scrutiny-fixes",
+      "severity": "non_blocking",
+      "description": "`tests_hcl_tmp.rs` is a tracked repo-root scratch file unrelated to the feature and should be removed in a follow-up cleanup."
+    }
+  ],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "skills",
+      "suggestion": "Align `implementation-worker` with enforceable expectations: either require workers to explicitly record deviations when they skip ADR review, red-phase tests, or manual CLI verification, or relax the procedure so handoffs do not claim `followedProcedure: true` when those steps were omitted.",
+      "evidence": "The rerun review for `languages-scrutiny-fixes` again found a `followedProcedure: true` handoff even though the transcript skeleton showed validator commands only, with no ADR review, failing-test-first step, or manual `vera index` / `vera search` verification required by the skill.",
+      "isSystemic": true
+    }
+  ],
+  "rejectedObservations": [],
+  "previousRound": "/home/lamim/Development/Tools/Vera/.factory/validation/extended-languages/scrutiny/synthesis.round1.json"
+}
