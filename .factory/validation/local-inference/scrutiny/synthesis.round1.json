@@ -1,0 +1,104 @@
+{
+  "milestone": "local-inference",
+  "round": 1,
+  "status": "fail",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "set -a && . \"/home/lamim/Development/Tools/Vera/secrets.env\" && set +a && cargo test --manifest-path \"/home/lamim/Development/Tools/Vera/Cargo.toml\" && cargo test --manifest-path \"/home/lamim/Development/Tools/Vera/Cargo.toml\" --features local",
+      "exitCode": 0
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "set -a && . \"/home/lamim/Development/Tools/Vera/secrets.env\" && set +a && cargo build --manifest-path \"/home/lamim/Development/Tools/Vera/Cargo.toml\" --release && cargo build --manifest-path \"/home/lamim/Development/Tools/Vera/Cargo.toml\" --release --features local",
+      "exitCode": 0
+    },
+    "lint": {
+      "passed": true,
+      "command": "set -a && . \"/home/lamim/Development/Tools/Vera/secrets.env\" && set +a && cargo clippy --manifest-path \"/home/lamim/Development/Tools/Vera/Cargo.toml\" -- -D warnings && cargo clippy --manifest-path \"/home/lamim/Development/Tools/Vera/Cargo.toml\" --features local -- -D warnings && cargo fmt --manifest-path \"/home/lamim/Development/Tools/Vera/Cargo.toml\" --all --check",
+      "exitCode": 0
+    }
+  },
+  "reviewsSummary": {
+    "total": 3,
+    "passed": 1,
+    "failed": 2,
+    "failedFeatures": [
+      "local-onnx-foundation",
+      "local-cli-integration"
+    ],
+    "reviewedFeatures": [
+      "local-onnx-foundation",
+      "local-cli-integration",
+      "cross-area-integration"
+    ]
+  },
+  "blockingIssues": [
+    {
+      "featureId": "local-onnx-foundation",
+      "severity": "blocking",
+      "description": "`crates/vera-core/src/local_models.rs:31` leaves `.part` files behind when model download streaming or rename fails, so partial-download cleanup required by the feature and VAL-LOCAL-005 is missing."
+    },
+    {
+      "featureId": "local-onnx-foundation",
+      "severity": "blocking",
+      "description": "`crates/vera-core/src/retrieval/local_reranker.rs:156` returns reranker scores in input order instead of descending relevance order, violating the `Reranker` contract and VAL-LOCAL-004."
+    },
+    {
+      "featureId": "local-cli-integration",
+      "severity": "blocking",
+      "description": "`crates/vera-core/src/retrieval/search_service.rs:32` swallows the explicit non-local-build error from dynamic provider creation and silently falls back to BM25, so `vera search --local` / MCP `VERA_LOCAL=1` do not surface the required graceful error."
+    },
+    {
+      "featureId": "local-cli-integration",
+      "severity": "blocking",
+      "description": "`crates/vera-core/src/retrieval/search_service.rs:63` and `crates/vera-core/src/indexing/update.rs:105-119,188,208` do not explicitly validate stored `embedding_dim` against the active provider, so mismatches can degrade instead of producing the required re-index error."
+    }
+  ],
+  "nonBlockingIssues": [
+    {
+      "featureId": "cross-area-integration",
+      "severity": "non_blocking",
+      "description": "`crates/vera-core/src/retrieval/search_service.rs:44` ships the metadata-dimension fix without an automated regression test, leaving the local-search path covered only by manual verification."
+    }
+  ],
+  "appliedUpdates": [
+    {
+      "target": "library",
+      "description": "Documented the `VERA_LOCAL=1` environment toggle and first-run local-model download behavior in `.factory/library/environment.md`.",
+      "sourceFeature": "local-cli-integration"
+    },
+    {
+      "target": "library",
+      "description": "Added local-mode user-testing notes covering `cargo build --release --features local`, MCP validation via `VERA_LOCAL=1`, and model-download expectations in `.factory/library/user-testing.md`.",
+      "sourceFeature": "local-cli-integration"
+    },
+    {
+      "target": "library",
+      "description": "Corrected the local-model storage note and recorded the `ort::Session` mutex constraint in `.factory/library/architecture.md`.",
+      "sourceFeature": "local-onnx-foundation"
+    }
+  ],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "skills",
+      "suggestion": "Align `implementation-worker` and its handoff expectations with validation-heavy features: require explicit deviation notes when workers skip the skill's red-test/manual-CLI steps, or provide a lighter-weight path for integration/scrutiny-driven tasks.",
+      "evidence": "Reviews for `local-onnx-foundation`, `local-cli-integration`, and `cross-area-integration` all found `skillFeedback.followedProcedure: true` even though transcript skeletons showed no red-test-first step and, for the CLI/MCP feature, no recorded manual CLI/MCP verification required by the skill.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Remove or qualify the claim that local model storage is configurable via `VERA_MODEL_DIR` until the code implements that override, or prioritize implementing the override to match the documented convention.",
+      "evidence": "`AGENTS.md` says local models are stored in `~/.vera/models/` and configurable via `VERA_MODEL_DIR`, but the `local-onnx-foundation` review found `crates/vera-core/src/local_models.rs` hardcodes only `~/.vera/models/`.",
+      "isSystemic": false
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Clarify whether validators may create isolated temp repos outside the project root, and keep AGENTS/library guidance consistent on approved scratch locations.",
+      "evidence": "The `cross-area-integration` review found `AGENTS.md` forbids modifying files outside the Vera repo root while `.factory/library/user-testing.md` directs validators to use isolated repos under `/tmp`, leading the worker to create `/home/lamim/test_repo_langs` outside the repo.",
+      "isSystemic": true
+    }
+  ],
+  "rejectedObservations": [],
+  "previousRound": null
+}

@@ -164,6 +164,11 @@ Key insights from competitor baseline benchmarking (21 tasks, 4 repos):
 - The service handles BM25 fallback, embedding provider setup, reranker creation, and filter application
 - Note: `execute_search()` creates a new tokio runtime per call — acceptable for CLI, suboptimal for high-throughput MCP use
 
+### Shared Update Path
+- Incremental update logic is extracted into `crates/vera-core/src/indexing/update.rs::update_repository`
+- Both CLI (`crates/vera-cli/src/commands/update.rs`) and MCP (`crates/vera-mcp/src/tools.rs`) call this shared core function
+- Provider/model/dimension validation should live in the shared core path, not only in a CLI wrapper, or MCP/direct callers can diverge from CLI behavior
+
 ## Local Inference (v1.1)
 
 ### Models

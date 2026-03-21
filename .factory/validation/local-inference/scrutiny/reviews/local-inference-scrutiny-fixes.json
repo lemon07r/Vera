@@ -1,0 +1,48 @@
+{
+  "featureId": "local-inference-scrutiny-fixes",
+  "reviewedAt": "2026-03-21T02:30:59Z",
+  "commitId": "b118fc24d0e8c6ef5d4d54b24372af94a1eea5e9",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "The fix closes the original partial-download cleanup, reranker ordering, and non-local-build error gaps, but it still leaves the update-path dimension-mismatch bug reachable through shared core/MCP paths and continues to silently degrade explicit local searches to BM25 when local provider initialization fails.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/indexing/update.rs",
+        "line": 104,
+        "severity": "blocking",
+        "description": "The dimension-mismatch fix was added only in `crates/vera-cli/src/commands/update.rs`, but the shared core update path still validates only `model_name` here and still reopens the vector store with `config.embedding.max_stored_dim` at lines 188 and 208. Because MCP `update_project` still calls `vera_core::indexing::update_repository(...)` directly (`crates/vera-mcp/src/tools.rs:253`), the original blocking mismatch issue from `local-cli-integration` remains unresolved for MCP/direct callers."
+      },
+      {
+        "file": "crates/vera-core/src/retrieval/search_service.rs",
+        "line": 34,
+        "severity": "blocking",
+        "description": "`execute_search` now errors only for the specific `--local` + non-local-build case. In a local-enabled build, any `create_dynamic_provider` failure from `crates/vera-core/src/embedding/dynamic.rs:37-42` (download, tokenizer, or ONNX init failure) still falls through to the warning/BM25 fallback at lines 38-40, so explicit `--local` / `VERA_LOCAL=1` requests can still silently ignore local mode instead of surfacing the required failure."
+      },
+      {
+        "file": "crates/vera-core/src/local_models.rs",
+        "line": 112,
+        "severity": "non_blocking",
+        "description": "The new cleanup regression test checks for `test-file.bin.part`, but the implementation creates the temp file with `target_path.with_extension(\"part\")` at line 43, which yields `test-file.part`. The runtime cleanup logic looks correct, but this test can pass without asserting that the actual temp file path was removed."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "knowledge",
+      "observation": "The shared library does not record that `vera_core::indexing::update_repository` is a shared core path used by both CLI and MCP, which made it easy to patch only the CLI wrapper while leaving `update_project` on the old behavior.",
+      "evidence": "`crates/vera-cli/src/commands/update.rs:74` and `crates/vera-mcp/src/tools.rs:253` both call `vera_core::indexing::update_repository(...)`; searching `.factory/library/` for `update_repository` returns no matches."
+    },
+    {
+      "area": "skills",
+      "observation": "The implementation-worker procedure/feedback flow did not catch that this fix touched MCP-shared behavior: the skill requires MCP verification when relevant, but the handoff still marked `followedProcedure: true` with only CLI verification recorded.",
+      "evidence": "`.factory/skills/implementation-worker/SKILL.md:104-105` says to test the MCP server when the feature involves it. The handoff for session `284c9f17-a585-42dc-b2d3-208b1fe8c7af` lists only `cargo clippy --features local -- -D warnings`, `cargo test --features local`, and `cargo run --bin vera -- search --local test` under verification."
+    }
+  ],
+  "addressesFailureFrom": [
+    "/home/lamim/Development/Tools/Vera/.factory/validation/local-inference/scrutiny/reviews/local-onnx-foundation.json",
+    "/home/lamim/Development/Tools/Vera/.factory/validation/local-inference/scrutiny/reviews/local-cli-integration.json"
+  ],
+  "summary": "Fail: the fix commit resolves the original downloader cleanup, reranker ordering, and non-local-build search error findings, but it does not fully close the prior update-path dimension-mismatch failure because MCP/direct callers still use the unfixed core update path. I also found one additional blocking issue where explicit local searches still degrade to BM25 on local provider initialization failure, plus a non-blocking regression test path mismatch in the download-cleanup test."
+}
