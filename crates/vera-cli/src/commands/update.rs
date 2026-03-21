@@ -37,6 +37,36 @@ pub fn run(path: &str, json_output: bool, local_flag: bool) -> anyhow::Result<()
         &config, is_local,
     ))?;
 
+    // Check metadata mismatch
+    let metadata_path = repo_path.join(".vera").join("metadata.db");
+    if let Ok(metadata_store) = vera_core::storage::metadata::MetadataStore::open(&metadata_path) {
+        if let (Some(s_model), Some(s_dim)) = (
+            metadata_store.get_index_meta("model_name").unwrap_or(None),
+            metadata_store.get_index_meta("embedding_dim").unwrap_or(None),
+        ) {
+            if s_model != model_name {
+                bail!(
+                    "Index was created with model '{}' ({} dimensions), but you are using model '{}'. Please re-index with matching provider.",
+                    s_model,
+                    s_dim,
+                    model_name
+                );
+            }
+            if let Ok(dim) = s_dim.parse::<usize>() {
+                use vera_core::embedding::EmbeddingProvider;
+                if let Some(provider_dim) = provider.expected_dim() {
+                    if provider_dim != dim {
+                        bail!(
+                            "Dimension mismatch: index has {} dimensions but active provider expects {}. Please re-index with matching provider.",
+                            dim,
+                            provider_dim
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     // Run the incremental update pipeline.
     let summary = rt
         .block_on(vera_core::indexing::update_repository(

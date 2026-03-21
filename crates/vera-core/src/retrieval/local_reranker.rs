@@ -153,6 +153,12 @@ impl LocalReranker {
             anyhow::bail!("Unexpected tensor shape for reranker: {:?}", shape);
         }
 
+        results.sort_by(|a, b| {
+            b.relevance_score
+                .partial_cmp(&a.relevance_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
         Ok(results)
     }
 }
@@ -209,5 +215,10 @@ mod tests {
             .unwrap()
             .relevance_score;
         assert!(relevant_score > irrelevant_score);
+
+        // Assert sorting is descending
+        assert_eq!(scores[0].index, 1);
+        assert_eq!(scores[1].index, 0);
+        assert!(scores[0].relevance_score > scores[1].relevance_score);
     }
 }
