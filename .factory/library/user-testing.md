@@ -319,9 +319,9 @@ set -a && source /home/lamim/Development/Tools/Vera/secrets.env && set +a
 - `VAL-LOCAL-010`, `VAL-CROSS-101`, `VAL-CROSS-102`: use a small isolated repo containing at least one newly added language file (for example Ruby and C#) so language classification and symbol metadata can be asserted from `--json` results.
 - `VAL-CROSS-103`: run the full validator commands (`cargo test`, `cargo test --features local`, `cargo clippy -- -D warnings`, `cargo clippy --features local -- -D warnings`, `cargo fmt --check`) from the repo root and record exit codes plus notable output.
 
-**Observed local-inference frictions (2026-03-20 validation):**
-- A cold-cache `cargo test --features local` run can fail once in `retrieval::search_service::tests::test_dimension_mismatch_and_inference` with `Failed to download ONNX data: No such file or directory (os error 2)` before passing on an immediate rerun after the model cache is populated. Capture both runs if this recurs.
-- Faithful local-mode indexing of the copied standard benchmark repos used for the 17-task Recall@5 check may be killed by the OS with exit `137`, even after constraining threads (`taskset`, `OMP_NUM_THREADS=1`, `ORT_NUM_THREADS=1`, `RAYON_NUM_THREADS=1`). Treat this as a validation blocker/failure signal rather than silently downgrading the workload.
+**Observed local-inference frictions (2026-03-20 / 2026-03-21 validation):**
+- On hosts where `/tmp` is nearly full, keep the assigned `HOME` under `/tmp` for isolation but point `HOME/.vera` and `TMPDIR` at evidence-backed storage on the main filesystem; this preserved a cold-cache validation path for `cargo test --features local` and `cargo clippy --features local -- -D warnings` during the 2026-03-21 rerun.
+- Faithful local-mode indexing of the copied standard benchmark repos used for the 17-task Recall@5 check still terminated during the 2026-03-21 rerun (`ripgrep` exit `-9`, `flask` exit `-15`, `fastify` exit `-15`) even with the reduced local defaults (`embedding.batch_size=16`, `embedding.max_concurrent_requests=1`). Treat this as a validation failure signal rather than silently downgrading the workload.
 
 ## Flow Validator Guidance: Local Inference MCP
 

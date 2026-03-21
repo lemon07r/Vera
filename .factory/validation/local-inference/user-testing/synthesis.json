@@ -1,58 +1,46 @@
 {
   "milestone": "local-inference",
-  "round": 1,
+  "round": 2,
   "status": "fail",
   "assertionsSummary": {
-    "total": 20,
-    "passed": 17,
-    "failed": 3,
+    "total": 3,
+    "passed": 2,
+    "failed": 1,
     "blocked": 0
   },
   "passedAssertions": [
-    "VAL-LOCAL-001",
-    "VAL-LOCAL-002",
-    "VAL-LOCAL-003",
-    "VAL-LOCAL-004",
-    "VAL-LOCAL-005",
-    "VAL-LOCAL-006",
-    "VAL-LOCAL-007",
-    "VAL-LOCAL-008",
-    "VAL-LOCAL-009",
-    "VAL-LOCAL-012",
-    "VAL-LOCAL-013",
-    "VAL-LOCAL-014",
-    "VAL-LOCAL-015",
-    "VAL-CROSS-101",
-    "VAL-CROSS-102",
-    "VAL-CROSS-103",
-    "VAL-CROSS-104"
+    "VAL-LOCAL-011",
+    "VAL-LOCAL-016"
   ],
   "failedAssertions": [
     {
       "id": "VAL-LOCAL-010",
-      "reason": "Local-mode indexing of the copied ripgrep/flask/fastify benchmark repos was repeatedly killed by the OS (exit -9/137), so the faithful 17-task Recall@5 reproduction could not produce usable indexes and recorded 0.0000."
-    },
-    {
-      "id": "VAL-LOCAL-011",
-      "reason": "The local-model initialization failure path exited cleanly but only reported `Failed to download ONNX model: Not a directory (os error 20)`; it did not name the expected cache path or provide remediation guidance."
-    },
-    {
-      "id": "VAL-LOCAL-016",
-      "reason": "A first cold-cache `cargo test --features local` run failed in `retrieval::search_service::tests::test_dimension_mismatch_and_inference` during ONNX data download; only a warm-cache rerun passed."
+      "reason": "Round 2 re-validation still failed: the isolated local-feature release binary could not finish indexing the copied ripgrep/flask/fastify benchmark repos (exit codes -9, -15, -15), leaving no `.vera/` indexes and an aggregate Recall@5 of 0.0000 on the standard 17-task subset. A follow-up ripgrep retry with OMP/ORT/RAYON thread limits also terminated (exit 143)."
     }
   ],
   "blockedAssertions": [],
   "appliedUpdates": [
     {
       "target": "user-testing.md",
-      "description": "Added local-inference-specific CLI/MCP guidance covering shared default/local binaries, isolated HOME/model-cache strategy, concurrency limits, and assertion-specific verification patterns.",
-      "source": "setup"
-    },
-    {
-      "target": "user-testing.md",
-      "description": "Recorded two observed local-inference frictions from flow reports: cold-cache `cargo test --features local` flakiness during model download and OS-killed local indexing on the 17-task benchmark subset.",
+      "description": "Updated local-inference testing guidance with the 2026-03-21 rerun findings: use evidence-backed HOME/.vera and TMPDIR when /tmp is full, and record that the 17-task local Recall@5 validation still terminated even with reduced local embedding defaults.",
       "source": "flow-report"
     }
   ],
-  "previousRound": null
+  "previousRound": ".factory/validation/local-inference/user-testing/synthesis.round1.json",
+  "roundDetails": {
+    "revalidatedAssertions": [
+      "VAL-LOCAL-010",
+      "VAL-LOCAL-011",
+      "VAL-LOCAL-016"
+    ],
+    "flowReports": [
+      "/home/lamim/Development/Tools/Vera/.factory/validation/local-inference/user-testing/flows/round2-local-relevance.json",
+      "/home/lamim/Development/Tools/Vera/.factory/validation/local-inference/user-testing/flows/round2-errors-and-tests.json"
+    ],
+    "notes": [
+      "VAL-LOCAL-011 passed by forcing local model download failure in the assigned /tmp-backed HOME and confirming a clean non-zero CLI error; VAL-LOCAL-016 passed by running cargo test --features local and cargo clippy --features local -- -D warnings from a cold HOME/.vera cache symlinked into the evidence directory.",
+      "VAL-LOCAL-010 fail: aggregate Recall@5 = 0.0000; indexing_completed_without_os_kills=false; scores_descending=true.",
+      "An additional manual ripgrep retry with OMP_NUM_THREADS=1 ORT_NUM_THREADS=1 RAYON_NUM_THREADS=1 still terminated before producing an index (exit 143)."
+    ]
+  }
 }
