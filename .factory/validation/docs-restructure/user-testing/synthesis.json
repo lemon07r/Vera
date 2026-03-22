@@ -1,0 +1,42 @@
+{
+  "milestone": "docs-restructure",
+  "round": 1,
+  "status": "pass",
+  "assertionsSummary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "blocked": 0
+  },
+  "passedAssertions": [
+    "VAL-DOCS-001",
+    "VAL-DOCS-002",
+    "VAL-DOCS-003",
+    "VAL-DOCS-004"
+  ],
+  "failedAssertions": [],
+  "blockedAssertions": [],
+  "appliedUpdates": [
+    {
+      "target": "user-testing.md",
+      "description": "Added CLI flow-validator isolation guidance for low-cost read-only documentation validation in this repository.",
+      "source": "setup"
+    }
+  ],
+  "previousRound": null,
+  "roundDetails": {
+    "testedAssertions": [
+      "VAL-DOCS-001",
+      "VAL-DOCS-002",
+      "VAL-DOCS-003",
+      "VAL-DOCS-004"
+    ],
+    "flowReports": [
+      "/home/lamim/Development/Tools/Vera/.factory/validation/docs-restructure/user-testing/flows/docs-cli.json"
+    ],
+    "notes": [
+      "No services or seed data were required because docs-restructure validation used the CLI/file-inspection surface only.",
+      "One CLI flow validator covered all four assigned assertions serially within a read-only isolation boundary."
+    ]
+  }
+}

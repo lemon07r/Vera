@@ -1,0 +1,118 @@
+{
+  "surface": "cli",
+  "groupId": "docs-cli",
+  "testedAt": "2026-03-22T06:53:42.445900+00:00",
+  "isolation": {
+    "surface": "CLI / file inspection only",
+    "repoRoot": "/home/lamim/Development/Tools/Vera",
+    "missionDir": "/home/lamim/.factory/missions/291889bc-b994-4be9-95b4-d1a630b822cf"
+  },
+  "toolsUsed": [
+    "Read",
+    "LS",
+    "Execute"
+  ],
+  "assertions": [
+    {
+      "id": "VAL-DOCS-001",
+      "status": "pass",
+      "reason": "AGENTS.md exists at repo root and contains substantive AI-agent guidance including documentation freshness rules, minimal LOC, no redundancy, simple/readable code, clear naming, avoid overengineering, and pointers to .dev/agent-docs.",
+      "evidence": [
+        "test -f \"/home/lamim/Development/Tools/Vera/AGENTS.md\" && echo \"AGENTS.md exists\" -> AGENTS.md exists",
+        "rg -n \"documentation freshness|Minimal LOC|No redundancy|Simple, readable code|Clear naming|Avoid overengineering|\\.dev/agent-docs\" \"/home/lamim/Development/Tools/Vera/AGENTS.md\" -> matched lines 52, 58, 60, 62, 64, 66, 80, 102, 103",
+        "Manual Read review confirmed AGENTS.md is a substantive guidance document, not a stub."
+      ]
+    },
+    {
+      "id": "VAL-DOCS-002",
+      "status": "pass",
+      "reason": ".dev/agent-docs exists, is gitignored via .gitignore, and contains a substantive architecture document with module map, coding patterns, and development workflows.",
+      "evidence": [
+        "test -d \"/home/lamim/Development/Tools/Vera/.dev/agent-docs\" && echo \".dev/agent-docs exists\" -> .dev/agent-docs exists",
+        "git -C \"/home/lamim/Development/Tools/Vera\" check-ignore -v \".dev/agent-docs\" -> .gitignore:11:.dev/\t.dev/agent-docs",
+        "rg --files \"/home/lamim/Development/Tools/Vera/.dev/agent-docs\" -> /home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md",
+        "wc -l \"/home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md\" -> 229 /home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md",
+        "rg -n -i \"module|architecture|structure|workflow|convention|pattern\" \"/home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md\" -> matched headings at lines 1, 14, 114, 124, 132, 153, 190"
+      ]
+    },
+    {
+      "id": "VAL-DOCS-003",
+      "status": "pass",
+      "reason": "AGENTS.md is not ignored and is tracked in git.",
+      "evidence": [
+        "git -C \"/home/lamim/Development/Tools/Vera\" check-ignore -v \"AGENTS.md\"; printf 'exit=%s\\n' $? -> exit=1",
+        "git -C \"/home/lamim/Development/Tools/Vera\" ls-files --error-unmatch \"AGENTS.md\" -> AGENTS.md"
+      ]
+    },
+    {
+      "id": "VAL-DOCS-004",
+      "status": "pass",
+      "reason": "README.md does not reference AGENTS.md or agent-internal doc paths; manual review shows it focuses on installation, usage, benchmarks, and architecture.",
+      "evidence": [
+        "python3 -c \"from pathlib import Path; p=Path('/home/lamim/Development/Tools/Vera/README.md'); text=p.read_text(); import re; hits=re.findall(r'AGENTS\\\\.md|agent-facing|agent docs|\\\\.dev/agent-docs|agent-internal', text, flags=re.I); print(len(hits))\" -> 0",
+        "rg -n -i \"AGENTS\\.md|agent-facing|agent docs|\\.dev/agent-docs|agent-internal\" \"/home/lamim/Development/Tools/Vera/README.md\"; printf 'exit=%s\\n' $? -> exit=1",
+        "Manual Read review confirmed README content is user-facing and does not describe AI coding guidelines or agent-internal docs."
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "test -f \"/home/lamim/Development/Tools/Vera/AGENTS.md\" && echo \"AGENTS.md exists\"",
+      "exitCode": 0,
+      "observation": "AGENTS.md exists\n"
+    },
+    {
+      "command": "rg -n \"documentation freshness|Minimal LOC|No redundancy|Simple, readable code|Clear naming|Avoid overengineering|\\.dev/agent-docs\" \"/home/lamim/Development/Tools/Vera/AGENTS.md\"",
+      "exitCode": 0,
+      "observation": "52:Detailed architecture notes, module maps, and development workflows are in `.dev/agent-docs/`. This directory is gitignored and intended for AI agents working on the codebase \u2014 not for end users.\n58:1. **Minimal LOC** \u2014 Write the least code that correctly solves the problem. Fewer lines means fewer bugs, faster reviews, and lower cognitive load. Achieve this organically through good design, not by cramming logic onto single lines.\n60:2. **No redundancy** \u2014 Never duplicate logic. If the same pattern appears twice, extract it into a shared function or module. Check existing code before writing new utilities \u2014 the codebase likely already has what you need.\n62:3. **Simple, readable code** \u2014 Favor straightforward implementations over clever ones. Future readers (human or AI) should understand each function's purpose within seconds. Use standard library idioms.\n64:4. **Clear naming** \u2014 Names should describe what something does or represents, not how it works. Use `download_model()` not `do_network_thing()`. Use `chunk_count` not `n`. Avoid abbreviations unless they are universally understood (`url`, `id`, `db`).\n66:5. **Avoid overengineering** \u2014 Do not add abstractions, generics, or indirection unless there is a concrete, immediate need. One concrete implementation is better than a generic framework for a single use case. YAGNI applies strongly.\n80:Follow the established pattern (see `.dev/agent-docs/architecture.md` for full details):\n102:6. **Never reference agent-internal paths in user docs** \u2014 README.md and SKILL.md must not mention `.dev/agent-docs/`, `AGENTS.md`, or any agent-specific infrastructure.\n103:7. **Architecture docs live in `.dev/agent-docs/`** \u2014 Detailed module maps, data flow diagrams, and coding patterns go here, not in README.\n"
+    },
+    {
+      "command": "test -d \"/home/lamim/Development/Tools/Vera/.dev/agent-docs\" && echo \".dev/agent-docs exists\"",
+      "exitCode": 0,
+      "observation": ".dev/agent-docs exists\n"
+    },
+    {
+      "command": "git -C \"/home/lamim/Development/Tools/Vera\" check-ignore -v \".dev/agent-docs\"",
+      "exitCode": 0,
+      "observation": ".gitignore:11:.dev/\t.dev/agent-docs\n"
+    },
+    {
+      "command": "rg --files \"/home/lamim/Development/Tools/Vera/.dev/agent-docs\"",
+      "exitCode": 0,
+      "observation": "/home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md\n"
+    },
+    {
+      "command": "wc -l \"/home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md\"",
+      "exitCode": 0,
+      "observation": "229 /home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md\n"
+    },
+    {
+      "command": "rg -n -i \"module|architecture|structure|workflow|convention|pattern\" \"/home/lamim/Development/Tools/Vera/.dev/agent-docs/architecture.md\"",
+      "exitCode": 0,
+      "observation": "1:# Vera Architecture \u2014 Module Map & Development Workflows\n14:## vera-core Module Map\n104:### Other Modules\n114:## vera-cli Structure\n124:## vera-mcp Structure\n132:## Coding Patterns\n153:### Test Structure\n190:## Development Workflows\n"
+    },
+    {
+      "command": "git -C \"/home/lamim/Development/Tools/Vera\" check-ignore -v \"AGENTS.md\"; printf 'exit=%s\\n' $?",
+      "exitCode": 0,
+      "observation": "exit=1\n"
+    },
+    {
+      "command": "git -C \"/home/lamim/Development/Tools/Vera\" ls-files --error-unmatch \"AGENTS.md\"",
+      "exitCode": 0,
+      "observation": "AGENTS.md\n"
+    },
+    {
+      "command": "python3 -c \"from pathlib import Path; p=Path('/home/lamim/Development/Tools/Vera/README.md'); text=p.read_text(); import re; hits=re.findall(r'AGENTS\\\\.md|agent-facing|agent docs|\\\\.dev/agent-docs|agent-internal', text, flags=re.I); print(len(hits))\"",
+      "exitCode": 0,
+      "observation": "0\n"
+    },
+    {
+      "command": "rg -n -i \"AGENTS\\.md|agent-facing|agent docs|\\.dev/agent-docs|agent-internal\" \"/home/lamim/Development/Tools/Vera/README.md\"; printf 'exit=%s\\n' $?",
+      "exitCode": 0,
+      "observation": "exit=1\n"
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 4 assigned documentation assertions via CLI/file inspection. Result: 4 passed, 0 failed, 0 blocked."
+}

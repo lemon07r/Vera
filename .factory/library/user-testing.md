@@ -38,3 +38,11 @@ Testing surface, required tools, and resource cost classification.
 - Local mode requires ONNX Runtime shared library on the system
 - Benchmark corpus repos must be in `.bench/repos/` (run `eval/setup-corpus.sh`)
 - MCP testing: pipe JSON-RPC messages via stdin, read JSON-RPC responses from stdout
+
+## Flow Validator Guidance: CLI
+
+- Use read-only shell commands and file inspection for documentation validation; do not modify repository files.
+- Stay inside `/home/lamim/Development/Tools/Vera` and its mission artifacts when gathering evidence.
+- Treat the repository working tree as shared state: no `cargo fmt`, no generated outputs, no staging/commits.
+- Prefer direct evidence commands (`test`, `git check-ignore`, `rg`, `wc`, `head`/`sed` alternatives via file reads when available) and capture exact outputs in the flow report.
+- Validation for docs-restructure is independent and low-cost, so a single CLI validator can cover all assigned assertions serially.
