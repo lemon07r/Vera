@@ -1,6 +1,6 @@
 {
   "milestone": "language-expansion",
-  "round": 1,
+  "round": 2,
   "status": "fail",
   "validatorsRun": {
     "test": {
@@ -25,83 +25,35 @@
     }
   },
   "reviewsSummary": {
-    "total": 4,
+    "total": 1,
     "passed": 0,
-    "failed": 4,
+    "failed": 1,
     "failedFeatures": [
-      "lang-tier1b-structural",
-      "lang-tier2a-batch1",
-      "lang-tier2a-batch2",
-      "lang-tier2b-and-finalize"
+      "lang-symbol-extraction-fixes"
     ]
   },
   "blockingIssues": [
     {
-      "featureId": "lang-tier1b-structural",
+      "featureId": "lang-symbol-extraction-fixes",
       "severity": "blocking",
-      "description": "Vue and Dockerfile support depend on vendored parser C sources that were not committed, so the feature only works after an undocumented `.factory/init.sh` download instead of from a clean checkout."
-    },
-    {
-      "featureId": "lang-tier2a-batch1",
-      "severity": "blocking",
-      "description": "Clojure support parses files but does not deliver the required symbol extraction; the shipped test was reduced to parse-only coverage."
-    },
-    {
-      "featureId": "lang-tier2a-batch1",
-      "severity": "blocking",
-      "description": "Common Lisp support likewise lacks working symbol extraction and only has parse-only test coverage."
-    },
-    {
-      "featureId": "lang-tier2a-batch2",
-      "severity": "blocking",
-      "description": "Standard `.m` MATLAB files still resolve to Objective-C, so the promised MATLAB extension mapping is incomplete for normal source files."
-    },
-    {
-      "featureId": "lang-tier2a-batch2",
-      "severity": "blocking",
-      "description": "Scheme and Racket extraction branches target node kinds their grammars do not emit, leaving both languages without the required working symbol extraction."
-    },
-    {
-      "featureId": "lang-tier2b-and-finalize",
-      "severity": "blocking",
-      "description": "Nginx detection only recognizes a synthetic `.nginx` extension while real `*.conf` Nginx files are still classified as INI, so Nginx stats/filtering behavior is incomplete."
+      "description": "The rerun fix resolves the Scheme/Racket/Clojure/Common Lisp extraction blockers, but Nginx detection is still incomplete because only the literal filename `nginx.conf` is special-cased while other real `*.conf` Nginx files still fall back to `Ini`."
     }
   ],
   "appliedUpdates": [
     {
       "target": "library",
-      "description": "Updated `.factory/library/environment.md` to record that clean checkouts may require running `.factory/init.sh` to fetch ignored vendored Vue/Dockerfile/Astro grammar sources before the first build.",
-      "sourceFeature": "lang-tier1b-structural"
-    },
-    {
-      "target": "library",
-      "description": "Updated `.factory/library/architecture.md` with the tree-sitter 0.26 ABI compatibility constraint and examples from the language-expansion work (Clojure orchard, skipped Nim/Hare/Hack candidates).",
-      "sourceFeature": "lang-tier2a-batch2"
+      "description": "Updated `.factory/library/architecture.md` to document the repo-specific `collect_symbols()` special-case pattern used for flat S-expression grammars such as Scheme, Racket, Clojure Orchard, and Common Lisp.",
+      "sourceFeature": "lang-symbol-extraction-fixes"
     }
   ],
   "suggestedGuidanceUpdates": [
     {
       "target": "skills",
-      "suggestion": "Tighten the implementation-worker procedure for language additions so workers must either provide explicit `vera index` / `vera stats` / `vera search --lang` evidence or mark `followedProcedure` false when that manual verification is skipped.",
-      "evidence": "Three independent reviews (`lang-tier2a-batch1`, `lang-tier2a-batch2`, and `lang-tier2b-and-finalize`) found the same gap: the worker handoffs claimed `followedProcedure: true` even though the transcript/handoff contained only Cargo validators and no manual CLI verification required by `.factory/skills/implementation-worker/SKILL.md`.",
-      "isSystemic": true
-    },
-    {
-      "target": "skills",
-      "suggestion": "Relax or clarify the implementation-worker's strict test-first rule for grammar/dependency work so workers can perform required tree-sitter compatibility research before writing tests without being marked as deviating from procedure.",
-      "evidence": "The `lang-tier1b-structural` review found the feature needed ABI/dependency investigation before tests were knowable, but `.factory/skills/implementation-worker/SKILL.md` still presents the step as strictly TDD-first.",
+      "suggestion": "Tighten the implementation-worker procedure for language additions and follow-up language fixes so workers must either provide explicit `cargo build --release`, `vera index`, `vera stats`, and `vera search --lang` evidence or mark `followedProcedure` false when that manual verification is skipped.",
+      "evidence": "The rerun fix review for `lang-symbol-extraction-fixes` repeated the same gap seen in round 1: the transcript/handoff contained only Cargo validators and targeted tests, but the feature still marked `skillFeedback.followedProcedure: true` despite `.factory/skills/implementation-worker/SKILL.md` requiring manual CLI verification for language work.",
       "isSystemic": true
     }
   ],
-  "rejectedObservations": [
-    {
-      "observation": "The repeated hidden-bootstrap observations from `lang-tier1b-structural` and `lang-tier2b-and-finalize` were not escalated as guidance changes.",
-      "reason": "applied-now"
-    },
-    {
-      "observation": "Multiple tree-sitter ABI compatibility observations were not duplicated in suggested guidance updates.",
-      "reason": "already-documented"
-    }
-  ],
-  "previousRound": null
+  "rejectedObservations": [],
+  "previousRound": "/home/lamim/Development/Tools/Vera/.factory/validation/language-expansion/scrutiny/synthesis.round1.json"
 }

@@ -42,3 +42,4 @@ Three integration patterns exist:
 - New grammar crates must be compatible with the workspace `tree-sitter 0.26` ABI; older crates may compile research spikes but fail in the real workspace.
 - Clojure currently uses `tree-sitter-clojure-orchard` because the more obvious `tree-sitter-clojure` package is not compatible with the workspace tree-sitter version.
 - Some researched candidates were skipped during language expansion because viable grammars were not both maintained and 0.26-compatible (for example Nim/Hare ABI mismatches and an archived Hack grammar).
+- Flat S-expression grammars may need custom `collect_symbols()` handling instead of only adding `classify_node()` branches. Scheme, Racket, Clojure Orchard, and Common Lisp now use dedicated traversal helpers because their parsers expose generic list/symbol forms that do not map cleanly to named declaration node kinds.

@@ -1,0 +1,39 @@
+{
+  "featureId": "lang-symbol-extraction-fixes",
+  "reviewedAt": "2026-03-22T09:02:40Z",
+  "commitId": "114ab6179b0bcff9b3e129d5cdb69625e318c2ed",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "The fix resolves the prior Scheme/Racket/Clojure/Common Lisp symbol-extraction blockers by replacing parse-only coverage with real symbol assertions and adding dedicated S-expression extraction paths, but it does not fully resolve the Nginx detection blocker from the prior scrutiny round.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/types.rs",
+        "line": 234,
+        "severity": "blocking",
+        "description": "The Nginx fix is still incomplete. `from_filename()` now recognizes only the literal `nginx.conf` (`types.rs:229-235`), but `.conf` still maps to `Ini` in `from_extension()` (`types.rs:297`) and both indexing paths still resolve language as filename override first, then extension fallback (`crates/vera-core/src/indexing/update.rs:241-250`, `crates/vera-core/src/indexing/pipeline.rs:238-249`). As a result, real Nginx files such as `conf.d/site.conf` or `sites-enabled/default.conf` remain classified as INI, so the original Nginx stats/filtering failure from `lang-tier2b-and-finalize` is not fully fixed."
+      },
+      {
+        "file": "crates/vera-core/src/parsing/extractor.rs",
+        "line": 1172,
+        "severity": "non_blocking",
+        "description": "`extract_scheme_define()` and `extract_racket_define()` still label every `define` form as `SymbolType::Function` (`extractor.rs:1171-1173`, `1218-1221`). When the form is a variable binding like `(define x 42)`, the helper now extracts the name but misclassifies the symbol type; the new Scheme variable test only checks the name (`extractor.rs:3051-3057`) and there is no equivalent Racket variable-binding test."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The implementation-worker skill still requires manual verification for language work, but this fix session recorded none of the required manual-verification commands while the handoff still claimed `followedProcedure: true`.",
+      "evidence": "`/home/lamim/Development/Tools/Vera/.factory/skills/implementation-worker/SKILL.md:42-45` requires `cargo build --release` plus creating a test file, indexing it, and checking `vera stats`. The transcript skeleton for worker session `65cd26fa-54d3-4eae-8b3a-f6c5b0d528d1` contains no `cargo build --release`, `vera index`, `vera stats`, or `vera search --lang` commands, and the handoff JSON for this feature lists only Cargo test/clippy/fmt plus targeted unit tests while `skillFeedback.followedProcedure` is `true`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Shared state still does not document the repo-specific pattern that flat S-expression grammars may need custom `collect_symbols()` handling instead of the usual `classify_node()` path.",
+      "evidence": "The fix itself adds dedicated `collect_symbols()` branches for Scheme/Racket/Clojure/Common Lisp (`crates/vera-core/src/parsing/extractor.rs:873-907`) and the handoff explicitly suggests documenting that pattern (`handoffs/2026-03-22T08-58-27-782Z__lang-symbol-extraction-fixes__65cd26fa-54d3-4eae-8b3a-f6c5b0d528d1.json:103`). `.factory/library/architecture.md` has tree-sitter integration notes, but no mention of this extractor pattern."
+    }
+  ],
+  "addressesFailureFrom": "/home/lamim/Development/Tools/Vera/.factory/validation/language-expansion/scrutiny/reviews/lang-tier2a-batch1.json; /home/lamim/Development/Tools/Vera/.factory/validation/language-expansion/scrutiny/reviews/lang-tier2a-batch2.json; /home/lamim/Development/Tools/Vera/.factory/validation/language-expansion/scrutiny/reviews/lang-tier2b-and-finalize.json",
+  "summary": "Reviewed the fix handoff, transcript skeleton, prior scrutiny reports, shared-state files, and commit `114ab61`. Scheme/Racket/Clojure/Common Lisp extraction is materially fixed, but the review still fails because only the exact filename `nginx.conf` was added; general `*.conf` Nginx files still fall back to INI classification."
+}
