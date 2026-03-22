@@ -38,6 +38,8 @@ Testing surface, required tools, and resource cost classification.
 - Local mode requires ONNX Runtime shared library on the system
 - On this Linux host, `ldconfig -p` exposes only `/opt/intel/oneapi/compiler/2025.0/lib/libonnxruntime.1.12.22.721.so`, which is too old for `ort 2.0.0-rc.11`; local validation must point `ORT_DYLIB_PATH` at a compatible 1.23+ runtime instead.
 - A compatible temporary runtime was provisioned at `/tmp/vera-onnxruntime-1.24.4/lib/libonnxruntime.so` for simplify-install user-testing reruns.
+- The prebuilt validation binary at `/home/lamim/Development/Tools/Vera/target/release/vera` works with that runtime for isolated local-mode fixtures.
+- `vera stats` currently has no `--index-dir` flag; run it from the indexed fixture directory (`cd <fixture> && vera stats --json`).
 - Benchmark corpus repos must be in `.bench/repos/` (run `eval/setup-corpus.sh`)
 - MCP testing: pipe JSON-RPC messages via stdin, read JSON-RPC responses from stdout
 
