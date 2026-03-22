@@ -197,6 +197,17 @@ pub enum Language {
     Fortran,
     PowerShell,
     R,
+    /// Tier 2A code languages batch 2.
+    Matlab,
+    DLang,
+    Fish,
+    Zsh,
+    Luau,
+    Scheme,
+    Racket,
+    Elm,
+    Glsl,
+    Hlsl,
     /// Data / config formats (Tier 0 — no tree-sitter grammar).
     Toml,
     Yaml,
@@ -233,7 +244,7 @@ impl Language {
             "scala" | "sc" => Self::Scala,
             "zig" => Self::Zig,
             "lua" => Self::Lua,
-            "sh" | "bash" | "zsh" => Self::Bash,
+            "sh" | "bash" => Self::Bash,
             "cs" => Self::CSharp,
             "php" => Self::Php,
             "hs" => Self::Haskell,
@@ -262,6 +273,16 @@ impl Language {
             "f" | "f90" | "f95" => Self::Fortran,
             "ps1" | "psm1" => Self::PowerShell,
             "r" => Self::R,
+            "mlx" => Self::Matlab,
+            "d" | "di" => Self::DLang,
+            "fish" => Self::Fish,
+            "zsh" => Self::Zsh,
+            "luau" => Self::Luau,
+            "scm" | "ss" => Self::Scheme,
+            "rkt" => Self::Racket,
+            "elm" => Self::Elm,
+            "glsl" | "vert" | "frag" | "geom" | "comp" | "tesc" | "tese" => Self::Glsl,
+            "hlsl" | "hlsli" | "fx" => Self::Hlsl,
             "toml" => Self::Toml,
             "yaml" | "yml" => Self::Yaml,
             "json" => Self::Json,
@@ -318,6 +339,16 @@ impl std::fmt::Display for Language {
             Self::Fortran => "fortran",
             Self::PowerShell => "powershell",
             Self::R => "r",
+            Self::Matlab => "matlab",
+            Self::DLang => "d",
+            Self::Fish => "fish",
+            Self::Zsh => "zsh",
+            Self::Luau => "luau",
+            Self::Scheme => "scheme",
+            Self::Racket => "racket",
+            Self::Elm => "elm",
+            Self::Glsl => "glsl",
+            Self::Hlsl => "hlsl",
             Self::Toml => "toml",
             Self::Yaml => "yaml",
             Self::Json => "json",
@@ -590,6 +621,78 @@ mod tests {
     fn language_from_extension_r() {
         assert_eq!(Language::from_extension("r"), Language::R);
         assert_eq!(Language::from_extension("R"), Language::R);
+    }
+
+    // ── Tier 2A batch 2 extension mapping tests ─────────────────
+
+    #[test]
+    fn language_from_extension_matlab() {
+        assert_eq!(Language::from_extension("mlx"), Language::Matlab);
+    }
+
+    #[test]
+    fn language_from_extension_dlang() {
+        assert_eq!(Language::from_extension("d"), Language::DLang);
+        assert_eq!(Language::from_extension("di"), Language::DLang);
+    }
+
+    #[test]
+    fn language_from_extension_fish() {
+        assert_eq!(Language::from_extension("fish"), Language::Fish);
+    }
+
+    #[test]
+    fn language_from_extension_zsh() {
+        assert_eq!(Language::from_extension("zsh"), Language::Zsh);
+    }
+
+    #[test]
+    fn language_from_extension_luau() {
+        assert_eq!(Language::from_extension("luau"), Language::Luau);
+    }
+
+    #[test]
+    fn language_from_extension_scheme() {
+        assert_eq!(Language::from_extension("scm"), Language::Scheme);
+        assert_eq!(Language::from_extension("ss"), Language::Scheme);
+    }
+
+    #[test]
+    fn language_from_extension_racket() {
+        assert_eq!(Language::from_extension("rkt"), Language::Racket);
+    }
+
+    #[test]
+    fn language_from_extension_elm() {
+        assert_eq!(Language::from_extension("elm"), Language::Elm);
+    }
+
+    #[test]
+    fn language_from_extension_glsl() {
+        assert_eq!(Language::from_extension("glsl"), Language::Glsl);
+        assert_eq!(Language::from_extension("vert"), Language::Glsl);
+        assert_eq!(Language::from_extension("frag"), Language::Glsl);
+    }
+
+    #[test]
+    fn language_from_extension_hlsl() {
+        assert_eq!(Language::from_extension("hlsl"), Language::Hlsl);
+        assert_eq!(Language::from_extension("hlsli"), Language::Hlsl);
+        assert_eq!(Language::from_extension("fx"), Language::Hlsl);
+    }
+
+    #[test]
+    fn language_display_tier2a_batch2() {
+        assert_eq!(Language::Matlab.to_string(), "matlab");
+        assert_eq!(Language::DLang.to_string(), "d");
+        assert_eq!(Language::Fish.to_string(), "fish");
+        assert_eq!(Language::Zsh.to_string(), "zsh");
+        assert_eq!(Language::Luau.to_string(), "luau");
+        assert_eq!(Language::Scheme.to_string(), "scheme");
+        assert_eq!(Language::Racket.to_string(), "racket");
+        assert_eq!(Language::Elm.to_string(), "elm");
+        assert_eq!(Language::Glsl.to_string(), "glsl");
+        assert_eq!(Language::Hlsl.to_string(), "hlsl");
     }
 
     #[test]

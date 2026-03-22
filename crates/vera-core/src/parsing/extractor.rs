@@ -71,6 +71,16 @@ pub fn classify_node(lang: Language, kind: &str) -> Option<SymbolType> {
         Language::Fortran => classify_fortran(kind),
         Language::PowerShell => classify_powershell(kind),
         Language::R => classify_r(kind),
+        Language::Matlab => classify_matlab(kind),
+        Language::DLang => classify_dlang(kind),
+        Language::Fish => classify_fish(kind),
+        Language::Zsh => classify_zsh(kind),
+        Language::Luau => classify_luau(kind),
+        Language::Scheme => classify_scheme(kind),
+        Language::Racket => classify_racket(kind),
+        Language::Elm => classify_elm(kind),
+        Language::Glsl => classify_glsl(kind),
+        Language::Hlsl => classify_hlsl(kind),
         _ => None,
     }
 }
@@ -317,6 +327,96 @@ fn classify_powershell(kind: &str) -> Option<SymbolType> {
 fn classify_r(kind: &str) -> Option<SymbolType> {
     match kind {
         "function_definition" => Some(SymbolType::Function),
+        _ => None,
+    }
+}
+
+fn classify_matlab(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "function_definition" => Some(SymbolType::Function),
+        "class_definition" => Some(SymbolType::Class),
+        _ => None,
+    }
+}
+
+fn classify_dlang(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "function_declaration" | "auto_declaration" => Some(SymbolType::Function),
+        "class_declaration" => Some(SymbolType::Class),
+        "struct_declaration" => Some(SymbolType::Struct),
+        "enum_declaration" => Some(SymbolType::Enum),
+        "interface_declaration" => Some(SymbolType::Interface),
+        "module_declaration" => Some(SymbolType::Module),
+        "template_declaration" => Some(SymbolType::TypeAlias),
+        _ => None,
+    }
+}
+
+fn classify_fish(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "function_definition" => Some(SymbolType::Function),
+        _ => None,
+    }
+}
+
+fn classify_zsh(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "function_definition" => Some(SymbolType::Function),
+        _ => None,
+    }
+}
+
+fn classify_luau(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "function_declaration" | "local_function" => Some(SymbolType::Function),
+        "type_definition" => Some(SymbolType::TypeAlias),
+        _ => None,
+    }
+}
+
+fn classify_scheme(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "define" => Some(SymbolType::Function),
+        "lambda" => Some(SymbolType::Function),
+        _ => None,
+    }
+}
+
+fn classify_racket(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "define" => Some(SymbolType::Function),
+        "lambda" => Some(SymbolType::Function),
+        "module" => Some(SymbolType::Module),
+        "struct" => Some(SymbolType::Struct),
+        _ => None,
+    }
+}
+
+fn classify_elm(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "value_declaration" => Some(SymbolType::Function),
+        "type_alias_declaration" => Some(SymbolType::TypeAlias),
+        "type_declaration" => Some(SymbolType::Enum),
+        "module_declaration" => Some(SymbolType::Module),
+        _ => None,
+    }
+}
+
+fn classify_glsl(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "function_definition" => Some(SymbolType::Function),
+        "struct_specifier" => Some(SymbolType::Struct),
+        "declaration" => Some(SymbolType::Variable),
+        _ => None,
+    }
+}
+
+fn classify_hlsl(kind: &str) -> Option<SymbolType> {
+    match kind {
+        "function_definition" => Some(SymbolType::Function),
+        "class_specifier" => Some(SymbolType::Class),
+        "struct_specifier" => Some(SymbolType::Struct),
+        "declaration" => Some(SymbolType::Variable),
         _ => None,
     }
 }
@@ -2432,6 +2532,229 @@ add <- function(a, b) {
         assert!(
             symbols.iter().any(|s| s.name.as_deref() == Some("hello")),
             "R should extract function name 'hello'"
+        );
+    }
+
+    // ── Tier 2A batch 2 symbol extraction tests ─────────────────
+
+    #[test]
+    fn matlab_extracts_functions() {
+        let source = r#"
+function y = square(x)
+  y = x^2;
+end
+
+function result = add(a, b)
+  result = a + b;
+end
+"#;
+        let symbols = parse_and_extract(source, Language::Matlab);
+        println!("MATLAB symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "MATLAB should extract symbols");
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.symbol_type == SymbolType::Function),
+            "MATLAB should extract functions"
+        );
+    }
+
+    #[test]
+    fn dlang_extracts_functions_and_classes() {
+        let source = r#"
+void main() {
+    writeln("hello");
+}
+
+class Foo {
+    int bar() { return 42; }
+}
+
+struct Point {
+    float x, y;
+}
+"#;
+        let symbols = parse_and_extract(source, Language::DLang);
+        println!("D symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "D should extract symbols");
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.symbol_type == SymbolType::Function),
+            "D should extract functions"
+        );
+    }
+
+    #[test]
+    fn fish_extracts_functions() {
+        let source = r#"
+function hello
+  echo hello
+end
+
+function greet -a name
+  echo "Hello, $name"
+end
+"#;
+        let symbols = parse_and_extract(source, Language::Fish);
+        println!("Fish symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "Fish should extract symbols");
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.symbol_type == SymbolType::Function),
+            "Fish should extract functions"
+        );
+    }
+
+    #[test]
+    fn zsh_extracts_functions() {
+        let source = r#"
+function hello() {
+  echo hello
+}
+
+greet() {
+  echo "Hello, $1"
+}
+"#;
+        let symbols = parse_and_extract(source, Language::Zsh);
+        println!("Zsh symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "Zsh should extract symbols");
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.symbol_type == SymbolType::Function),
+            "Zsh should extract functions"
+        );
+    }
+
+    #[test]
+    fn luau_extracts_functions() {
+        let source = r#"
+local function hello()
+  print("hello")
+end
+
+function greet(name: string)
+  print("Hello, " .. name)
+end
+"#;
+        let symbols = parse_and_extract(source, Language::Luau);
+        println!("Luau symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "Luau should extract symbols");
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.symbol_type == SymbolType::Function),
+            "Luau should extract functions"
+        );
+    }
+
+    #[test]
+    fn scheme_extracts_definitions() {
+        let source = r#"
+(define (hello)
+  (display "hello"))
+
+(define (add a b)
+  (+ a b))
+"#;
+        let symbols = parse_and_extract(source, Language::Scheme);
+        println!("Scheme symbols: {:#?}", symbols);
+        // At minimum the grammar should parse without errors
+        let grammar = tree_sitter_grammar(Language::Scheme).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&grammar).unwrap();
+        let tree = parser.parse(source, None).unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn racket_extracts_definitions() {
+        let source = r#"
+#lang racket
+
+(define (hello)
+  (displayln "hello"))
+
+(define (add a b)
+  (+ a b))
+"#;
+        let symbols = parse_and_extract(source, Language::Racket);
+        println!("Racket symbols: {:#?}", symbols);
+        // At minimum the grammar should parse without errors
+        let grammar = tree_sitter_grammar(Language::Racket).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&grammar).unwrap();
+        let tree = parser.parse(source, None).unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn elm_extracts_functions_and_types() {
+        let source = r#"
+module Main exposing (main)
+
+type alias Model =
+    { count : Int
+    }
+
+type Msg
+    = Increment
+    | Decrement
+
+main =
+    text "hello"
+"#;
+        let symbols = parse_and_extract(source, Language::Elm);
+        println!("Elm symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "Elm should extract symbols");
+    }
+
+    #[test]
+    fn glsl_extracts_functions() {
+        let source = r#"
+struct Light {
+    vec3 position;
+    vec3 color;
+};
+
+void main() {
+    gl_FragColor = vec4(1.0);
+}
+"#;
+        let symbols = parse_and_extract(source, Language::Glsl);
+        println!("GLSL symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "GLSL should extract symbols");
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.symbol_type == SymbolType::Function),
+            "GLSL should extract functions"
+        );
+    }
+
+    #[test]
+    fn hlsl_extracts_functions() {
+        let source = r#"
+struct VS_OUTPUT {
+    float4 pos : SV_Position;
+    float2 uv : TEXCOORD0;
+};
+
+float4 main(float4 pos : SV_Position) : SV_Target {
+    return float4(1, 0, 0, 1);
+}
+"#;
+        let symbols = parse_and_extract(source, Language::Hlsl);
+        println!("HLSL symbols: {:#?}", symbols);
+        assert!(!symbols.is_empty(), "HLSL should extract symbols");
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.symbol_type == SymbolType::Function),
+            "HLSL should extract functions"
         );
     }
 }

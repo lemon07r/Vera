@@ -71,6 +71,17 @@ pub fn tree_sitter_grammar(lang: Language) -> Option<TsLanguage> {
         Language::Fortran => tree_sitter_fortran::LANGUAGE.into(),
         Language::PowerShell => tree_sitter_powershell::LANGUAGE.into(),
         Language::R => tree_sitter_r::LANGUAGE.into(),
+        // Tier 2A batch 2 code languages
+        Language::Matlab => tree_sitter_matlab::LANGUAGE.into(),
+        Language::DLang => tree_sitter_d::LANGUAGE.into(),
+        Language::Fish => tree_sitter_fish::language(),
+        Language::Zsh => tree_sitter_zsh::LANGUAGE.into(),
+        Language::Luau => tree_sitter_luau::LANGUAGE.into(),
+        Language::Scheme => tree_sitter_scheme::LANGUAGE.into(),
+        Language::Racket => tree_sitter_racket::LANGUAGE.into(),
+        Language::Elm => tree_sitter_elm::LANGUAGE.into(),
+        Language::Glsl => tree_sitter_glsl::LANGUAGE_GLSL.into(),
+        Language::Hlsl => tree_sitter_hlsl::LANGUAGE_HLSL.into(),
         // Languages without tree-sitter grammar support → Tier 0 fallback
         Language::Toml
         | Language::Yaml
@@ -460,6 +471,169 @@ mod tests {
             .expect("R grammar should load");
         let tree = parser
             .parse("hello <- function() { print(\"hello\") }\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    // ── Tier 2A batch 2 grammar loading tests ─────────────────
+
+    #[test]
+    fn tier_2a_batch2_languages_have_grammars() {
+        let tier_2a_b2 = [
+            Language::Matlab,
+            Language::DLang,
+            Language::Fish,
+            Language::Zsh,
+            Language::Luau,
+            Language::Scheme,
+            Language::Racket,
+            Language::Elm,
+            Language::Glsl,
+            Language::Hlsl,
+        ];
+        for lang in tier_2a_b2 {
+            assert!(
+                has_grammar(lang),
+                "{lang} should have a tree-sitter grammar"
+            );
+        }
+    }
+
+    #[test]
+    fn matlab_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Matlab).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("MATLAB grammar should load");
+        let tree = parser
+            .parse("function y = square(x)\n  y = x^2;\nend\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn dlang_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::DLang).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("D grammar should load");
+        let tree = parser
+            .parse("void main() { writeln(\"hello\"); }\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn fish_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Fish).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("Fish grammar should load");
+        let tree = parser
+            .parse("function hello\n  echo hello\nend\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn zsh_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Zsh).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("Zsh grammar should load");
+        let tree = parser
+            .parse("function hello() {\n  echo hello\n}\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn luau_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Luau).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("Luau grammar should load");
+        let tree = parser
+            .parse("local function hello()\n  print(\"hello\")\nend\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn scheme_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Scheme).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("Scheme grammar should load");
+        let tree = parser
+            .parse("(define (hello) (display \"hello\"))\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn racket_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Racket).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("Racket grammar should load");
+        let tree = parser
+            .parse(
+                "#lang racket\n(define (hello) (displayln \"hello\"))\n",
+                None,
+            )
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn elm_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Elm).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("Elm grammar should load");
+        let tree = parser
+            .parse(
+                "module Main exposing (main)\n\nmain =\n  text \"hello\"\n",
+                None,
+            )
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn glsl_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Glsl).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("GLSL grammar should load");
+        let tree = parser
+            .parse("void main() {\n  gl_FragColor = vec4(1.0);\n}\n", None)
+            .unwrap();
+        assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn hlsl_grammar_creates_valid_parser() {
+        let grammar = tree_sitter_grammar(Language::Hlsl).unwrap();
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&grammar)
+            .expect("HLSL grammar should load");
+        let tree = parser
+            .parse(
+                "float4 main(float4 pos : SV_Position) : SV_Target {\n  return float4(1, 0, 0, 1);\n}\n",
+                None,
+            )
             .unwrap();
         assert!(!tree.root_node().has_error());
     }
