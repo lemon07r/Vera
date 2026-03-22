@@ -33,4 +33,5 @@ Loaded from `secrets.env` (gitignored, never commit):
 
 - Rust 1.85+ (project uses edition 2024)
 - C compiler for tree-sitter grammars (cc crate) and bundled SQLite
+- On a clean checkout, run `.factory/init.sh` before the first build if vendored grammar sources are missing; it downloads the ignored C grammar directories under `crates/tree-sitter-vue/`, `crates/tree-sitter-dockerfile/`, and `crates/tree-sitter-astro/`
 - API mode has no other external runtime dependencies

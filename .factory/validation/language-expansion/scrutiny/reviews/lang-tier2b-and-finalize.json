@@ -1,0 +1,33 @@
+{
+  "featureId": "lang-tier2b-and-finalize",
+  "reviewedAt": "2026-03-22T08:42:59+00:00",
+  "commitId": "ee3c11e",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "The feature adds the requested Tier 2B enum variants, grammar wiring, extractor rules, tests, and README/SKILL language-count updates, but the Nginx support is not usable for normal Nginx config files. The implementation only recognizes a synthetic `.nginx` extension while routing `.conf` files to `Ini`, so the milestone's Nginx indexing/filtering behavior is not actually satisfied.",
+    "issues": [
+      {
+        "file": "crates/vera-core/src/types.rs",
+        "line": 296,
+        "severity": "blocking",
+        "description": "`Language::from_extension()` maps `.conf` to `Ini` and only maps the nonstandard `.nginx` extension to `Nginx`. Because indexing resolves language via `from_filename()` then `from_extension()` (`crates/vera-core/src/indexing/update.rs:244-250`), real Nginx configs like `nginx.conf` or `conf.d/site.conf` will be indexed as `ini`, not `nginx`. That means the feature does not actually deliver Nginx config support and breaks the milestone expectations behind VAL-LANG-005/006 for Nginx stats and `vera search --lang nginx`."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The implementation-worker procedure says language additions must be manually verified by creating a test file, indexing it, and checking `vera stats`, but this worker session did not record any `vera index`, `vera stats`, or `vera search --lang` checks even though the feature's validation contract requires those behaviors. The handoff still marked `skillFeedback.followedProcedure` as true.",
+      "evidence": "`.factory/skills/implementation-worker/SKILL.md:42-45` requires manual verification for language additions. In `worker-transcripts.jsonl` for session `0ba22141-4542-4977-9b27-eb94b8758942`, the transcript contains none of `vera index`, `vera stats`, or `vera search --lang` (verified by transcript search), and the handoff file `handoffs/2026-03-22T08-37-35-994Z__lang-tier2b-and-finalize__0ba22141-4542-4977-9b27-eb94b8758942.json` has no `verification.interactiveChecks` while `skillFeedback.followedProcedure` is `true`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Repo shared state does not document that successful builds depend on running `.factory/init.sh` to fetch vendored tree-sitter C grammars (now including Astro). This repo knowledge is currently scattered across build/init code instead of being captured in library/services guidance.",
+      "evidence": "`crates/vera-core/build.rs:52-71` warns that `tree-sitter-astro` must be downloaded via `.factory/init.sh`; `.factory/init.sh:28-61` downloads vendored Vue/Dockerfile/Astro grammar sources; `.gitignore:8-11` ignores those vendored grammar directories; but `.factory/library/environment.md:32-35` only lists Rust/C compiler build requirements, `.factory/services.yaml:1-13` exposes cargo commands only, and `.factory/library/architecture.md:33-38` documents in-repo C grammars only for SQL/Proto."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Reviewed the feature handoff, transcript skeleton, commit `ee3c11e`, and the touched code/docs. The implementation is close, but it fails review because Nginx detection only works for a synthetic `.nginx` extension and not real Nginx config filenames, so the milestone's Nginx support is incomplete."
+}

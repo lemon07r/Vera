@@ -36,3 +36,9 @@ Three integration patterns exist:
 1. **crates.io**: `tree-sitter-rust = "0.24"` in Cargo.toml
 2. **git deps**: `tree-sitter-hcl = { git = "...", tag = "..." }` 
 3. **in-repo C**: `crates/tree-sitter-sql/`, `crates/tree-sitter-proto/` with extern "C" bindings
+
+## Tree-sitter Compatibility Notes
+
+- New grammar crates must be compatible with the workspace `tree-sitter 0.26` ABI; older crates may compile research spikes but fail in the real workspace.
+- Clojure currently uses `tree-sitter-clojure-orchard` because the more obvious `tree-sitter-clojure` package is not compatible with the workspace tree-sitter version.
+- Some researched candidates were skipped during language expansion because viable grammars were not both maintained and 0.26-compatible (for example Nim/Hare ABI mismatches and an archived Hack grammar).
