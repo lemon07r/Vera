@@ -199,12 +199,12 @@ Benchmarked on 17 tasks across 3 repositories (ripgrep/Rust, flask/Python, fasti
 | Metric       | ripgrep | cocoindex-code | vector-only | **Vera (hybrid)** |
 |--------------|---------|----------------|-------------|-------------------|
 | **Recall@1** | 0.15    | 0.16           | 0.10        | **0.46**          |
-| **Recall@5** | 0.35    | 0.37           | 0.49        | **0.67**          |
+| **Recall@5** | 0.28    | 0.37           | 0.49        | **0.67**          |
 | **Recall@10**| 0.37    | 0.50           | 0.66        | **0.87**          |
-| **MRR@10**   | 0.32    | 0.35           | 0.28        | **0.69**          |
+| **MRR@10**   | 0.26    | 0.35           | 0.28        | **0.69**          |
 | **nDCG@10**  | 0.29    | 0.52           | 0.71        | **0.99**          |
 
-Vera's hybrid pipeline achieves **2.9× higher Recall@1**, **+81% Recall@5**, and **+97% MRR** compared to the best competitor on each metric.
+Vera's hybrid pipeline achieves **2.9× higher Recall@1**, **+37% Recall@5**, and **+97% MRR** compared to the best competitor on each metric.
 
 ### Per-Category Highlights
 
