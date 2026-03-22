@@ -48,8 +48,8 @@ Each release includes SHA256 checksums (`checksums-sha256.txt`) for verification
 
 ```bash
 # Clone and build
-git clone https://github.com/vera-search/vera.git
-cd vera
+git clone https://github.com/lemon07r/Vera.git
+cd Vera
 cargo build --release
 
 # The binary is at target/release/vera
