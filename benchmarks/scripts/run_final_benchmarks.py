@@ -536,7 +536,7 @@ def generate_report(
     add("- **Embedding model:** Qwen3-Embedding-8B (4096→1024-dim Matryoshka truncation)")
     add("- **Reranker model:** Qwen3-Reranker (cross-encoder via API)")
     add("- **Storage:** SQLite + sqlite-vec (vectors), Tantivy (BM25)")
-    add("- **RRF k:** 60.0, **Rerank candidates:** 30")
+    add("- **RRF k:** 60.0, **Rerank candidates:** 50")
     add()
 
     add("### Test Corpus (4 repositories, pinned SHAs)")

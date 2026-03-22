@@ -184,39 +184,40 @@ Benchmarked on 17 tasks across 3 repositories (ripgrep/Rust, flask/Python, fasti
 
 | Metric       | ripgrep | cocoindex-code | vector-only | **Vera (hybrid)** |
 |--------------|---------|----------------|-------------|-------------------|
-| **Recall@1** | 0.15    | 0.16           | 0.10        | **0.43**          |
-| **Recall@5** | 0.35    | 0.37           | 0.49        | **0.73**          |
-| **Recall@10**| 0.37    | 0.50           | 0.66        | **0.75**          |
-| **MRR@10**   | 0.32    | 0.35           | 0.28        | **0.59**          |
-| **nDCG@10**  | 0.29    | 0.52           | 0.71        | **0.80**          |
+| **Recall@1** | 0.15    | 0.16           | 0.10        | **0.46**          |
+| **Recall@5** | 0.35    | 0.37           | 0.49        | **0.67**          |
+| **Recall@10**| 0.37    | 0.50           | 0.66        | **0.87**          |
+| **MRR@10**   | 0.32    | 0.35           | 0.28        | **0.69**          |
+| **nDCG@10**  | 0.29    | 0.52           | 0.71        | **0.99**          |
 
-Vera's hybrid pipeline achieves **2.8× higher Recall@1**, **+97% Recall@5**, and **+69% MRR** compared to the best competitor on each metric.
+Vera's hybrid pipeline achieves **2.9× higher Recall@1**, **+81% Recall@5**, and **+97% MRR** compared to the best competitor on each metric.
 
 ### Per-Category Highlights
 
 | Category          | Best Competitor | Vera Hybrid | Improvement |
 |-------------------|-----------------|-------------|-------------|
-| Symbol Lookup MRR | 0.34 (cocoindex)| **0.85**    | +150%       |
-| Intent Search MRR | 0.63 (cocoindex)| 0.46        | —           |
+| Symbol Lookup MRR | 0.34 (cocoindex)| **0.83**    | +144%       |
+| Intent Search MRR | 0.63 (cocoindex)| **0.54**    | —           |
 | Config Lookup R@5 | 0.75 (vector)   | **1.00**    | +33%        |
-| Disambiguation MRR| 0.39 (ripgrep)  | **0.60**    | +54%        |
+| Disambiguation MRR| 0.39 (ripgrep)  | **1.00**    | +156%       |
+| Cross-file MRR    | 0.56 (cocoindex)| **0.50**    | —           |
 
 ### Performance
 
 | Metric                     | Target    | Actual           |
 |----------------------------|-----------|------------------|
-| 100K+ LOC indexing         | < 120s    | **62.7s** (175K LOC) |
-| BM25 query p95 latency     | < 10ms    | **3.6ms**        |
-| Incremental update         | < 5s      | **3.1s**         |
-| Index size / source size   | < 2.0×    | **1.38×**        |
+| 100K+ LOC indexing         | < 120s    | **65.2s** (175K LOC) |
+| BM25 query p95 latency     | < 10ms    | **3.8ms**        |
+| Incremental update         | < 5s      | **3.3s**         |
+| Index size / source size   | < 2.0×    | **1.64×**        |
 
 ### Ablation Summary
 
 | Component              | MRR Impact   | Recommendation |
 |------------------------|-------------|----------------|
-| + BM25 fusion          | +111% vs vector-only | Essential |
-| + Vector search        | +111% vs BM25-only   | Essential |
-| + Cross-encoder rerank | +77% vs unreranked    | Recommended |
+| + BM25 fusion          | +145% vs vector-only | Essential |
+| + Vector search        | +84% vs BM25-only    | Essential |
+| + Cross-encoder rerank | +67% vs unreranked    | Recommended |
 
 Each pipeline component addresses different failure modes: BM25 handles exact identifiers, vectors enable semantic search, and reranking improves precision. Full details in [`benchmarks/reports/`](benchmarks/reports/).
 

@@ -15,7 +15,7 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.5878050002793316,
+      "latency_ms": 4.116645999602042,
       "result_count": 20
     },
     {
@@ -31,7 +31,7 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 2.9801845012116246,
+      "latency_ms": 3.7352444996940903,
       "result_count": 20
     },
     {
@@ -47,7 +47,7 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.0156259999785107,
+      "latency_ms": 3.469305998805794,
       "result_count": 20
     },
     {
@@ -63,7 +63,7 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.2474200015712995,
+      "latency_ms": 3.685966503326199,
       "result_count": 20
     },
     {
@@ -79,7 +79,7 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 2.9298789995664265,
+      "latency_ms": 3.5893335025320994,
       "result_count": 20
     },
     {
@@ -95,7 +95,7 @@
         "ndcg": 0.18216449358756576,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.3872899984999094,
+      "latency_ms": 3.6251759993319865,
       "result_count": 20
     },
     {
@@ -104,14 +104,14 @@
       "repo": "flask",
       "query": "run",
       "retrieval_metrics": {
-        "recall_at_1": 0.0,
-        "recall_at_5": 0.5,
-        "recall_at_10": 0.5,
-        "mrr": 0.5,
-        "ndcg": 0.23981246656813146,
+        "recall_at_1": 0.5,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.9238850086262381,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2.985985000123037,
+      "latency_ms": 3.3291965009993874,
       "result_count": 20
     },
     {
@@ -120,14 +120,14 @@
       "repo": "flask",
       "query": "how are HTTP errors handled and returned to clients",
       "retrieval_metrics": {
-        "recall_at_1": 0.0,
-        "recall_at_5": 0.0,
-        "recall_at_10": 0.0,
-        "mrr": 0.07142857142857142,
-        "ndcg": 0.0,
-        "precision_at_3": 0.0
+        "recall_at_1": 0.5,
+        "recall_at_5": 0.5,
+        "recall_at_10": 0.5,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584,
+        "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 3.1754590017953888,
+      "latency_ms": 3.4191165013908176,
       "result_count": 20
     },
     {
@@ -136,14 +136,14 @@
       "repo": "flask",
       "query": "session management and cookie handling",
       "retrieval_metrics": {
-        "recall_at_1": 0.0,
-        "recall_at_5": 0.0,
-        "recall_at_10": 0.0,
-        "mrr": 0.09090909090909091,
-        "ndcg": 0.0,
-        "precision_at_3": 0.0
+        "recall_at_1": 1.0,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg": 2.324715843671491,
+        "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 3.000201999384444,
+      "latency_ms": 3.5200125003029825,
       "result_count": 20
     },
     {
@@ -159,7 +159,7 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.194845496182097,
+      "latency_ms": 3.6800610014324775,
       "result_count": 20
     },
     {
@@ -175,7 +175,7 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.146774000924779,
+      "latency_ms": 3.4883224998338846,
       "result_count": 20
     },
     {
@@ -191,7 +191,7 @@
         "ndcg": 0.2890648263178879,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.021732496563345,
+      "latency_ms": 3.3045144973584684,
       "result_count": 20
     },
     {
@@ -207,7 +207,7 @@
         "ndcg": 1.0,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2.9345875009312294,
+      "latency_ms": 3.34125950030284,
       "result_count": 20
     },
     {
@@ -223,7 +223,7 @@
         "ndcg": 1.0,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2.947957498690812,
+      "latency_ms": 3.6894780005241046,
       "result_count": 20
     },
     {
@@ -233,13 +233,13 @@
       "query": "Flask class definition",
       "retrieval_metrics": {
         "recall_at_1": 0.0,
-        "recall_at_5": 1.0,
-        "recall_at_10": 1.0,
-        "mrr": 0.25,
-        "ndcg": 0.43067655807339306,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_ms": 3.2717655012675095,
+      "latency_ms": 3.494624499580823,
       "result_count": 20
     },
     {
@@ -249,13 +249,13 @@
       "query": "Blueprint class definition",
       "retrieval_metrics": {
         "recall_at_1": 0.0,
-        "recall_at_5": 1.0,
-        "recall_at_10": 1.0,
-        "mrr": 0.5,
-        "ndcg": 0.6309297535714575,
-        "precision_at_3": 0.3333333333333333
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0,
+        "precision_at_3": 0.0
       },
-      "latency_ms": 2.9080269996484276,
+      "latency_ms": 3.5197515007894253,
       "result_count": 20
     },
     {
@@ -271,7 +271,7 @@
         "ndcg": 1.0,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2.893805500207236,
+      "latency_ms": 3.1677709994255565,
       "result_count": 20
     }
   ],
@@ -285,8 +285,8 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_p50_ms": 3.0156259999785107,
-      "latency_p95_ms": 3.5305871002492495,
+      "latency_p50_ms": 3.7352444996940903,
+      "latency_p95_ms": 4.078505849611247,
       "task_count": 3
     },
     "cross_file": {
@@ -298,62 +298,62 @@
         "ndcg": 0.0,
         "precision_at_3": 0.0
       },
-      "latency_p50_ms": 3.088649500568863,
-      "latency_p95_ms": 3.231542951471056,
+      "latency_p50_ms": 3.637650002929149,
+      "latency_p95_ms": 3.681134853286494,
       "task_count": 2
     },
     "disambiguation": {
       "retrieval": {
-        "recall_at_1": 0.0,
-        "recall_at_5": 0.25,
-        "recall_at_10": 0.5,
-        "mrr": 0.3214285714285714,
-        "ndcg": 0.2109884800778486,
+        "recall_at_1": 0.25,
+        "recall_at_5": 0.5,
+        "recall_at_10": 0.75,
+        "mrr": 0.5714285714285714,
+        "ndcg": 0.553024751106902,
         "precision_at_3": 0.16666666666666666
       },
-      "latency_p50_ms": 3.186637499311473,
-      "latency_p95_ms": 3.367224748581066,
+      "latency_p50_ms": 3.477186250165687,
+      "latency_p95_ms": 3.6103770244153566,
       "task_count": 2
     },
     "intent": {
       "retrieval": {
-        "recall_at_1": 0.0,
-        "recall_at_5": 0.0,
-        "recall_at_10": 0.2,
-        "mrr": 0.06675324675324676,
-        "ndcg": 0.05781296526357758,
-        "precision_at_3": 0.0
+        "recall_at_1": 0.3,
+        "recall_at_5": 0.3,
+        "recall_at_10": 0.5,
+        "mrr": 0.4342857142857143,
+        "ndcg": 0.6453855725509674,
+        "precision_at_3": 0.13333333333333333
       },
-      "latency_p50_ms": 3.146774000924779,
-      "latency_p95_ms": 3.1909681973047554,
+      "latency_p50_ms": 3.4883224998338846,
+      "latency_p95_ms": 3.6480513012065785,
       "task_count": 5
     },
     "symbol_lookup": {
       "retrieval": {
         "recall_at_1": 0.6,
-        "recall_at_5": 1.0,
-        "recall_at_10": 1.0,
-        "mrr": 0.75,
-        "ndcg": 0.8123212623289702,
-        "precision_at_3": 0.26666666666666666
+        "recall_at_5": 0.6,
+        "recall_at_10": 0.6,
+        "mrr": 0.6,
+        "ndcg": 0.6,
+        "precision_at_3": 0.2
       },
-      "latency_p50_ms": 2.9345875009312294,
-      "latency_p95_ms": 3.20700390075217,
+      "latency_p50_ms": 3.494624499580823,
+      "latency_p95_ms": 3.6555327005771687,
       "task_count": 5
     }
   },
   "aggregate": {
     "retrieval": {
-      "recall_at_1": 0.17647058823529413,
+      "recall_at_1": 0.29411764705882354,
       "recall_at_5": 0.3235294117647059,
       "recall_at_10": 0.4117647058823529,
-      "mrr": 0.28195823784059076,
-      "ndcg": 0.2807440057716727,
-      "precision_at_3": 0.0980392156862745
+      "mrr": 0.3753501400560224,
+      "ndcg": 0.43135160970403774,
+      "precision_at_3": 0.11764705882352941
     },
     "performance": {
-      "latency_p50_ms": 3.0372575020010117,
-      "latency_p95_ms": 3.572660150894079,
+      "latency_p50_ms": 3.5159345006832154,
+      "latency_p95_ms": 3.8268667485681362,
       "total_queries": 34
     },
     "task_count": 17

@@ -15,7 +15,7 @@
         "ndcg": 1.1309297535714575,
         "precision_at_3": 0.6666666666666666
       },
-      "latency_ms": 5242.087417500443,
+      "latency_ms": 5314.907538499028,
       "result_count": 20
     },
     {
@@ -28,10 +28,10 @@
         "recall_at_5": 1.0,
         "recall_at_10": 1.0,
         "mrr": 1.0,
-        "ndcg": 1.7640098914067264,
+        "ndcg": 2.102348621967144,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 3213.8226904971816,
+      "latency_ms": 6387.144008998803,
       "result_count": 20
     },
     {
@@ -43,11 +43,11 @@
         "recall_at_1": 0.0,
         "recall_at_5": 1.0,
         "recall_at_10": 1.0,
-        "mrr": 0.25,
-        "ndcg": 0.7868837451814152,
-        "precision_at_3": 0.0
+        "mrr": 0.375,
+        "ndcg": 0.8870103429304474,
+        "precision_at_3": 0.16666666666666666
       },
-      "latency_ms": 3771.8952799987164,
+      "latency_ms": 5297.581259999788,
       "result_count": 20
     },
     {
@@ -63,7 +63,7 @@
         "ndcg": 0.4030302838010049,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2506.5470579975226,
+      "latency_ms": 5115.7855255023605,
       "result_count": 20
     },
     {
@@ -73,13 +73,13 @@
       "query": "Blueprint registration and route mounting",
       "retrieval_metrics": {
         "recall_at_1": 0.0,
-        "recall_at_5": 0.0,
-        "recall_at_10": 0.0,
-        "mrr": 0.09090909090909091,
-        "ndcg": 0.0,
-        "precision_at_3": 0.0
+        "recall_at_5": 0.5,
+        "recall_at_10": 0.5,
+        "mrr": 0.5,
+        "ndcg": 0.38685280723454163,
+        "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 7285.113547000947,
+      "latency_ms": 7692.369224499998,
       "result_count": 20
     },
     {
@@ -89,13 +89,13 @@
       "query": "Config",
       "retrieval_metrics": {
         "recall_at_1": 0.25,
-        "recall_at_5": 0.5,
-        "recall_at_10": 0.5,
+        "recall_at_5": 0.625,
+        "recall_at_10": 1.0,
         "mrr": 1.0,
-        "ndcg": 0.3893896983223993,
+        "ndcg": 0.7155052431740829,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2600.455409501592,
+      "latency_ms": 3611.8939754996973,
       "result_count": 20
     },
     {
@@ -104,14 +104,14 @@
       "repo": "flask",
       "query": "run",
       "retrieval_metrics": {
-        "recall_at_1": 0.0,
+        "recall_at_1": 0.5,
         "recall_at_5": 0.5,
         "recall_at_10": 0.5,
-        "mrr": 0.2,
-        "ndcg": 0.14704034066641014,
-        "precision_at_3": 0.0
+        "mrr": 1.0,
+        "ndcg": 0.7601875334318685,
+        "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 4571.178399997734,
+      "latency_ms": 5806.212637500721,
       "result_count": 20
     },
     {
@@ -121,13 +121,13 @@
       "query": "how are HTTP errors handled and returned to clients",
       "retrieval_metrics": {
         "recall_at_1": 0.0,
-        "recall_at_5": 0.0,
+        "recall_at_5": 0.5,
         "recall_at_10": 0.5,
-        "mrr": 0.1,
-        "ndcg": 0.17723928678404774,
-        "precision_at_3": 0.0
+        "mrr": 0.41666666666666663,
+        "ndcg": 0.3467132018086354,
+        "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 4433.843582999543,
+      "latency_ms": 6367.366055997991,
       "result_count": 20
     },
     {
@@ -140,10 +140,10 @@
         "recall_at_5": 1.0,
         "recall_at_10": 1.0,
         "mrr": 1.0,
-        "ndcg": 1.79867161237003,
-        "precision_at_3": 0.5
+        "ndcg": 2.9484591188793923,
+        "precision_at_3": 1.0
       },
-      "latency_ms": 4332.646544502495,
+      "latency_ms": 7652.804997998828,
       "result_count": 20
     },
     {
@@ -154,12 +154,12 @@
       "retrieval_metrics": {
         "recall_at_1": 0.0,
         "recall_at_5": 0.0,
-        "recall_at_10": 0.0,
-        "mrr": 0.0,
-        "ndcg": 0.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.1111111111111111,
+        "ndcg": 0.3010299956639812,
         "precision_at_3": 0.0
       },
-      "latency_ms": 7497.191277499951,
+      "latency_ms": 4297.829244500463,
       "result_count": 20
     },
     {
@@ -169,13 +169,13 @@
       "query": "file type detection and filtering",
       "retrieval_metrics": {
         "recall_at_1": 0.0,
-        "recall_at_5": 1.0,
+        "recall_at_5": 0.0,
         "recall_at_10": 1.0,
-        "mrr": 0.2,
-        "ndcg": 0.38685280723454163,
+        "mrr": 0.16666666666666666,
+        "ndcg": 0.3562071871080222,
         "precision_at_3": 0.0
       },
-      "latency_ms": 4625.214165000216,
+      "latency_ms": 3944.535998498395,
       "result_count": 20
     },
     {
@@ -188,10 +188,10 @@
         "recall_at_5": 1.0,
         "recall_at_10": 1.0,
         "mrr": 1.0,
-        "ndcg": 2.2112651326703876,
+        "ndcg": 2.222702059557732,
         "precision_at_3": 0.6666666666666666
       },
-      "latency_ms": 2719.1087549981603,
+      "latency_ms": 3729.0617269991344,
       "result_count": 20
     },
     {
@@ -207,7 +207,7 @@
         "ndcg": 1.0,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2673.862678002479,
+      "latency_ms": 5367.256299499786,
       "result_count": 20
     },
     {
@@ -223,7 +223,7 @@
         "ndcg": 1.0,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2970.1869134987646,
+      "latency_ms": 4582.809873001679,
       "result_count": 20
     },
     {
@@ -239,7 +239,7 @@
         "ndcg": 1.0,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 4894.778604000749,
+      "latency_ms": 6204.752291499972,
       "result_count": 20
     },
     {
@@ -249,13 +249,13 @@
       "query": "Blueprint class definition",
       "retrieval_metrics": {
         "recall_at_1": 0.0,
-        "recall_at_5": 1.0,
+        "recall_at_5": 0.0,
         "recall_at_10": 1.0,
-        "mrr": 0.25,
-        "ndcg": 0.43067655807339306,
+        "mrr": 0.14285714285714285,
+        "ndcg": 0.3333333333333333,
         "precision_at_3": 0.0
       },
-      "latency_ms": 4212.886274999619,
+      "latency_ms": 5590.334869499202,
       "result_count": 20
     },
     {
@@ -271,7 +271,7 @@
         "ndcg": 1.0,
         "precision_at_3": 0.3333333333333333
       },
-      "latency_ms": 2880.481364998559,
+      "latency_ms": 4899.392696999712,
       "result_count": 20
     }
   ],
@@ -281,79 +281,79 @@
         "recall_at_1": 0.3333333333333333,
         "recall_at_5": 1.0,
         "recall_at_10": 1.0,
-        "mrr": 0.5833333333333334,
-        "ndcg": 1.2272744633865331,
-        "precision_at_3": 0.3333333333333333
+        "mrr": 0.625,
+        "ndcg": 1.3734295728230164,
+        "precision_at_3": 0.38888888888888884
       },
-      "latency_p50_ms": 3771.8952799987164,
-      "latency_p95_ms": 5095.068203750269,
+      "latency_p50_ms": 5314.907538499028,
+      "latency_p95_ms": 6279.920361948825,
       "task_count": 3
     },
     "cross_file": {
       "retrieval": {
         "recall_at_1": 0.0,
-        "recall_at_5": 0.16666666666666666,
-        "recall_at_10": 0.16666666666666666,
-        "mrr": 0.29545454545454547,
-        "ndcg": 0.20151514190050246,
-        "precision_at_3": 0.16666666666666666
+        "recall_at_5": 0.41666666666666663,
+        "recall_at_10": 0.41666666666666663,
+        "mrr": 0.5,
+        "ndcg": 0.3949415455177733,
+        "precision_at_3": 0.3333333333333333
       },
-      "latency_p50_ms": 4895.830302499235,
-      "latency_p95_ms": 7046.1852225507755,
+      "latency_p50_ms": 6404.0773750011795,
+      "latency_p95_ms": 7563.5400395501165,
       "task_count": 2
     },
     "disambiguation": {
       "retrieval": {
-        "recall_at_1": 0.125,
-        "recall_at_5": 0.5,
-        "recall_at_10": 0.5,
-        "mrr": 0.6,
-        "ndcg": 0.26821501949440474,
-        "precision_at_3": 0.16666666666666666
+        "recall_at_1": 0.375,
+        "recall_at_5": 0.5625,
+        "recall_at_10": 0.75,
+        "mrr": 1.0,
+        "ndcg": 0.7378463883029758,
+        "precision_at_3": 0.3333333333333333
       },
-      "latency_p50_ms": 3585.816904749663,
-      "latency_p95_ms": 4472.642250472927,
+      "latency_p50_ms": 4709.053306500209,
+      "latency_p95_ms": 5696.49670440067,
       "task_count": 2
     },
     "intent": {
       "retrieval": {
         "recall_at_1": 0.4,
-        "recall_at_5": 0.6,
-        "recall_at_10": 0.7,
-        "mrr": 0.45999999999999996,
-        "ndcg": 0.9148057678118013,
-        "precision_at_3": 0.2333333333333333
+        "recall_at_5": 0.5,
+        "recall_at_10": 0.9,
+        "mrr": 0.5388888888888889,
+        "ndcg": 1.2350223126035527,
+        "precision_at_3": 0.4
       },
-      "latency_p50_ms": 4433.843582999543,
-      "latency_p95_ms": 6922.795855000004,
+      "latency_p50_ms": 4297.829244500463,
+      "latency_p95_ms": 7395.717209598661,
       "task_count": 5
     },
     "symbol_lookup": {
       "retrieval": {
         "recall_at_1": 0.8,
-        "recall_at_5": 1.0,
+        "recall_at_5": 0.8,
         "recall_at_10": 1.0,
-        "mrr": 0.85,
-        "ndcg": 0.8861353116146786,
+        "mrr": 0.8285714285714286,
+        "ndcg": 0.8666666666666666,
         "precision_at_3": 0.26666666666666666
       },
-      "latency_p50_ms": 2970.1869134987646,
-      "latency_p95_ms": 4758.400138200523,
+      "latency_p50_ms": 5367.256299499786,
+      "latency_p95_ms": 6081.868807099818,
       "task_count": 5
     }
   },
   "aggregate": {
     "retrieval": {
-      "recall_at_1": 0.4264705882352941,
-      "recall_at_5": 0.7254901960784315,
-      "recall_at_10": 0.7549019607843137,
-      "mrr": 0.5935828877005348,
-      "ndcg": 0.8015287711812831,
-      "precision_at_3": 0.24509803921568624
+      "recall_at_1": 0.45588235294117646,
+      "recall_at_5": 0.6740196078431373,
+      "recall_at_10": 0.8725490196078431,
+      "mrr": 0.6889589169000934,
+      "ndcg": 0.9937829107330378,
+      "precision_at_3": 0.3431372549019608
     },
     "performance": {
-      "latency_p50_ms": 3923.6344964992895,
-      "latency_p95_ms": 7491.029165102369,
+      "latency_p50_ms": 5461.036632999821,
+      "latency_p95_ms": 7768.15395564881,
       "total_queries": 34
     },
     "task_count": 17
