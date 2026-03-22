@@ -231,6 +231,7 @@ impl Language {
             "Dockerfile" | "dockerfile" => Some(Self::Dockerfile),
             "CMakeLists.txt" => Some(Self::CMake),
             "Makefile" | "makefile" | "GNUmakefile" => Some(Self::Makefile),
+            "nginx.conf" => Some(Self::Nginx),
             _ => None,
         }
     }
@@ -757,6 +758,11 @@ mod tests {
             Language::from_filename("GNUmakefile"),
             Some(Language::Makefile)
         );
+    }
+
+    #[test]
+    fn language_from_filename_nginx_conf() {
+        assert_eq!(Language::from_filename("nginx.conf"), Some(Language::Nginx));
     }
 
     #[test]

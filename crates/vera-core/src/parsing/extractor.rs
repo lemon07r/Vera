@@ -870,6 +870,44 @@ fn collect_symbols(
         }
     }
 
+    // Handle Scheme S-expressions: (define (name ...) ...)
+    if lang == Language::Scheme && kind == "list" {
+        if let Some(sym) = extract_scheme_define(&node, source) {
+            symbols.push(sym);
+            return;
+        }
+    }
+
+    // Handle Racket S-expressions: (define (name ...) ...), (module ...), (struct ...)
+    if lang == Language::Racket && kind == "list" {
+        if let Some(sym) = extract_racket_define(&node, source) {
+            symbols.push(sym);
+            return;
+        }
+    }
+
+    // Handle Clojure S-expressions: (defn name ...), (ns name), (defmacro name ...), (def name ...)
+    if lang == Language::Clojure && kind == "list_lit" {
+        if let Some(sym) = extract_clojure_define(&node, source) {
+            symbols.push(sym);
+            return;
+        }
+    }
+
+    // Handle Common Lisp: defun has defun_header with name; defclass via list_lit
+    if lang == Language::CommonLisp && kind == "defun" {
+        if let Some(sym) = extract_commonlisp_defun(&node, source) {
+            symbols.push(sym);
+            return;
+        }
+    }
+    if lang == Language::CommonLisp && kind == "list_lit" {
+        if let Some(sym) = extract_commonlisp_list(&node, source) {
+            symbols.push(sym);
+            return;
+        }
+    }
+
     // Handle Elixir calls
     if lang == Language::Elixir && kind == "call" {
         if let Some(target) = node.child_by_field_name("target") {
@@ -1115,6 +1153,199 @@ fn collect_symbols(
     for child in node.children(&mut cursor) {
         collect_symbols(child, source, lang, symbols, depth + 1);
     }
+}
+
+/// Extract a symbol from a Scheme `list` node if it starts with `define` or `define-syntax`.
+///
+/// Scheme AST: `list` → first child `symbol` "define" → second child is either
+/// a `list` (procedure: name is its first `symbol`) or a `symbol` (variable definition).
+fn extract_scheme_define(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<RawSymbol> {
+    let mut cursor = node.walk();
+    let children: Vec<_> = node.children(&mut cursor).collect();
+
+    // Need at least: ( symbol <something> )
+    // Find the first `symbol` child (skip parentheses)
+    let first_sym = children.iter().find(|c| c.kind() == "symbol")?;
+    let keyword = first_sym.utf8_text(source).ok()?;
+
+    let sym_type = match keyword {
+        "define" | "define-syntax" => SymbolType::Function,
+        _ => return None,
+    };
+
+    // The name is in the next meaningful child after the keyword
+    let after_keyword: Vec<_> = children
+        .iter()
+        .skip_while(|c| c.start_byte() <= first_sym.start_byte())
+        .filter(|c| c.kind() != "(" && c.kind() != ")")
+        .collect();
+
+    let name = if let Some(next) = after_keyword.first() {
+        if next.kind() == "list" {
+            // (define (hello ...) ...) → name is first symbol in the inner list
+            let mut inner_cursor = next.walk();
+            next.children(&mut inner_cursor)
+                .find(|c| c.kind() == "symbol")
+                .and_then(|c| c.utf8_text(source).ok().map(|s| s.to_string()))
+        } else if next.kind() == "symbol" {
+            // (define x 42) → name is the symbol directly
+            next.utf8_text(source).ok().map(|s| s.to_string())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    Some(RawSymbol {
+        name,
+        symbol_type: sym_type,
+        start_byte: node.start_byte(),
+        end_byte: node.end_byte(),
+        start_row: node.start_position().row,
+        end_row: node.end_position().row,
+    })
+}
+
+/// Extract a symbol from a Racket `list` node for define/module/struct forms.
+fn extract_racket_define(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<RawSymbol> {
+    let mut cursor = node.walk();
+    let children: Vec<_> = node.children(&mut cursor).collect();
+
+    let first_sym = children.iter().find(|c| c.kind() == "symbol")?;
+    let keyword = first_sym.utf8_text(source).ok()?;
+
+    let sym_type = match keyword {
+        "define" | "define-syntax" => SymbolType::Function,
+        "module" | "module*" | "module+" => SymbolType::Module,
+        "struct" => SymbolType::Struct,
+        _ => return None,
+    };
+
+    let after_keyword: Vec<_> = children
+        .iter()
+        .skip_while(|c| c.start_byte() <= first_sym.start_byte())
+        .filter(|c| c.kind() != "(" && c.kind() != ")")
+        .collect();
+
+    let name = if let Some(next) = after_keyword.first() {
+        if next.kind() == "list" {
+            let mut inner_cursor = next.walk();
+            next.children(&mut inner_cursor)
+                .find(|c| c.kind() == "symbol")
+                .and_then(|c| c.utf8_text(source).ok().map(|s| s.to_string()))
+        } else if next.kind() == "symbol" {
+            next.utf8_text(source).ok().map(|s| s.to_string())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    Some(RawSymbol {
+        name,
+        symbol_type: sym_type,
+        start_byte: node.start_byte(),
+        end_byte: node.end_byte(),
+        start_row: node.start_position().row,
+        end_row: node.end_position().row,
+    })
+}
+
+/// Extract a symbol from a Clojure `list_lit` node for defn/defmacro/ns/def forms.
+///
+/// Clojure AST: `list_lit` → first `sym_lit` child text is the keyword → second `sym_lit` is the name.
+fn extract_clojure_define(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<RawSymbol> {
+    let mut cursor = node.walk();
+    let sym_lits: Vec<_> = node
+        .children(&mut cursor)
+        .filter(|c| c.kind() == "sym_lit")
+        .collect();
+
+    if sym_lits.len() < 2 {
+        return None;
+    }
+
+    let keyword = sym_lits[0].utf8_text(source).ok()?;
+    let sym_type = match keyword {
+        "defn" | "defmacro" | "defn-" => SymbolType::Function,
+        "ns" => SymbolType::Module,
+        "def" | "defonce" => SymbolType::Variable,
+        _ => return None,
+    };
+
+    let name = sym_lits[1].utf8_text(source).ok().map(|s| s.to_string());
+
+    Some(RawSymbol {
+        name,
+        symbol_type: sym_type,
+        start_byte: node.start_byte(),
+        end_byte: node.end_byte(),
+        start_row: node.start_position().row,
+        end_row: node.end_position().row,
+    })
+}
+
+/// Extract a symbol from a Common Lisp `defun` node.
+///
+/// CL AST: `defun` → `defun_header` child → `sym_lit` child is the name.
+fn extract_commonlisp_defun(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<RawSymbol> {
+    let mut cursor = node.walk();
+    let name = node
+        .children(&mut cursor)
+        .find(|c| c.kind() == "defun_header")
+        .and_then(|header| {
+            let mut hcursor = header.walk();
+            header
+                .children(&mut hcursor)
+                .find(|c| c.kind() == "sym_lit")
+                .and_then(|s| s.utf8_text(source).ok().map(|t| t.to_string()))
+        });
+
+    Some(RawSymbol {
+        name,
+        symbol_type: SymbolType::Function,
+        start_byte: node.start_byte(),
+        end_byte: node.end_byte(),
+        start_row: node.start_position().row,
+        end_row: node.end_position().row,
+    })
+}
+
+/// Extract a symbol from a Common Lisp `list_lit` node for defclass/defvar/defparameter etc.
+///
+/// CL AST for non-defun forms: `list_lit` → first `sym_lit` is keyword → second `sym_lit` is name.
+fn extract_commonlisp_list(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<RawSymbol> {
+    let mut cursor = node.walk();
+    let sym_lits: Vec<_> = node
+        .children(&mut cursor)
+        .filter(|c| c.kind() == "sym_lit")
+        .collect();
+
+    if sym_lits.len() < 2 {
+        return None;
+    }
+
+    let keyword = sym_lits[0].utf8_text(source).ok()?;
+    let sym_type = match keyword {
+        "defclass" => SymbolType::Class,
+        "defvar" | "defparameter" | "defconstant" => SymbolType::Variable,
+        "defpackage" => SymbolType::Module,
+        "defmacro" | "defgeneric" | "defmethod" => SymbolType::Function,
+        _ => return None,
+    };
+
+    let name = sym_lits[1].utf8_text(source).ok().map(|s| s.to_string());
+
+    Some(RawSymbol {
+        name,
+        symbol_type: sym_type,
+        start_byte: node.start_byte(),
+        end_byte: node.end_byte(),
+        start_row: node.start_position().row,
+        end_row: node.end_position().row,
+    })
 }
 
 fn extract_elixir_name(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<String> {
@@ -2451,13 +2682,57 @@ def hello() {
 "#;
         let symbols = parse_and_extract(source, Language::Clojure);
         println!("Clojure symbols: {:#?}", symbols);
-        // Clojure's tree-sitter grammar may vary in node types
-        // At minimum, the grammar should parse without errors
-        let grammar = tree_sitter_grammar(Language::Clojure).unwrap();
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&grammar).unwrap();
-        let tree = parser.parse(source, None).unwrap();
-        assert!(!tree.root_node().has_error());
+        assert!(
+            symbols.len() >= 3,
+            "Clojure should extract at least 3 symbols (ns + 2 defn), got {}",
+            symbols.len()
+        );
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("myapp.core")
+                    && s.symbol_type == SymbolType::Module),
+            "Clojure should extract ns 'myapp.core'"
+        );
+        assert!(
+            symbols.iter().any(
+                |s| s.name.as_deref() == Some("hello") && s.symbol_type == SymbolType::Function
+            ),
+            "Clojure should extract function 'hello'"
+        );
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("add") && s.symbol_type == SymbolType::Function),
+            "Clojure should extract function 'add'"
+        );
+    }
+
+    #[test]
+    fn clojure_extracts_defmacro() {
+        let source = "(defmacro my-when [test & body]\n  `(if ~test (do ~@body)))\n";
+        let symbols = parse_and_extract(source, Language::Clojure);
+        println!("Clojure macro symbols: {:#?}", symbols);
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("my-when")
+                    && s.symbol_type == SymbolType::Function),
+            "Clojure should extract defmacro 'my-when'"
+        );
+    }
+
+    #[test]
+    fn clojure_extracts_def() {
+        let source = "(def pi 3.14159)\n";
+        let symbols = parse_and_extract(source, Language::Clojure);
+        println!("Clojure def symbols: {:#?}", symbols);
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("pi") && s.symbol_type == SymbolType::Variable),
+            "Clojure should extract def 'pi'"
+        );
     }
 
     #[test]
@@ -2475,12 +2750,43 @@ def hello() {
 "#;
         let symbols = parse_and_extract(source, Language::CommonLisp);
         println!("Common Lisp symbols: {:#?}", symbols);
-        // At minimum the grammar should parse without errors
-        let grammar = tree_sitter_grammar(Language::CommonLisp).unwrap();
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&grammar).unwrap();
-        let tree = parser.parse(source, None).unwrap();
-        assert!(!tree.root_node().has_error());
+        assert!(
+            symbols.len() >= 3,
+            "CL should extract at least 3 symbols (2 defun + defclass), got {}",
+            symbols.len()
+        );
+        assert!(
+            symbols.iter().any(
+                |s| s.name.as_deref() == Some("hello") && s.symbol_type == SymbolType::Function
+            ),
+            "CL should extract function 'hello'"
+        );
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("add") && s.symbol_type == SymbolType::Function),
+            "CL should extract function 'add'"
+        );
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("point") && s.symbol_type == SymbolType::Class),
+            "CL should extract class 'point'"
+        );
+    }
+
+    #[test]
+    fn commonlisp_extracts_defvar() {
+        let source = "(defvar *my-var* 42)\n";
+        let symbols = parse_and_extract(source, Language::CommonLisp);
+        println!("CL defvar symbols: {:#?}", symbols);
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("*my-var*")
+                    && s.symbol_type == SymbolType::Variable),
+            "CL should extract defvar '*my-var*'"
+        );
     }
 
     #[test]
@@ -2722,12 +3028,47 @@ end
 "#;
         let symbols = parse_and_extract(source, Language::Scheme);
         println!("Scheme symbols: {:#?}", symbols);
-        // At minimum the grammar should parse without errors
-        let grammar = tree_sitter_grammar(Language::Scheme).unwrap();
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&grammar).unwrap();
-        let tree = parser.parse(source, None).unwrap();
-        assert!(!tree.root_node().has_error());
+        assert!(
+            symbols.len() >= 2,
+            "Scheme should extract at least 2 symbols, got {}",
+            symbols.len()
+        );
+        assert!(
+            symbols.iter().any(
+                |s| s.name.as_deref() == Some("hello") && s.symbol_type == SymbolType::Function
+            ),
+            "Scheme should extract function 'hello'"
+        );
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("add") && s.symbol_type == SymbolType::Function),
+            "Scheme should extract function 'add'"
+        );
+    }
+
+    #[test]
+    fn scheme_extracts_variable_define() {
+        let source = "(define x 42)\n";
+        let symbols = parse_and_extract(source, Language::Scheme);
+        println!("Scheme variable symbols: {:#?}", symbols);
+        assert!(
+            symbols.iter().any(|s| s.name.as_deref() == Some("x")),
+            "Scheme should extract variable 'x'"
+        );
+    }
+
+    #[test]
+    fn scheme_extracts_define_syntax() {
+        let source = "(define-syntax my-macro\n  (syntax-rules () ()))\n";
+        let symbols = parse_and_extract(source, Language::Scheme);
+        println!("Scheme define-syntax symbols: {:#?}", symbols);
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("my-macro")),
+            "Scheme should extract define-syntax 'my-macro'"
+        );
     }
 
     #[test]
@@ -2743,12 +3084,36 @@ end
 "#;
         let symbols = parse_and_extract(source, Language::Racket);
         println!("Racket symbols: {:#?}", symbols);
-        // At minimum the grammar should parse without errors
-        let grammar = tree_sitter_grammar(Language::Racket).unwrap();
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&grammar).unwrap();
-        let tree = parser.parse(source, None).unwrap();
-        assert!(!tree.root_node().has_error());
+        assert!(
+            symbols.len() >= 2,
+            "Racket should extract at least 2 symbols, got {}",
+            symbols.len()
+        );
+        assert!(
+            symbols.iter().any(
+                |s| s.name.as_deref() == Some("hello") && s.symbol_type == SymbolType::Function
+            ),
+            "Racket should extract function 'hello'"
+        );
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("add") && s.symbol_type == SymbolType::Function),
+            "Racket should extract function 'add'"
+        );
+    }
+
+    #[test]
+    fn racket_extracts_struct() {
+        let source = "#lang racket\n(struct point (x y))\n";
+        let symbols = parse_and_extract(source, Language::Racket);
+        println!("Racket struct symbols: {:#?}", symbols);
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name.as_deref() == Some("point") && s.symbol_type == SymbolType::Struct),
+            "Racket should extract struct 'point'"
+        );
     }
 
     #[test]
