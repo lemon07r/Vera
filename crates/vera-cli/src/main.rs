@@ -214,7 +214,7 @@ enum Commands {
                       indexing.max_file_size_bytes   Max file size to index (default: 1000000)\n  \
                       retrieval.default_limit        Default result count (default: 10)\n  \
                       retrieval.rrf_k                RRF fusion constant (default: 60)\n  \
-                      retrieval.rerank_candidates    Reranker candidate count (default: 30)\n  \
+                      retrieval.rerank_candidates    Reranker candidate count (default: 50)\n  \
                       retrieval.reranking_enabled    Enable reranking (default: true)\n  \
                       embedding.batch_size           Embedding batch size (default: 128)\n  \
                       embedding.max_concurrent_requests  Concurrent API requests (default: 8)\n  \

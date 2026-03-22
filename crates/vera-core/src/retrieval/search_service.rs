@@ -9,6 +9,8 @@ use anyhow::Result;
 use tracing::warn;
 
 use crate::config::VeraConfig;
+use crate::retrieval::hybrid::compute_vector_candidates;
+use crate::retrieval::query_classifier::{classify_query, params_for_query_type};
 use crate::retrieval::{apply_filters, search_bm25, search_hybrid, search_hybrid_reranked};
 use crate::types::{SearchFilters, SearchResult};
 
@@ -89,8 +91,14 @@ pub fn execute_search(
             None
         });
 
-    let rrf_k = config.retrieval.rrf_k;
     let rerank_candidates = config.retrieval.rerank_candidates;
+
+    // Classify query to adapt fusion parameters.
+    let query_type = classify_query(query);
+    let query_params = params_for_query_type(query_type);
+    let rrf_k = query_params.rrf_k;
+    let vector_candidates =
+        compute_vector_candidates(fetch_limit, query_params.vector_candidate_multiplier);
 
     let results = if let Some(ref reranker) = reranker {
         rt.block_on(search_hybrid_reranked(
@@ -102,6 +110,7 @@ pub fn execute_search(
             rrf_k,
             stored_dim,
             rerank_candidates.max(fetch_limit),
+            vector_candidates,
         ))?
     } else {
         rt.block_on(search_hybrid(
@@ -111,6 +120,7 @@ pub fn execute_search(
             fetch_limit,
             rrf_k,
             stored_dim,
+            vector_candidates,
         ))?
     };
 

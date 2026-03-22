@@ -61,7 +61,7 @@ impl Default for RetrievalConfig {
         Self {
             default_limit: 10,
             rrf_k: 60.0,
-            rerank_candidates: 30,
+            rerank_candidates: 50,
             reranking_enabled: true,
         }
     }

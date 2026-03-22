@@ -35,6 +35,12 @@ pub enum HybridSearchError {
     PipelineError(#[from] anyhow::Error),
 }
 
+/// Compute the number of vector candidates to fetch for a given limit and
+/// query type multiplier. Ensures at least 50 candidates for any limit.
+pub fn compute_vector_candidates(limit: usize, multiplier: usize) -> usize {
+    limit.saturating_mul(multiplier).max(50)
+}
+
 /// Perform hybrid search combining BM25 and vector retrieval via RRF fusion.
 ///
 /// Runs BM25 and vector search, merges results using Reciprocal Rank Fusion,
@@ -48,6 +54,7 @@ pub enum HybridSearchError {
 /// - `limit` — Maximum number of results to return
 /// - `rrf_k` — RRF constant (typically 60.0)
 /// - `stored_dim` — Dimensionality of stored vectors
+/// - `vector_candidates` — Number of vector candidates to fetch (query-type-aware)
 pub async fn search_hybrid(
     index_dir: &Path,
     provider: &impl EmbeddingProvider,
@@ -55,15 +62,17 @@ pub async fn search_hybrid(
     limit: usize,
     rrf_k: f64,
     stored_dim: usize,
+    vector_candidates: usize,
 ) -> Result<Vec<SearchResult>, HybridSearchError> {
-    // Fetch more candidates from each source for better fusion quality.
-    let candidates = limit.saturating_mul(3).max(limit + 20);
+    // BM25 candidates: standard multiplier.
+    let bm25_candidates = limit.saturating_mul(3).max(limit + 20);
 
     // Run BM25 search.
-    let bm25_results = search_bm25(index_dir, query, candidates);
+    let bm25_results = search_bm25(index_dir, query, bm25_candidates);
 
-    // Run vector search.
-    let vector_results = search_vector(index_dir, provider, query, candidates, stored_dim).await;
+    // Run vector search with query-type-aware candidate count.
+    let vector_results =
+        search_vector(index_dir, provider, query, vector_candidates, stored_dim).await;
 
     // Handle failure modes with graceful degradation.
     match (bm25_results, vector_results) {
@@ -121,6 +130,7 @@ pub async fn search_hybrid(
 /// - `rrf_k` — RRF constant (typically 60.0)
 /// - `stored_dim` — Dimensionality of stored vectors
 /// - `rerank_candidates` — Number of candidates to send to the reranker
+/// - `vector_candidates` — Number of vector candidates to fetch (query-type-aware)
 #[allow(clippy::too_many_arguments)]
 pub async fn search_hybrid_reranked(
     index_dir: &Path,
@@ -131,12 +141,21 @@ pub async fn search_hybrid_reranked(
     rrf_k: f64,
     stored_dim: usize,
     rerank_candidates: usize,
+    vector_candidates: usize,
 ) -> Result<Vec<SearchResult>, HybridSearchError> {
     // Run base hybrid search, fetching enough candidates for reranking.
     let fetch_limit = rerank_candidates.max(limit);
 
-    let hybrid_results =
-        search_hybrid(index_dir, provider, query, fetch_limit, rrf_k, stored_dim).await?;
+    let hybrid_results = search_hybrid(
+        index_dir,
+        provider,
+        query,
+        fetch_limit,
+        rrf_k,
+        stored_dim,
+        vector_candidates,
+    )
+    .await?;
 
     if hybrid_results.is_empty() {
         return Ok(hybrid_results);
@@ -671,6 +690,7 @@ mod tests {
             60.0,
             dim,
             10,
+            50,
         )
         .await
         .unwrap();
@@ -715,6 +735,7 @@ mod tests {
             60.0,
             dim,
             10,
+            50,
         )
         .await
         .unwrap();
@@ -750,6 +771,7 @@ mod tests {
             60.0,
             dim,
             10,
+            50,
         )
         .await
         .unwrap();
@@ -773,11 +795,108 @@ mod tests {
         let reranker = MockReranker::new();
 
         let results = search_hybrid_reranked(
-            &index_dir, &provider, &reranker, "function", 2, 60.0, dim, 10,
+            &index_dir, &provider, &reranker, "function", 2, 60.0, dim, 10, 50,
         )
         .await
         .unwrap();
 
         assert!(results.len() <= 2, "should respect the limit of 2");
+    }
+
+    // ── compute_vector_candidates tests ─────────────────────────────
+
+    #[test]
+    fn compute_vector_candidates_minimum_50() {
+        // Even with small limit and multiplier, floor is 50.
+        assert!(compute_vector_candidates(5, 3) >= 50);
+        assert!(compute_vector_candidates(1, 1) >= 50);
+        assert!(compute_vector_candidates(10, 3) >= 50);
+    }
+
+    #[test]
+    fn compute_vector_candidates_default_limit_10() {
+        // For default limit=10 with identifier multiplier (3): max(30, 50) = 50
+        assert_eq!(compute_vector_candidates(10, 3), 50);
+        // For default limit=10 with NL multiplier (5): max(50, 50) = 50
+        assert_eq!(compute_vector_candidates(10, 5), 50);
+    }
+
+    #[test]
+    fn compute_vector_candidates_scales_with_limit() {
+        // For large limit, multiplier should dominate.
+        assert_eq!(compute_vector_candidates(100, 3), 300);
+        assert_eq!(compute_vector_candidates(100, 5), 500);
+    }
+
+    // ── Integration: NL vs identifier query produces different fusion ──
+
+    #[tokio::test]
+    async fn nl_query_uses_different_rrf_k_than_identifier() {
+        use crate::embedding::test_helpers::MockProvider;
+        use crate::retrieval::query_classifier::{
+            QueryType, classify_query, params_for_query_type,
+        };
+        use crate::retrieval::reranker::test_helpers::MockReranker;
+
+        let tmp = tempfile::tempdir().unwrap();
+        let (index_dir, dim) = setup_test_index(tmp.path()).await;
+
+        let provider = MockProvider::new(dim);
+        let reranker = MockReranker::new();
+
+        // Identifier query → uses default k=60.
+        let id_query = "authenticate";
+        let id_type = classify_query(id_query);
+        assert_eq!(id_type, QueryType::Identifier);
+        let id_params = params_for_query_type(id_type);
+
+        let id_results = search_hybrid_reranked(
+            &index_dir,
+            &provider,
+            &reranker,
+            id_query,
+            5,
+            id_params.rrf_k,
+            dim,
+            10,
+            compute_vector_candidates(5, id_params.vector_candidate_multiplier),
+        )
+        .await
+        .unwrap();
+
+        // NL query → uses lower k=20.
+        let nl_query = "how is authentication handled";
+        let nl_type = classify_query(nl_query);
+        assert_eq!(nl_type, QueryType::NaturalLanguage);
+        let nl_params = params_for_query_type(nl_type);
+
+        let nl_results = search_hybrid_reranked(
+            &index_dir,
+            &provider,
+            &reranker,
+            nl_query,
+            5,
+            nl_params.rrf_k,
+            dim,
+            10,
+            compute_vector_candidates(5, nl_params.vector_candidate_multiplier),
+        )
+        .await
+        .unwrap();
+
+        // Both should return results (the index has auth content).
+        assert!(
+            !id_results.is_empty(),
+            "identifier query should find results"
+        );
+        assert!(!nl_results.is_empty(), "NL query should find results");
+
+        // The key assertion: different RRF k was used.
+        assert!(
+            id_params.rrf_k > nl_params.rrf_k,
+            "identifier k ({}) should be greater than NL k ({})",
+            id_params.rrf_k,
+            nl_params.rrf_k
+        );
     }
 }

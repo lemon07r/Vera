@@ -10,6 +10,7 @@
 
 pub mod bm25;
 pub mod hybrid;
+pub mod query_classifier;
 pub mod reranker;
 pub mod search_service;
 pub mod vector;
