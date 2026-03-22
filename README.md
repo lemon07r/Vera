@@ -20,21 +20,30 @@ Vera (Vector Enhanced Relevance Agent) is a code indexing and retrieval CLI tool
 - **Embedding API** — An OpenAI-compatible embedding endpoint (e.g., Qwen3-Embedding-8B)
 - **Reranker API** (optional) — An OpenAI-compatible reranker endpoint for improved precision
 
-### Install
+### Download Pre-Built Binaries
+
+Pre-built binaries for Linux (x86_64, aarch64), macOS (x86_64, Apple Silicon), and Windows (x86_64) are available from [GitHub Releases](https://github.com/vera-search/vera/releases).
 
 ```bash
-# Clone and build from source
+# Download the latest release for your platform, then:
+chmod +x vera
+cp vera ~/.local/bin/
+```
+
+### Build from Source
+
+```bash
+# Clone and build
 git clone https://github.com/vera-search/vera.git
 cd vera
 cargo build --release
-
-# With local inference support (no API keys needed):
-cargo build --release --features local
 
 # The binary is at target/release/vera
 # Optionally, copy it to your PATH:
 cp target/release/vera ~/.local/bin/
 ```
+
+The single build includes both API and local inference support — no feature flags needed.
 
 ### Configure
 
@@ -51,7 +60,7 @@ export RERANKER_MODEL_ID=Qwen/Qwen3-Reranker
 export RERANKER_MODEL_API_KEY=your-api-key
 ```
 
-**Option B: Local mode** — no API keys needed (requires `--features local` build):
+**Option B: Local mode** — no API keys needed:
 
 ```bash
 # Use --local flag or set VERA_LOCAL=1

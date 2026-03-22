@@ -11,7 +11,7 @@ name = "vera"
 path = "src/main.rs"
 
 [dependencies]
-vera-core = { workspace = true, features = [] }
+vera-core = { workspace = true }
 vera-mcp = { path = "../vera-mcp" }
 clap = { workspace = true }
 serde = { workspace = true }
