@@ -5,7 +5,7 @@ This note captures one representative indexing run on `ripgrep`.
 ## Environment
 
 - CPU: AMD Ryzen 5 7600X3D
-- RAM: 30 GB
+- RAM: 32 GB
 - OS: Arch Linux
 - Build: release
 - Embedding setup: API-backed embeddings with 1024 stored dimensions
