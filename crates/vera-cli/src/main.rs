@@ -1,4 +1,4 @@
-//! Vera CLI — code indexing and retrieval for AI coding agents.
+//! Vera CLI — code indexing and retrieval for local and tool-driven workflows.
 //!
 //! # Commands
 //!
@@ -18,11 +18,11 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(
     name = "vera",
-    about = "Evidence-backed code indexing & retrieval for AI coding agents",
-    long_about = "Vera (Vector Enhanced Relevance Agent) is a code indexing and retrieval \
-                  tool built for AI coding agents. It combines BM25 full-text search with \
-                  vector similarity search using Reciprocal Rank Fusion (RRF) and optional \
-                  cross-encoder reranking to deliver highly relevant code search results.\n\n\
+    about = "Hybrid code indexing and retrieval for local and tool-driven workflows",
+    long_about = "Vera is a code indexing and retrieval tool for source trees. It combines \
+                  BM25 full-text search with vector similarity search using Reciprocal Rank \
+                  Fusion (RRF) and optional cross-encoder reranking to return ranked code \
+                  results for direct CLI use and tool integrations.\n\n\
                   Quick start:\n  \
                   vera index .          # Index current directory\n  \
                   vera search \"auth\"    # Search for authentication code\n  \
@@ -46,14 +46,14 @@ struct Cli {
 enum Commands {
     /// Start the MCP (Model Context Protocol) server.
     ///
-    /// Runs a JSON-RPC 2.0 server over stdio for AI agent integration.
+    /// Runs a JSON-RPC 2.0 server over stdio for tool integration.
     /// The server exposes tools: search_code, index_project, update_project, get_stats.
     ///
     /// Examples:
     ///   vera mcp
     #[command(long_about = "Start the MCP (Model Context Protocol) server.\n\n\
-                      Runs a JSON-RPC 2.0 server over stdio, enabling AI coding agents \
-                      to use Vera's indexing and search capabilities.\n\n\
+                      Runs a JSON-RPC 2.0 server over stdio so editors, assistants, and \
+                      other tools can use Vera's indexing and search capabilities.\n\n\
                       The server reads JSON-RPC messages from stdin and writes responses \
                       to stdout. Logs go to stderr.\n\n\
                       Exposed tools:\n  \

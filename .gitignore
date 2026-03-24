@@ -1,4 +1,5 @@
 secrets.env
+/AGENTS.md
 .bench/
 target/
 .vera/
@@ -16,4 +17,3 @@ crates/tree-sitter-astro/
 .dev/
 .tmp/
 skills-lock.json
-

@@ -1,134 +1,83 @@
-# Vera Benchmark Reproduction Guide
+# Benchmark Reproduction Guide
 
-How to reproduce the Vera final benchmark results.
+This guide reproduces the public benchmark snapshot referenced in [README.md](../../README.md) and [docs/benchmarks.md](../../docs/benchmarks.md).
 
-## Prerequisites
+## Requirements
 
-### System Requirements
-- Linux x86_64 (tested on CachyOS/Arch Linux)
-- 8+ GB RAM (30 GB recommended)
-- 10+ GB free disk space
-- Internet connection for embedding/reranker APIs
+- Linux x86_64
+- Rust toolchain installed
+- Python 3
+- `git`
+- network access for embedding and reranking endpoints
 
-### Tool Versions
+## API Configuration
 
-| Tool              | Version                  | Install Command |
-|-------------------|--------------------------|-----------------|
-| Rust              | 1.94.0+                  | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
-| Python            | 3.14+                    | System package manager |
-| ripgrep           | 13.0.0+                  | `cargo install ripgrep` or system package |
-| git               | 2.40+                    | System package manager |
+Create `secrets.env` at the repository root:
 
-### API Credentials
-
-Create a `secrets.env` file at the repository root with:
 ```bash
-EMBEDDING_MODEL_BASE_URL=<your-openai-compatible-embedding-api-url>
+EMBEDDING_MODEL_BASE_URL=<your-embedding-api-url>
 EMBEDDING_MODEL_ID=Qwen/Qwen3-Embedding-8B
 EMBEDDING_MODEL_API_KEY=<your-api-key>
-RERANKER_MODEL_BASE_URL=<your-openai-compatible-reranker-api-url>
+RERANKER_MODEL_BASE_URL=<your-reranker-api-url>
 RERANKER_MODEL_ID=Qwen/Qwen3-Reranker
 RERANKER_MODEL_API_KEY=<your-api-key>
 ```
 
-The embedding and reranker APIs must be OpenAI-compatible endpoints.
-We used Nebius tokenfactory for benchmarking.
+The published benchmark numbers used OpenAI-compatible endpoints with the model IDs above.
 
 ## Corpus Setup
 
-### Step 1: Clone and pin test repositories
+Clone the benchmark repositories and pin them to the expected commits:
+
 ```bash
 bash eval/setup-corpus.sh
+cargo run --release --bin vera-eval -- verify-corpus
 ```
 
-This clones 4 repositories to `.bench/repos/` and pins them to specific SHAs:
-
-| Repository | Language   | Commit SHA                                       |
-|------------|-----------|--------------------------------------------------|
-| ripgrep    | Rust       | `4519153e5e461527f4bca45b042fff45c4ec6fb9`       |
-| flask      | Python     | `4cae5d8e411b1e69949d8fae669afeacbd3e5908`       |
-| fastify    | TypeScript | `a22217f9420f70017a419d8e18b2a3141ab27989`       |
-| turborepo  | Polyglot   | `56b79ff5c1c9366593e9e68a922d997e2698c5f4`       |
-
-### Step 2: Verify corpus
-```bash
-cargo run --bin vera-eval -- verify-corpus
-```
-
-## Build Vera
+## Build
 
 ```bash
 cargo build --release
 ```
 
-## Run Benchmarks
+## Run The Full Benchmark
 
-### Full Suite (single command)
 ```bash
-set -a; source secrets.env; set +a
+set -a
+source secrets.env
+set +a
 python3 benchmarks/scripts/run_final_benchmarks.py
 ```
 
-This will:
-1. Clean and re-index all 4 repositories (with cooldown between repos)
-2. Run 21 benchmark tasks in 3 Vera modes (bm25-only, hybrid-norerank, hybrid)
-3. Compare against pre-computed competitor baselines
-4. Verify all performance targets
-5. Produce comparison tables and save results to `benchmarks/results/final-suite/`
+This command:
 
-### Individual Components
+1. indexes the benchmark repositories
+2. runs the Vera benchmark modes
+3. compares them with the stored baselines
+4. writes results under `benchmarks/results/`
+
+## Useful Partial Runs
+
 ```bash
-# Just Vera benchmarks (skip indexing)
 python3 benchmarks/scripts/run_vera_benchmarks.py --modes bm25-only hybrid-norerank hybrid --skip-index --runs 2
-
-# Competitor baselines
 python3 benchmarks/scripts/run_baselines.py --tool all --runs 3
-
-# Just ripgrep baseline
 python3 benchmarks/scripts/run_baselines.py --tool ripgrep --runs 3
 ```
 
 ## Expected Ranges
 
-Results should fall within these ranges on comparable hardware:
+Results vary with model latency and hardware, but on comparable hardware you should expect roughly:
 
-| Metric                     | Expected Range    | Notes |
-|----------------------------|-------------------|-------|
-| Vera hybrid Recall@10      | 0.70 – 0.85       | Depends on API model version |
-| Vera hybrid MRR@10         | 0.50 – 0.70       | Reranker quality varies |
-| Vera BM25-only Recall@10   | 0.35 – 0.50       | Deterministic, stable |
-| BM25 p95 latency           | 1 – 15 ms         | Depends on disk/cache |
-| Hybrid p95 latency         | 3000 – 10000 ms   | Dominated by API round trips |
-| ripgrep index time         | 50 – 120 s        | Dominated by embedding API |
-| Index size ratio           | 1.0x – 2.0x       | Depends on repo structure |
-| Incremental update         | 1 – 5 s           | Single file change |
+| Metric | Expected range |
+|--------|----------------|
+| Vera hybrid Recall@10 | `0.70 - 0.85` |
+| Vera hybrid MRR@10 | `0.50 - 0.70` |
+| BM25 p95 latency | `1 - 15 ms` |
+| Hybrid p95 latency | `3000 - 10000 ms` |
+| Index size ratio | `1.0x - 2.0x` |
 
-## Metric Reproducibility
+## Notes
 
-- **Retrieval metrics** (Recall, MRR, nDCG): Deterministic — same query yields
-  same results. Two runs should match within ±2%.
-- **Latency**: Varies by ~20% due to API response times and system load.
-  Use BM25-only mode for stable latency measurements.
-- **Index time**: Dominated by embedding API throughput. Varies 20-50%
-  depending on API load.
-
-## Troubleshooting
-
-### Dimension mismatch errors
-If you see dimension errors, clear old indexes:
-```bash
-rm -rf .bench/repos/*/.vera
-```
-
-### API rate limits
-The script includes cooldown periods between repos. If rate limits persist,
-increase `COOLDOWN_SECS` in the script or index repos individually with
-pauses between them.
-
-### Turborepo indexing fails
-Turborepo is a large polyglot repo and requires more API calls. If it fails,
-run the other 3 repos first, wait 60 seconds, then index turborepo:
-```bash
-set -a; source secrets.env; set +a
-./target/release/vera index .bench/repos/turborepo
-```
+- The published public summary uses the 17-task subset across `ripgrep`, `flask`, and `fastify`.
+- Hybrid latency depends heavily on remote model round trips.
+- If you hit rate limits, rerun after a cooldown period or benchmark repositories one at a time.
