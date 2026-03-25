@@ -1,38 +1,42 @@
 # Vera
 
-Vera (Vector Enhanced Reranking Agent) is a code indexing and retrieval tool for source trees. It combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking to return ranked code results from the CLI or from coding agents.
+Code search that actually understands what you're looking for.
+
+Vera is a code indexing and retrieval engine that combines BM25 keyword search, vector similarity, Reciprocal Rank Fusion, and cross-encoder reranking into a single pipeline. It parses 60+ languages with tree-sitter, runs fully local by default, and returns structured, ranked results that work for both humans in the terminal and agents that need machine-readable context.
+
+## Quick Start
+
+```bash
+# Install
+npx -y @vera-ai/cli install    # or: bunx @vera-ai/cli install / uvx vera-ai install
+
+# Set up local models and index your repo
+vera setup
+vera index .
+
+# Search
+vera search "authentication logic"
+vera search "error handling" --lang rust
+vera search "handler" --type function --limit 5 --json
+```
 
 ## Why Vera?
 
-### Fully Local By Design
+**Hybrid ranking pipeline** — Vera doesn't rely on a single retrieval method. It runs BM25 and vector search in parallel, fuses results with RRF, then applies a cross-encoder reranker. This consistently outperforms any single method alone, especially on ambiguous, intent-heavy queries like `"where does request validation happen"`.
 
-Vera stores each repo index in `.vera/`, keeps user config under `~/.vera/`, and does not depend on any hosted Vera service. The only configurable part is the model backend: you can use Vera's built-in local models, point it at your own local OpenAI-compatible endpoint, or use a remote endpoint if you want to.
+**Fully local by default** — `vera setup` downloads quantized ONNX models to `~/.vera/models/` and indexes your repo to `.vera/`. No hosted service, no API keys, no data leaving your machine. You can optionally point Vera at any OpenAI-compatible endpoint if you prefer.
 
-### Stronger Search For Real Code Questions
+**Real local models, not a fallback** — The built-in stack pairs a retrieval-tuned embedding model with a dedicated reranker. This preserves the full hybrid ranking pipeline locally, rather than dropping to a single lightweight embedding model like most tools do.
 
-`rg` is still the right tool for exact strings and regex. Vera is for intent-heavy queries like `"authentication logic"` or `"where request validation happens"`, where you want ranked, cross-file, symbol-aware results instead of raw text matches.
+**60+ languages via tree-sitter** — Vera parses source code structurally, extracting functions, classes, methods, and other symbols. Results include file paths, line ranges, content, scores, and symbol metadata.
 
-### High-Quality Built-In Local Models
+**Structured output for agents** — JSON output, a CLI workflow agents can call directly, and an installable skill so agents know when and how to use Vera. See [skills/vera/SKILL.md](skills/vera/SKILL.md).
 
-Vera's built-in local stack is not a throwaway fallback. It uses a modern retrieval-specific embedding model plus a dedicated reranker, so local search keeps the same hybrid ranking shape Vera is built around instead of dropping down to a single lightweight embedding model.
-
-### Structured, Code-Aware Results
-
-Vera parses 60+ languages with tree-sitter and returns structured results with file paths, line ranges, content, scores, and symbol metadata. That makes it useful both for humans in the terminal and for agents that need machine-readable code context.
-
-### Built For Agents
-
-Vera has structured JSON output, a CLI workflow agents can call directly, and an installable skill so agents know when to use Vera versus exact-match tools.
-
-### Benchmark-Backed Ranking
-
-On the [public benchmark snapshot](#benchmark-snapshot), Vera hybrid reaches `0.6009` MRR@10 and `0.7549` Recall@10 across mixed symbol lookup, intent search, cross-file discovery, config lookup, and disambiguation tasks. See [docs/benchmarks.md](docs/benchmarks.md) for details and caveats.
+**Benchmark-backed** — On the [public benchmark](#benchmark-snapshot), Vera hybrid reaches `0.6009` MRR@10 and `0.7549` Recall@10 across symbol lookup, intent search, cross-file discovery, config lookup, and disambiguation tasks.
 
 ## Installation
 
 ### Preferred: CLI + Skills
-
-Paste one of these:
 
 ```bash
 npx -y @vera-ai/cli install
@@ -40,9 +44,9 @@ bunx @vera-ai/cli install
 uvx vera-ai install
 ```
 
-That installs the right `vera` binary for your platform, adds a persistent `vera` command, and runs `vera agent install` for supported agent skill directories.
+This installs the `vera` binary for your platform, adds a persistent `vera` command, and runs `vera agent install` for supported agent skill directories.
 
-Then bootstrap Vera and run your first search:
+Then set up and run your first search:
 
 ```bash
 vera setup
@@ -52,9 +56,9 @@ vera search "authentication logic"
 
 Use `vera doctor` if setup fails.
 
-### Alternative: MCP
+### Alternative: MCP Server
 
-If your client specifically wants a stdio MCP server instead of CLI + Skills, use one of these:
+If your client wants a stdio MCP server instead of CLI + Skills:
 
 ```bash
 npx -y @vera-ai/cli mcp
@@ -62,18 +66,13 @@ bunx @vera-ai/cli mcp
 uvx vera-ai mcp
 ```
 
-If you already installed `vera`, the equivalent local command is:
+Or if `vera` is already installed:
 
 ```bash
 vera mcp
 ```
 
-The server exposes:
-
-- `search_code`
-- `index_project`
-- `update_project`
-- `get_stats`
+The server exposes `search_code`, `index_project`, `update_project`, and `get_stats`.
 
 ### Alternative: Prebuilt Binaries
 
@@ -97,7 +96,7 @@ vera setup
 
 ### Alternative: Build From Source
 
-Rust 1.85 or newer is required.
+Rust 1.85 or newer required.
 
 ```bash
 git clone https://github.com/lemon07r/Vera.git
@@ -108,82 +107,39 @@ vera agent install
 vera setup
 ```
 
-## Choose A Model Backend
+## Model Backend
 
-Vera itself is local. The index always lives in the repo's `.vera/` directory. The choice below only changes where embeddings and reranking are computed.
+Vera itself is always local — the index lives in `.vera/`, config in `~/.vera/`. The backend choice only affects where embeddings and reranking run.
 
-### Built-In Local Models
+### Built-In Local Models (Default)
 
-`vera setup` is the default path. It downloads the default Jina ONNX models into `~/.vera/models/` and uses ONNX Runtime for local inference.
+`vera setup` downloads quantized ONNX models into `~/.vera/models/` and runs inference locally via ONNX Runtime:
 
-Vera's built-in local stack currently uses:
+- **Embeddings:** `jinaai/jina-embeddings-v5-text-nano-retrieval`
+- **Reranker:** `jinaai/jina-reranker-v2-base-multilingual`
 
-- `jinaai/jina-embeddings-v5-text-nano-retrieval` for embeddings
-- `jinaai/jina-reranker-v2-base-multilingual` for reranking
-
-Why these models:
-
-- They match Vera's actual retrieval pipeline. Vera is not just "embed everything and cosine-search it" - it combines BM25, vector retrieval, RRF fusion, and reranking, so the local default uses both a retrieval-focused embedding model and a dedicated reranker.
-- They are modern, high-quality local defaults chosen for quality per size rather than just minimum footprint.
-- They are quantized ONNX assets, which makes them practical to cache under `~/.vera/models/` and run locally without a hosted Vera service.
-- The reranker materially improves ambiguous and intent-heavy queries after the first retrieval pass. That gives Vera a stronger built-in local stack than tools that only ship a single lightweight embedding model for their local mode.
-
-```bash
-vera setup
-vera index .
-vera search "authentication logic"
-```
-
-What this gives you:
-
-- local repo index on disk in `.vera/`
-- local model cache under `~/.vera/models/`
-- a self-contained default path for private repos and offline-ish workflows once the models are cached
+These are modern, retrieval-specific models chosen for quality-per-size. The reranker materially improves ambiguous queries after the initial retrieval pass — this is what separates Vera's local mode from tools that only ship a single embedding model.
 
 ### Any OpenAI-Compatible Endpoint
 
-Use `vera setup --api` when you already have embedding and reranker endpoints. This can still be a fully local setup if you point Vera at a local OpenAI-compatible server such as `llama.cpp` or any other self-hosted stack.
-
-Set these first:
+Use `vera setup --api` to point Vera at your own endpoint. This works with remote APIs or local servers like `llama.cpp`.
 
 ```bash
 export EMBEDDING_MODEL_BASE_URL=https://your-embedding-api/v1
 export EMBEDDING_MODEL_ID=your-embedding-model
 export EMBEDDING_MODEL_API_KEY=your-api-key
-```
 
-Optional reranker:
-
-```bash
+# Optional reranker
 export RERANKER_MODEL_BASE_URL=https://your-reranker-api/v1
 export RERANKER_MODEL_ID=your-reranker-model
 export RERANKER_MODEL_API_KEY=your-api-key
-```
 
-Then persist the configuration:
-
-```bash
 vera setup --api
 ```
 
-If you point those variables at a remote service, only the model calls leave your machine. Vera still indexes, stores, and searches the codebase locally.
+Only model calls leave your machine. Indexing, storage, and search remain local.
 
-## Quick Start
-
-If `vera` is already installed, install or refresh the Vera skill:
-
-```bash
-vera agent install
-vera agent status --scope all
-```
-
-Index a repository:
-
-```bash
-vera index .
-```
-
-Search it:
+## Usage
 
 ```bash
 vera search "parse_config"
@@ -207,9 +163,7 @@ vera stats
 vera config
 ```
 
-For agent-facing Vera usage guidance, see [skills/vera/SKILL.md](skills/vera/SKILL.md).
-
-Sample JSON search result:
+Sample JSON output:
 
 ```json
 [
@@ -228,7 +182,7 @@ Sample JSON search result:
 
 ## Benchmark Snapshot
 
-The benchmark suite in this repository covers 17 tasks across three open-source codebases (`ripgrep`, `flask`, and `fastify`) and five workload categories: symbol lookup, intent search, cross-file discovery, config lookup, and disambiguation. Full details: [docs/benchmarks.md](docs/benchmarks.md).
+The benchmark suite covers 17 tasks across three open-source codebases (`ripgrep`, `flask`, `fastify`) and five workload categories: symbol lookup, intent search, cross-file discovery, config lookup, and disambiguation. Full details: [docs/benchmarks.md](docs/benchmarks.md).
 
 | Metric | ripgrep | cocoindex-code | vector-only | Vera hybrid |
 |--------|---------|----------------|-------------|-------------|
@@ -237,19 +191,13 @@ The benchmark suite in this repository covers 17 tasks across three open-source 
 | MRR@10 | 0.2625 | 0.3517 | 0.2814 | **0.6009** |
 | nDCG@10 | 0.2929 | 0.5206 | 0.7077 | **0.8008** |
 
-Additional performance notes from the same benchmark set:
+- BM25-only search: `3.5 ms` p95 latency
+- API-backed hybrid search: `6749 ms` p95 (dominated by remote model calls)
+- Indexing `ripgrep` (~175K LOC): `65.1 s`
+- Incremental updates: seconds for small changes
 
-- `vera search` in BM25-only mode measured `3.5 ms` p95 latency
-- API-backed hybrid search measured `6749 ms` p95 latency and is dominated by remote model calls
-- Indexing `ripgrep` (about 175K LOC) completed in `65.1 s`
-- Incremental updates complete in a few seconds for small changes
-
-More detail:
-
-- Public benchmark summary: [docs/benchmarks.md](docs/benchmarks.md)
-- Indexing performance note: [benchmarks/indexing-performance.md](benchmarks/indexing-performance.md)
-- Reproduction guide: [benchmarks/reports/reproduction-guide.md](benchmarks/reports/reproduction-guide.md)
+More detail: [docs/benchmarks.md](docs/benchmarks.md) · [benchmarks/indexing-performance.md](benchmarks/indexing-performance.md) · [benchmarks/reports/reproduction-guide.md](benchmarks/reports/reproduction-guide.md)
 
 ## Supported Languages
 
-Vera supports 60+ languages and file formats, including Rust, Python, TypeScript, JavaScript, Go, Java, C, C++, SQL, Terraform, Protobuf, HTML, CSS, Vue, Dockerfile, Astro, TOML, YAML, JSON, and Markdown.
+Vera supports 60+ languages and file formats, including Python, TypeScript, JavaScript, Java, Go, Rust, C, C++, C#, Ruby, Swift, Kotlin, PHP, Scala, Dart, Haskell, Elixir, Lua, SQL, HTML, CSS, Vue, Terraform, and common config formats like TOML, YAML, JSON, and Markdown.
