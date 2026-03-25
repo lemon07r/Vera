@@ -1,12 +1,13 @@
 # Vera
 
-Vera is a local-first code indexing and retrieval tool for source trees. It keeps each repository index in that repository's own `.vera/` directory, returns ranked code results with file paths, line ranges, symbol metadata, and JSON output, and is designed to work well both from the terminal and from coding agents.
+Vera is a fully local code indexing and retrieval tool for source trees. It keeps each repository index in that repository's own `.vera/` directory, returns ranked code results with file paths, line ranges, symbol metadata, and JSON output, and is designed to work well both from the terminal and from coding agents.
 
 Vera combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking. You can use Vera's built-in local ONNX models, or point it at any OpenAI-compatible endpoint (local or remote). The indexing, storage, and search pipeline stay local on your machine; the only thing that changes is where embeddings and reranking are computed.
 
 ## Why Vera?
 
 - Local by design. Vera stores each repo index in `.vera/`, keeps user config under `~/.vera/`, and does not depend on any hosted Vera service.
+- Higher-quality built-in local defaults. Vera's built-in local path uses a retrieval-tuned embedding model plus a dedicated reranker, not just a single local embedding model, so local search keeps the same hybrid ranking shape Vera is built around.
 - Better than grep for intent-heavy search. Queries like `"authentication logic"` or `"where request validation happens"` work without needing the exact symbol name first. Vera is meant to complement tools like `rg`, not replace them, and comes with SKILL files so your agents know how and when to best use Vera alongside other tools.
 - Built for coding agents and direct CLI use. Vera has structured JSON output, an installable skill, and a CLI workflow that agents can call directly.
 - Strong ranking quality on the [public benchmark snapshot](#benchmark-snapshot). Vera hybrid reaches `0.6009` MRR@10 and `0.7549` Recall@10 across the public benchmark set; see [docs/benchmarks.md](docs/benchmarks.md) for details and caveats.
@@ -100,6 +101,17 @@ Vera itself is local. The index always lives in the repo's `.vera/` directory. T
 ### Built-In Local Models
 
 `vera setup` is the default path. It downloads the default Jina ONNX models into `~/.vera/models/` and uses ONNX Runtime for local inference.
+
+Vera's built-in local stack currently uses:
+
+- `jinaai/jina-embeddings-v5-text-nano-retrieval` for embeddings
+- `jinaai/jina-reranker-v2-base-multilingual` for reranking
+
+Why these models:
+
+- They match Vera's actual retrieval pipeline. Vera is not just "embed everything and cosine-search it" - it combines BM25, vector retrieval, RRF fusion, and reranking, so the local default uses both a retrieval-focused embedding model and a dedicated reranker.
+- They are quantized ONNX assets, which makes them practical to cache under `~/.vera/models/` and run locally without a hosted Vera service.
+- The reranker materially improves ambiguous and intent-heavy queries after the first retrieval pass. That is usually a stronger local setup than tools that only ship a single lightweight embedding model for their local mode.
 
 ```bash
 vera setup
