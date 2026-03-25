@@ -34,19 +34,11 @@ vera search "handler" --type function --limit 5 --json
 
 **Your model, local or remote.** Vera's pipeline is model-agnostic. Point it at any OpenAI-compatible embedding or reranker endpoint, whether that's a remote API or a local server like llama.cpp. Everything else (indexing, storage, search logic) stays on your machine regardless. If you don't want to manage models at all, `vera setup` downloads two curated ONNX models that run locally via ONNX Runtime, giving you the full three-stage pipeline without any network calls. Most local-first search tools only ship an embedding model and skip reranking entirely, which caps their precision on anything beyond exact name matches. Details on the bundled models are in the [Model Backend](#model-backend) section below.
 
+## Features
+
+**Tree-sitter structural parsing.** Vera builds its index using tree-sitter grammars for 60+ languages, extracting functions, classes, methods, structs, and other symbols as discrete chunks rather than splitting files by line count. This means you can request `--type function --json` and get back precisely the function definitions matching your query, not a list of matching lines with no context boundaries.
+
 **Structured JSON output.** Every search result includes the file path, exact line range, full source content, symbol name, symbol type, language, and relevance score. Agents and scripts can consume this directly without parsing or guessing at context boundaries. A CLI skill file is included so agents know when and how to invoke Vera: [skills/vera/SKILL.md](skills/vera/SKILL.md).
-
-## How It Works
-
-Vera builds a structural index using tree-sitter grammars for 60+ languages, extracting functions, classes, methods, structs, and other symbols as discrete chunks rather than splitting files by line count. Search results come back with the symbol name, symbol type, exact line range, and the full source content. This means you can request `--type function --json` and get back precisely the function definitions matching your query, not a list of matching lines with no context boundaries.
-
-The retrieval pipeline runs three stages:
-
-1. **BM25 keyword search** over the full chunk index for fast lexical matching.
-2. **Vector similarity search** using embeddings to catch semantic matches that keywords miss.
-3. **Cross-encoder reranking** that reads each query-candidate pair jointly and rescores them, producing the final ranked output.
-
-Results from stages 1 and 2 are fused via Reciprocal Rank Fusion (RRF) before the reranker sees them.
 
 ## Installation
 
