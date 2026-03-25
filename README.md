@@ -1,6 +1,6 @@
 # Vera
 
-Vera is a code indexing and retrieval tool for source trees. It combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking to return ranked code results from the CLI or from coding agents.
+Vera (Vector Enhanced Reranking Agent) is a code indexing and retrieval tool for source trees. It combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking to return ranked code results from the CLI or from coding agents.
 
 ## Why Vera?
 
