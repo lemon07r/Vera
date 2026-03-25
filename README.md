@@ -4,6 +4,8 @@
 
 Vera is a code search tool built in Rust that combines BM25 keyword matching, vector similarity, and cross-encoder reranking into a single retrieval pipeline. It parses 60+ languages with tree-sitter, runs everything locally, and returns structured JSON with file paths, line ranges, symbol metadata, and relevance scores.
 
+Every decision made is intentional, with ample research, testing, analysis, benchmarking and evaluation behind every one. I made this to succeed my fork, Pampax, which was an attempt to fix up someone else's vibeslop project because I couldnt find any other tools like it, that actually supported model/provider-agnostic reranking. I learned a lot from that project and realized I could make something way better I built it from scratch. I've tested and tried a lot of agents and tools, and knew exactly what I wanted from this one. I made it to be the very best at what it does.  
+
 ## Quick Start
 
 ```bash
@@ -36,19 +38,20 @@ Most code indexing tools retrieve candidates and stop there. Vera adds a cross-e
 
 Vera ships as one static binary with all 60+ language grammars compiled in via tree-sitter. No Python runtime, no language servers, no per-language toolchains to install or manage. Drop the binary on any machine, run `vera setup`, and the full search pipeline is ready. Tools like Serena require a Python runtime and uv just to start, plus separate LSP dependencies for some languages. Vera has zero external dependencies.
 
-### High accuracy, proven on real codebases
+### High accuracy, extremely fast, proven on real codebases
 
 17 tasks across three real codebases (ripgrep, flask, fastify). Vera's hybrid pipeline scores 0.80 nDCG@10 and 0.75 Recall@10 against grep-based and embedding-only baselines. See [Benchmark Snapshot](#benchmark-snapshot) for the full breakdown.
 
 ## Features
 
+### Model-agnostic, local-first
+
+Point Vera at any OpenAI-compatible embedding or reranker endpoint, remote or local. Everything else (indexing, storage, search logic) stays on your machine regardless, no cloud hosted services needed. Run `vera setup` to download two curated ONNX models and run the full pipeline offline. Details: [Model Backend](#model-backend).
+
 ### Tree-sitter structural parsing
 
 Vera uses tree-sitter grammars for 60+ languages to extract functions, classes, methods, and structs as discrete chunks. Search results map to actual symbol boundaries, not arbitrary line ranges. Filter by type with `--type function` or `--type class` to narrow results to exactly the kind of symbol you need.
 
-### Model-agnostic, local-first
-
-Point Vera at any OpenAI-compatible embedding or reranker endpoint, remote or local. Everything else (indexing, storage, search logic) stays on your machine regardless, no cloud hosted services needed. Or run `vera setup` to download two curated ONNX models and run the full pipeline offline. Details: [Model Backend](#model-backend).
 
 ### Structured, code-aware results
 
