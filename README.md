@@ -16,7 +16,7 @@ export EMBEDDING_MODEL_ID=your-model
 export EMBEDDING_MODEL_API_KEY=your-key
 vera setup --api
 
-# Option B: download Vera's curated local models (no API needed)
+# Option B: download curated local models (no API needed)
 vera setup
 
 # Index and search
@@ -30,7 +30,11 @@ vera search "handler" --type function --limit 5 --json
 
 ### Cross-encoder reranking
 
-Most code search stops at embedding similarity, which falls apart on intent queries like `"where does request validation happen"`. Vera's cross-encoder reads query and candidate together as a pair, scoring them jointly: 0.60 MRR@10 vs 0.28 for vector-only.
+Most code indexing tools retrieve candidates and stop there. Vera adds a cross-encoder reranking stage that reads query and candidate together as a single pair, scoring relevance jointly instead of comparing pre-computed vectors. This is the difference between 0.28 MRR@10 (vector retrieval alone) and 0.60 MRR@10 (with reranking).
+
+### Built for real code questions
+
+`rg` is still the right tool for exact strings and regex patterns. Vera is for intent queries like `"authentication logic"` or `"where does request validation happen"`, where you want ranked, cross-file, symbol-aware results instead of raw line matches.
 
 ### Benchmarked against real workloads
 
@@ -40,15 +44,15 @@ Most code search stops at embedding similarity, which falls apart on intent quer
 
 ### Tree-sitter structural parsing
 
-Vera uses tree-sitter grammars for 60+ languages, extracting functions, classes, methods, and structs as discrete chunks. Search with `--type function --json` and get back precisely the function definitions matching your query, not lines with no context boundaries.
+Vera uses tree-sitter grammars for 60+ languages to extract functions, classes, methods, and structs as discrete chunks. Search results map to actual symbol boundaries, not arbitrary line ranges. Filter by type with `--type function` or `--type class` to narrow results to exactly the kind of symbol you need.
 
 ### Model-agnostic, local-first
 
-Point Vera at any OpenAI-compatible embedding or reranker endpoint, remote or local. Everything else (indexing, storage, search logic) stays on your machine regardless, no cloud hosted services needed. Or run `vera setup` to download two curated ONNX models for the full pipeline without any network calls. Details: [Model Backend](#model-backend).
+Point Vera at any OpenAI-compatible embedding or reranker endpoint, remote or local. Everything else (indexing, storage, search logic) stays on your machine regardless, no cloud hosted services needed. Or run `vera setup` to download two curated ONNX models and run the full pipeline offline. Details: [Model Backend](#model-backend).
 
-### Structured JSON output
+### Structured, code-aware results
 
-Every result includes file path, line range, source content, symbol name, type, language, and relevance score. Agents and scripts consume this directly. A CLI skill file is included: [skills/vera/SKILL.md](skills/vera/SKILL.md).
+Every result includes file path, line range, source content, symbol name, symbol type, language, and relevance score. Agents and scripts consume this directly without parsing. A CLI skill file is included for agent integration: [skills/vera/SKILL.md](skills/vera/SKILL.md).
 
 ## Installation
 
@@ -134,7 +138,11 @@ Vera itself is always local: the index lives in `.vera/`, config in `~/.vera/`. 
 - **Embeddings:** [`jinaai/jina-embeddings-v5-text-nano-retrieval`](https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval) (quantized ONNX). At 239M parameters, this is the highest scoring embedding model under 500M on MMTEB (65.5), beating KaLM-mini-v2.5 (494M), Gemma-300M (308M), and voyage-4-nano (480M). It scores 71.0 on MTEB English v2. Built on EuroBERT-210M with distillation from Qwen3-Embedding-4B, it uses a retrieval-specific LoRA adapter designed for asymmetric search where the query is short and the document is a code block.
 - **Reranker:** [`jinaai/jina-reranker-v2-base-multilingual`](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual) (quantized ONNX). A 278M parameter cross-encoder that scores query-document pairs jointly rather than comparing pre-computed embeddings. Its 1,024-token context window is a natural fit for Vera's tree-sitter symbol chunks: discrete functions and classes, not raw files. Fine-tuned on ToolBench (function-calling schemas) and NSText2SQL (structured queries), it scores 71.36 on CodeSearchNet MRR@10 and 77.75 on ToolBench recall@3 while being half the size and 15x faster than bge-reranker-v2-m3 (568M).
 
-Having both models locally means the full three-stage pipeline (BM25, vector search, rerank) runs without any external calls.
+With both models cached locally, the full three-stage pipeline (BM25, vector search, rerank) runs without any external calls. This gives you:
+
+- A local repo index on disk in `.vera/`
+- A local model cache under `~/.vera/models/`
+- A fully self-contained setup for private repos and offline workflows
 
 ### Any OpenAI-Compatible Endpoint
 
@@ -171,6 +179,13 @@ Update after code changes:
 vera update .
 ```
 
+Install agent skill files and check status:
+
+```bash
+vera agent install
+vera agent status --scope all
+```
+
 Inspect the index:
 
 ```bash
@@ -178,6 +193,8 @@ vera doctor
 vera stats
 vera config
 ```
+
+The skill file at [skills/vera/SKILL.md](skills/vera/SKILL.md) teaches agents how to use Vera effectively.
 
 Sample JSON output:
 
