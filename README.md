@@ -1,8 +1,8 @@
 # Vera
 
-Code search that actually understands what you're looking for.
+Hybrid code search — BM25, vector similarity, and cross-encoder reranking in one pipeline.
 
-Vera is a code indexing and retrieval engine that combines BM25 keyword search, vector similarity, Reciprocal Rank Fusion, and cross-encoder reranking into a single pipeline. It parses 60+ languages with tree-sitter, runs fully local by default, and returns structured, ranked results that work for both humans in the terminal and agents that need machine-readable context.
+Vera indexes 60+ languages with tree-sitter, fuses keyword and semantic retrieval via Reciprocal Rank Fusion, and reranks with a cross-encoder. It returns structured, scored results with file paths, line ranges, symbol metadata, and source content. Everything runs locally — no external services required.
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ Vera is a code indexing and retrieval engine that combines BM25 keyword search, 
 # Install
 npx -y @vera-ai/cli install    # or: bunx @vera-ai/cli install / uvx vera-ai install
 
-# Set up local models and index your repo
+# Download models and index your repo
 vera setup
 vera index .
 
@@ -22,13 +22,11 @@ vera search "handler" --type function --limit 5 --json
 
 ## Why Vera?
 
-**Hybrid ranking pipeline** — Vera doesn't rely on a single retrieval method. It runs BM25 and vector search in parallel, fuses results with RRF, then applies a cross-encoder reranker. This consistently outperforms any single method alone, especially on ambiguous, intent-heavy queries like `"where does request validation happen"`.
+**Three-stage ranking** — Most code search tools use a single retrieval method. Vera runs BM25 and vector search in parallel, fuses results with RRF, then applies a cross-encoder reranker to re-score the top candidates. The reranker is what makes ambiguous queries like `"where does request validation happen"` work well — it sees the full query-document pair and catches relevance that keyword or embedding similarity alone would miss.
 
-**Fully local by default** — `vera setup` downloads quantized ONNX models to `~/.vera/models/` and indexes your repo to `.vera/`. No hosted service, no API keys, no data leaving your machine. You can optionally point Vera at any OpenAI-compatible endpoint if you prefer.
+**Bring your own models, or use ours** — Vera's search pipeline is model-agnostic. Point it at any OpenAI-compatible embedding and reranker endpoint — remote APIs, local servers like `llama.cpp`, whatever you prefer. If you don't want to manage models, `vera setup` downloads a curated local stack: [jina-embeddings-v3](https://huggingface.co/jinaai/jina-embeddings-v3) (quantized nano variant) for embeddings and [jina-reranker-v2-base-multilingual](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual) for reranking, both running via ONNX Runtime. These aren't generic sentence transformers — they're retrieval-specific models trained on code and technical text, and the reranker in particular is what lets the local stack match the full hybrid pipeline instead of degrading to embedding-only search.
 
-**Real local models, not a fallback** — The built-in stack pairs a retrieval-tuned embedding model with a dedicated reranker. This preserves the full hybrid ranking pipeline locally, rather than dropping to a single lightweight embedding model like most tools do.
-
-**60+ languages via tree-sitter** — Vera parses source code structurally, extracting functions, classes, methods, and other symbols. Results include file paths, line ranges, content, scores, and symbol metadata.
+**60+ languages via tree-sitter** — Vera parses source code structurally, extracting functions, classes, methods, and other symbols. Results include file paths, line ranges, content, scores, and symbol metadata — not just matching lines.
 
 **Structured output for agents** — JSON output, a CLI workflow agents can call directly, and an installable skill so agents know when and how to use Vera. See [skills/vera/SKILL.md](skills/vera/SKILL.md).
 
@@ -111,14 +109,14 @@ vera setup
 
 Vera itself is always local — the index lives in `.vera/`, config in `~/.vera/`. The backend choice only affects where embeddings and reranking run.
 
-### Built-In Local Models (Default)
+### Curated Local Models
 
 `vera setup` downloads quantized ONNX models into `~/.vera/models/` and runs inference locally via ONNX Runtime:
 
-- **Embeddings:** `jinaai/jina-embeddings-v5-text-nano-retrieval`
-- **Reranker:** `jinaai/jina-reranker-v2-base-multilingual`
+- **Embeddings:** [`jinaai/jina-embeddings-v3`](https://huggingface.co/jinaai/jina-embeddings-v3) (nano retrieval variant, quantized) — a late-interaction embedding model trained specifically for retrieval tasks on code and technical content. Unlike general-purpose sentence transformers, it produces embeddings optimized for asymmetric search where the query is short and the document is a code block.
+- **Reranker:** [`jinaai/jina-reranker-v2-base-multilingual`](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual) — a cross-encoder that scores query-document pairs directly rather than comparing pre-computed embeddings. This is the component that makes the biggest difference on ambiguous queries: it sees the full context of both the query and the candidate chunk, catching semantic matches that vector similarity alone would rank lower.
 
-These are modern, retrieval-specific models chosen for quality-per-size. The reranker materially improves ambiguous queries after the initial retrieval pass — this is what separates Vera's local mode from tools that only ship a single embedding model.
+Having both models locally means the full three-stage pipeline (BM25 → vector → rerank) runs without any external calls. Most local-first search tools ship only an embedding model and skip reranking entirely, which leaves precision on the table for anything beyond exact symbol lookups.
 
 ### Any OpenAI-Compatible Endpoint
 
