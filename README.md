@@ -1,8 +1,6 @@
 # Vera
 
-Vera is a code indexing and retrieval tool for source trees, built for coding agents and direct CLI use. It keeps each repository index in that repository's own `.vera/` directory and returns ranked, structured code results with file paths, line ranges, symbol metadata, and JSON output.
-
-Vera combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking. It can run with built-in local ONNX models or any OpenAI-compatible embedding and reranker endpoints. Vera itself does not depend on a hosted Vera service, and every repo keeps its own local index.
+Vera is a code indexing and retrieval tool for source trees. It combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking to return ranked code results from the CLI or from coding agents.
 
 ## Why Vera?
 
