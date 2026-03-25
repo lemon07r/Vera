@@ -1,13 +1,13 @@
 # Vera
 
-Vera is a local code indexing and retrieval tool for source trees. It keeps each repository index in that repository's own `.vera/` directory, returns ranked code results with file paths, line ranges, symbol metadata, and JSON output, and is designed to work well both from the terminal and from coding agents.
+Vera is a local-first code indexing and retrieval tool for source trees. It keeps each repository index in that repository's own `.vera/` directory, returns ranked code results with file paths, line ranges, symbol metadata, and JSON output, and is designed to work well both from the terminal and from coding agents.
 
-Vera combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking. You can use Vera's built-in local ONNX models, point it at a local OpenAI-compatible endpoint, or use a remote endpoint if you want. The indexing, storage, and search pipeline stay on your machine either way; the only thing that changes is where embeddings and reranking are computed.
+Vera combines BM25 keyword search, vector search, Reciprocal Rank Fusion (RRF), and optional reranking. You can use Vera's built-in local ONNX models, or point it at any OpenAI-compatible endpoint (local or remote). The indexing, storage, and search pipeline stay local on your machine; the only thing that changes is where embeddings and reranking are computed.
 
 ## Why Vera?
 
 - Local by design. Vera stores each repo index in `.vera/`, keeps user config under `~/.vera/`, and does not depend on any hosted Vera service.
-- Better than grep for intent-heavy search. Queries like `"authentication logic"` or `"where request validation happens"` work without needing the exact symbol name first. Vera is meant to complement tools like `rg`, not replace them.
+- Better than grep for intent-heavy search. Queries like `"authentication logic"` or `"where request validation happens"` work without needing the exact symbol name first. Vera is meant to complement tools like `rg`, not replace them, and comes with SKILL files so your agents know how and when to best use Vera alongside other tools.
 - Built for coding agents and direct CLI use. Vera has structured JSON output, an installable skill, and a CLI workflow that agents can call directly.
 - Strong ranking quality on the [public benchmark snapshot](#benchmark-snapshot). Vera hybrid reaches `0.6009` MRR@10 and `0.7549` Recall@10 across the public benchmark set; see [docs/benchmarks.md](docs/benchmarks.md) for details and caveats.
 - Tree-sitter parsing across 60+ languages, with symbol-aware chunks for functions, methods, classes, structs, and other code units.
