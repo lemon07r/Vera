@@ -7,7 +7,7 @@ This page tracks two benchmark snapshots:
 
 ## Current Local Release Benchmark
 
-This is the benchmark used to recover the `v0.5.0` retrieval regressions and gate `v0.6.0`.
+This is the benchmark used to measure the `v0.6.0` retrieval pipeline.
 
 - 21 tasks
 - 4 repos: `ripgrep`, `flask`, `fastify`, `turborepo`
@@ -15,7 +15,7 @@ This is the benchmark used to recover the `v0.5.0` retrieval regressions and gat
 - CUDA ONNX backend
 - same pinned corpora and the same local-binary harness for every version below
 
-### Version To Version Recovery
+### Accuracy Improvements From `v0.4.0` To `v0.6.0`
 
 | Version | Recall@1 | Recall@5 | Recall@10 | MRR@10 | nDCG@10 |
 |--------|----------|----------|-----------|--------|---------|
@@ -38,7 +38,7 @@ Committed artifacts:
 - [v0.4.0 benchmark](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.4.0-jina-cuda-onnx.json)
 - [v0.5.0 benchmark](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.5.0-jina-cuda-onnx.json)
 - [v0.6.0 benchmark](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.6.0-jina-cuda-onnx.json)
-- [Accuracy recovery notes](/home/lamim/Development/Tools/Vera/docs/accuracy-recovery-v0.4-to-v0.6.md)
+- [Accuracy improvements from `v0.4.0` to `v0.6.0`](/home/lamim/Development/Tools/Vera/docs/accuracy-improvements-v0.4-to-v0.6.md)
 
 ### Current Performance Snapshot
 
@@ -56,7 +56,7 @@ Committed artifacts:
 
 ## Vera vs ColGREP
 
-These ColGREP numbers are the earlier reference results recorded on the same 21-task, 4-repo suite. They are useful as a retrieval quality reference because this was the comparison that originally exposed Vera's top-rank accuracy gap.
+These ColGREP numbers are the earlier reference results recorded on the same 21-task, 4-repo suite. They remain useful as a retrieval quality reference because they show how the current Vera pipeline compares with a late-interaction code search system on the same workload.
 
 | Metric | Vera `v0.6.0` | ColGREP (149M) | ColGREP Edge (17M) |
 |--------|---------------|----------------|--------------------|
@@ -74,7 +74,7 @@ Indexing time, 4 repos combined:
 | ColGREP (149M, CPU) | `~180 s` | Ryzen 5 7600X3D 6c/12t |
 | ColGREP Edge (17M, CPU) | `~160 s` | Ryzen 5 7600X3D 6c/12t |
 
-ColGREP's late-interaction design was still an important reference during this work. The main takeaways Vera borrowed were richer structured retrieval text, stronger structural units, and more deliberate candidate shaping before final ranking.
+ColGREP's late-interaction design was a useful reference while improving Vera's own ranking and chunk selection. The changes in `v0.6.0` stayed within Vera's existing hybrid architecture.
 
 ## Legacy Public API Benchmark
 
@@ -125,6 +125,6 @@ From the same older benchmark set:
 
 ## Related Docs
 
-- [Accuracy recovery notes](/home/lamim/Development/Tools/Vera/docs/accuracy-recovery-v0.4-to-v0.6.md)
+- [Accuracy improvements from `v0.4.0` to `v0.6.0`](/home/lamim/Development/Tools/Vera/docs/accuracy-improvements-v0.4-to-v0.6.md)
 - [Indexing performance note](/home/lamim/Development/Tools/Vera/benchmarks/indexing-performance.md)
 - [Reproduction guide](/home/lamim/Development/Tools/Vera/benchmarks/reports/reproduction-guide.md)

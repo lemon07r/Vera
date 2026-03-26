@@ -28,7 +28,7 @@ Every decision made is intentional, with ample research, testing, analysis, benc
 - [How It Works](#how-it-works)
 - [Contributing](#contributing)
 
-**Docs:** [Query Guide](docs/query-guide.md) · [Benchmarks](docs/benchmarks.md) · [Accuracy Recovery](docs/accuracy-recovery-v0.4-to-v0.6.md) · [How It Works](docs/how-it-works.md) · [Supported Languages](docs/supported-languages.md) · [Troubleshooting](docs/troubleshooting.md)
+**Docs:** [Query Guide](docs/query-guide.md) · [Benchmarks](docs/benchmarks.md) · [How It Works](docs/how-it-works.md) · [Supported Languages](docs/supported-languages.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Quick Start
 
@@ -269,7 +269,7 @@ Sample JSON output (`--json`):
 
 ## Benchmark Snapshot
 
-The public comparison snapshot below is older and reflects the `v0.4.0` era pipeline and nearby public runs, not the current `v0.6.0` retrieval quality. It is kept here because it compares Vera against other tools on the same workload. Since then, Vera's local 21-task release benchmark improved from `0.2421` to `0.8135` Recall@1 and from `0.5016` to `1.0000` MRR@10. Full recovery details: [docs/accuracy-recovery-v0.4-to-v0.6.md](docs/accuracy-recovery-v0.4-to-v0.6.md).
+The public comparison snapshot below is older and reflects the `v0.4.0` era pipeline and nearby public runs, not the current `v0.6.0` retrieval quality. It is kept here because it compares Vera against other tools on the same workload. Since then, Vera's local 21-task release benchmark improved from `0.2421` to `0.8135` Recall@1 and from `0.5016` to `1.0000` MRR@10. More detail: [Accuracy improvements from `v0.4.0` to `v0.6.0`](docs/accuracy-improvements-v0.4-to-v0.6.md).
 
 The older public benchmark suite covers 17 tasks across three open-source codebases (`ripgrep`, `flask`, `fastify`) and five workload categories: symbol lookup, intent search, cross-file discovery, config lookup, and disambiguation.
 
@@ -280,7 +280,7 @@ The older public benchmark suite covers 17 tasks across three open-source codeba
 | MRR@10 | 0.2625 | 0.3517 | 0.2814 | **0.6009** |
 | nDCG@10 | 0.2929 | 0.5206 | 0.7077 | **0.8008** |
 
-#### Recovery Since `v0.4.0`
+#### Improvements Since `v0.4.0`
 
 The current local Jina CUDA ONNX release benchmark for `v0.6.0` uses 21 tasks across `ripgrep`, `flask`, `fastify`, and `turborepo`:
 
