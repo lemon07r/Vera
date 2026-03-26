@@ -82,6 +82,14 @@ Two caveats matter here:
 
 \* Qwen3-8B numbers are from a different task set (17 tasks, 3 repos) and are not directly comparable to the 21-task ColGREP columns. They are included to show how the API model performs on a similar workload.
 
+Indexing time (4 repos combined, release builds):
+
+| Tool | Total time | Hardware |
+|------|-----------|----------|
+| Vera (Jina CUDA) | ~79s | RTX 4080 |
+| ColGREP (149M, CPU) | ~180s | Ryzen 5 7600X3D 6c/12t |
+| ColGREP Edge (17M, CPU) | ~160s | Ryzen 5 7600X3D 6c/12t |
+
 ColGREP's late-interaction (ColBERT) approach scores higher on Recall@1 and MRR despite using smaller models and no GPU. Vera's strengths are broader language support (63 vs 18), agent integration (skill files, MCP server), and hybrid BM25+vector fusion. ColGREP indexes are 30-40% larger due to multi-vector storage.
 
 ## Model Evaluation Notes
