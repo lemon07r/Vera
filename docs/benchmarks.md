@@ -68,6 +68,55 @@ Two caveats matter here:
 - BM25-only search is fast because it runs locally with no embedding or reranker round trips.
 - API-backed hybrid search is slower because latency is dominated by remote model calls rather than local indexing or ranking work.
 
+## Model Evaluation Notes
+
+We evaluated alternative models to see if better options exist for local inference.
+
+### Reranker: Jina v2 vs GTE-ModernBERT-base (int8)
+
+Both tests used Jina v5 nano CUDA embeddings. GTE re-reranked Jina's top-30 candidates.
+
+| Metric | Jina reranker (278M) | GTE-ModernBERT (149M) |
+|--------|---------------------|----------------------|
+| Recall@1 | **0.42** | 0.19 |
+| Recall@5 | 0.69 | **0.72** |
+| MRR@10 | **0.70** | 0.51 |
+| nDCG@10 | **0.68** | 0.59 |
+
+Jina reranker wins on the metrics that matter most for code search (MRR, Recall@1 — putting the right result first). GTE's slight Recall@5 edge is noise.
+
+CPU reranking speed (Ryzen 5 7600X3D, 6c/12t):
+
+| Reranker | 10 docs | Per doc |
+|----------|---------|--------|
+| Jina v2 (278M, int8) | **1.0s** | **104ms** |
+| GTE-ModernBERT (149M, int8) | 1.5s | 145ms |
+
+Jina is faster despite being larger — likely due to its simpler architecture vs ModernBERT's Flash Attention overhead on CPU.
+
+### Embedding: Why Jina v5 nano stays
+
+Jina-embeddings-v5-text-nano (239M, Feb 2026) scores 71.0 on MTEB English v2 — the highest among models under 500M parameters. Alternatives considered:
+
+| Model | Params | MTEB English | Code-specific? | Notes |
+|-------|--------|-------------|----------------|-------|
+| **Jina v5 nano** | **239M** | **71.0** | No (general) | Current default |
+| EmbeddingGemma-300M | 308M | 68.4 | No | Larger, lower score |
+| CodeRankEmbed | 137M | N/A | Yes (code-only) | Trained on code pairs, not NL→code queries |
+| snowflake-arctic-embed-xs | 22M | ~42 (est.) | No | 10x smaller but much lower quality |
+
+CodeRankEmbed (137M) is a bi-encoder that could be a drop-in replacement, but it's trained on code-to-code matching (CoRNStack dataset), not natural-language-to-code retrieval. Vera's primary use case is queries like "how does the search pipeline work" — general models handle this better than code-specialized ones.
+
+### CPU indexing speed in context
+
+~6 minutes for ~3,100 chunks on a 6-core CPU is expected for a 239M-parameter model. The bottleneck is pure matrix math in the embedding model, not file I/O or parsing (which takes <2 seconds). Indexing time scales linearly with chunk count:
+
+- ~500-line project: ~30s on CPU
+- ~23K-line project (Vera itself): ~6 min on CPU, ~8s on CUDA
+- After initial index, `vera update .` only re-embeds changed files
+
+These models are designed for GPU inference. CPU mode works but is not their intended target. For large initial indexes, use `--onnx-jina-cuda` or API mode.
+
 ## Limits And Caveats
 
 - The public benchmark summary uses the stable 17-task subset. A larger polyglot benchmark was not included in the public summary because API rate limits made it unreliable.
