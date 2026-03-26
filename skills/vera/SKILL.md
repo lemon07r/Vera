@@ -1,74 +1,64 @@
 ---
 name: vera
-description: Use Vera for semantic code search, symbol lookup, cross-file discovery, and ranked code context in a local repository. Prefer it when the user asks where logic lives, wants related code across files, needs the best matching function/class/module first, or is exploring unfamiliar code by intent rather than exact text. Do not use Vera for exact literal search, regex search, or bulk find-and-replace; use rg for those.
+description: Semantic code search and symbol lookup across a local repository. Returns ranked code capsules (file path, line range, content, score, symbol info) as JSON. Use when the user asks to find where logic lives, what calls a function, how a feature is implemented, which files handle a concept, or wants to explore unfamiliar code by intent. Also use for symbol lookup when the exact name appears in many files. Do NOT use for exact literal search, regex, counting occurrences, or bulk find-and-replace — use rg for those.
 ---
 
 # Vera
 
-Use Vera as the agent-first code search tool when the task is about understanding a codebase, not just matching raw text.
-
-Make sure the `vera` CLI is available on `PATH`. The preferred install flow is `npx -y @vera-ai/cli install`, then `vera setup`.
-
-## When To Use Vera
-
-- Semantic search: "authentication logic", "request validation", "database connection pooling"
-- Symbol lookup when the exact name might appear in multiple places
-- Cross-file discovery: find related code paths, not every raw match
-- Ranked context: get the best candidates first instead of a long grep dump
-
-## When Not To Use Vera
-
-- Exact literal or regex matching
-- Bulk text replacement
-- Counting token occurrences
-
-For those, use `rg`.
+Semantic code search CLI. Combines BM25 keyword matching with vector similarity and cross-encoder reranking to return the most relevant code for a natural-language query.
 
 ## Workflow
 
-1. Make sure Vera is installed (add `.vera/` to `.gitignore` on first use). If it is missing, follow `references/install.md`.
-2. Make sure the repository is indexed.
-   - First time: `vera index .`
-   - After edits: `vera update .`
-3. Run a focused search.
-   - Semantic: `vera search "authentication middleware"`
-   - Symbol oriented: `vera search "parse_config"`
-   - Narrow results: add `--lang`, `--path`, `--type`, `--limit`
-4. Use `--json` when you need to parse results or feed them into another tool.
+1. Ensure Vera is installed and on `PATH` (add `.vera/` to `.gitignore` on first use). If missing: `references/install.md`.
+2. Index the repo: `vera index .` (first time) or `vera update .` (after edits).
+3. Search:
+   ```sh
+   vera search "authentication middleware" --json
+   vera search "parse_config" --type function --limit 5
+   vera search "database connection" --lang rust --path "src/**"
+   ```
+4. Use the highest-scored results first. Pass `--json` for machine-readable output.
 
-## Query Tips
+## Example Output
 
-- Prefer intent phrases over vague nouns.
-- Start broad, then add filters when the first pass is noisy.
-- If the user gave an exact symbol, search for that exact symbol name first.
-- If the user asks for exact text, switch to `rg` instead of forcing Vera.
+```sh
+vera search "hybrid search" --limit 1 --json
+```
 
-See `references/query-patterns.md` for more examples.
+```json
+[{
+  "file_path": "crates/vera-core/src/retrieval/hybrid.rs",
+  "line_start": 58,
+  "line_end": 110,
+  "content": "pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }",
+  "language": "rust",
+  "score": 2.28,
+  "symbol_name": "search_hybrid",
+  "symbol_type": "function"
+}]
+```
 
-## Output
+Fields: `file_path`, `line_start`, `line_end`, `content`, `language`, `score`, and optional `symbol_name`/`symbol_type`.
 
-Vera returns ranked code capsules with:
+## Query Strategy
 
-- `file_path`
-- `line_start` and `line_end`
-- `content`
-- `language`
-- `score`
-- optional `symbol_name` and `symbol_type`
-
-Use the highest-ranked results first unless the query clearly needs broad coverage.
+- Describe behavior or intent: "JWT token validation", "request rate limiting", not "code" or "utils".
+- For known symbol names, search the exact name: `vera search "parse_config"`.
+- Start broad, then narrow with `--lang`, `--path`, `--type`, `--limit`.
+- After code changes mid-session, run `vera update .` before searching again.
+- If the user wants exact text or regex, use `rg` instead.
 
 ## Failure Recovery
 
-- `no index found`: run `vera index <repo-path>`
-- results look stale after code changes: run `vera update <repo-path>`
-- built-in local model setup fails: see `references/troubleshooting.md`
-- API mode is missing credentials: see `references/install.md`
-- user asks for MCP specifically: see `references/mcp.md`
+- `no index found` → `vera index .`
+- stale results after edits → `vera update .`
+- local model/ONNX fails → `vera doctor`, then `references/troubleshooting.md`
+- API credentials missing → `references/install.md`
+- MCP requested → `references/mcp.md`
 
 ## References
 
-- Install and first run: `references/install.md`
-- Query examples: `references/query-patterns.md`
-- Troubleshooting: `references/troubleshooting.md`
-- Optional MCP usage: `references/mcp.md`
+- `references/install.md` — install, setup, API and local config
+- `references/query-patterns.md` — more query examples and rg guidance
+- `references/troubleshooting.md` — common errors and fixes
+- `references/mcp.md` — optional MCP server usage

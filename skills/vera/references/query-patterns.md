@@ -1,56 +1,39 @@
 # Query Patterns
 
-## Prefer Vera For Intent Search
+## Good Vera Queries
 
-Good Vera queries:
+```sh
+vera search "authentication middleware"
+vera search "JWT token validation"
+vera search "parse_config"
+vera search "request rate limiting" --lang rust
+vera search "routes" --path "src/**/*.ts"
+vera search "handler" --type function --limit 5
+```
 
-- `vera search "authentication middleware"`
-- `vera search "JWT token validation"`
-- `vera search "parse_config"`
-- `vera search "request rate limiting" --lang rust`
-- `vera search "routes" --path "src/**/*.ts"`
-- `vera search "handler" --type function --limit 5`
+## Weak Vera Queries
 
-Weak Vera queries:
+Single generic words return noise:
 
 - `vera search "code"`
 - `vera search "utils"`
 - `vera search "file"`
 
-## Prefer `rg` For Exact Text
+Fix: describe what the code *does*, not what it *is*.
 
-Use `rg` instead of Vera when the task is:
+## When To Use `rg` Instead
 
-- exact string lookup
-- regex search
-- counting occurrences
-- simple find-and-replace prep
+- Exact string: `rg "EMBEDDING_MODEL_BASE_URL"`
+- Regex: `rg "TODO\\(" -n`
+- File name search: `rg --files | rg "docker"`
+- Counting occurrences
+- Bulk find-and-replace prep
 
-Examples:
+## Narrowing Results
 
-```sh
-rg "EMBEDDING_MODEL_BASE_URL"
-rg "TODO\\(" -n
-rg --files | rg "docker"
-```
+Add one filter at a time:
 
-## Search Strategy
-
-1. Start with the user's intent.
-2. If results are broad, add one filter at a time.
-3. If the user gives a likely symbol name, search that exact symbol next.
-4. If the user changes the code during the session, run `vera update .` before trusting stale results.
-
-## JSON Mode
-
-When the workflow needs parsing, use:
-
-```sh
-vera search "authentication logic" --json
-```
-
-That output is better for:
-
-- downstream scripts
-- agent post-processing
-- precise file/line extraction
+1. `--lang rust` — restrict to a language
+2. `--path "src/auth/**"` — restrict to a path glob
+3. `--type function` — restrict to symbol type
+4. `--limit 3` — fewer, higher-confidence results
