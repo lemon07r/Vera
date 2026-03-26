@@ -68,6 +68,22 @@ Two caveats matter here:
 - BM25-only search is fast because it runs locally with no embedding or reranker round trips.
 - API-backed hybrid search is slower because latency is dominated by remote model calls rather than local indexing or ranking work.
 
+## Vera vs ColGREP (Late Interaction)
+
+21 tasks across 4 repos (ripgrep, flask, fastify, turborepo). Vera used Jina v5 nano + Jina reranker on CUDA (RTX 4080). ColGREP used LateOn-Code models on CPU. Qwen3-8B API results are from the 17-task/3-repo benchmark (different task set, included for reference).
+
+| Metric | Vera (Jina CUDA) | ColGREP (149M) | ColGREP Edge (17M) | Qwen3-8B API* |
+|--------|------------------|----------------|--------------------|--------------:|
+| Recall@1 | 0.476 | **0.571** | 0.524 | 0.43 |
+| Recall@5 | **0.667** | **0.667** | 0.571 | 0.73 |
+| Recall@10 | 0.667 | **0.714** | **0.714** | 0.75 |
+| MRR@10 | 0.556 | **0.617** | 0.566 | 0.60 |
+| nDCG@10 | 0.509 | **0.561** | 0.524 | 0.81 |
+
+\* Qwen3-8B numbers are from a different task set (17 tasks, 3 repos) and are not directly comparable to the 21-task ColGREP columns. They are included to show how the API model performs on a similar workload.
+
+ColGREP's late-interaction (ColBERT) approach scores higher on Recall@1 and MRR despite using smaller models and no GPU. Vera's strengths are broader language support (63 vs 18), agent integration (skill files, MCP server), and hybrid BM25+vector fusion. ColGREP indexes are 30-40% larger due to multi-vector storage.
+
 ## Model Evaluation Notes
 
 We evaluated alternative models to see if better options exist for local inference.
