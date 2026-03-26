@@ -117,7 +117,6 @@ impl QueryFeatures {
                         "configuration",
                         "config",
                         "workspace",
-                        "pipeline",
                         "settings",
                     ],
                 ),
@@ -270,6 +269,10 @@ fn score_prior(features: &QueryFeatures, result: &SearchResult, stage: RankingSt
     let mut bonus = 0.0;
     let file_path = result.file_path.to_ascii_lowercase();
     let result_filename = file_name(&result.file_path).to_ascii_lowercase();
+    let allow_filename_semantic_bonus = matches!(
+        role,
+        FileRole::Source | FileRole::Config | FileRole::Unknown
+    );
     let path_fragment_match = features
         .path_fragment
         .as_deref()
@@ -342,10 +345,30 @@ fn score_prior(features: &QueryFeatures, result: &SearchResult, stage: RankingSt
     if features.query_type == QueryType::NaturalLanguage
         && !features.keywords.is_empty()
         && !features.wants_config_paths
+        && allow_filename_semantic_bonus
     {
         let normalized_stem = normalize_token(stem_overlap);
         if features.keywords.contains(&normalized_stem) {
             bonus += stage_weight * 0.6;
+        } else if features
+            .keywords
+            .iter()
+            .any(|keyword| shares_keyword_stem(&normalized_stem, keyword))
+        {
+            bonus += stage_weight * 0.6;
+        }
+    }
+
+    if features.query_type == QueryType::NaturalLanguage
+        && !features.keywords.is_empty()
+        && !features.wants_config_paths
+        && allow_filename_semantic_bonus
+    {
+        if let Some(symbol_name) = result.symbol_name.as_deref() {
+            let symbol_bonus = symbol_keyword_bonus(symbol_name, &features.keywords);
+            if symbol_bonus > 0.0 {
+                bonus += stage_weight * symbol_bonus;
+            }
         }
     }
 
@@ -578,6 +601,45 @@ fn looks_like_impl_block(result: &SearchResult) -> bool {
         .lines()
         .find(|line| !line.trim().is_empty())
         .is_some_and(|line| line.trim_start().starts_with("impl "))
+}
+
+fn shares_keyword_stem(left: &str, right: &str) -> bool {
+    common_prefix_len(left, right) >= 6
+}
+
+fn common_prefix_len(left: &str, right: &str) -> usize {
+    left.chars()
+        .zip(right.chars())
+        .take_while(|(l, r)| l == r)
+        .count()
+}
+
+fn symbol_keyword_bonus(symbol_name: &str, keywords: &[String]) -> f64 {
+    let tokens: Vec<String> = symbol_name
+        .split(|ch: char| !ch.is_ascii_alphanumeric())
+        .filter(|part| !part.is_empty())
+        .map(normalize_token)
+        .collect();
+
+    if tokens.is_empty() {
+        return 0.0;
+    }
+
+    if tokens
+        .iter()
+        .any(|token| keywords.iter().any(|keyword| keyword == token))
+    {
+        return 0.5;
+    }
+
+    if tokens
+        .iter()
+        .any(|token| keywords.iter().any(|keyword| shares_keyword_stem(token, keyword)))
+    {
+        return 0.32;
+    }
+
+    0.0
 }
 
 fn prefers_structural_chunks(features: &QueryFeatures) -> bool {
@@ -873,6 +935,29 @@ mod tests {
         );
 
         assert_eq!(ranked[0].file_path, "lib/validation.js");
+    }
+
+    #[test]
+    fn fuzzy_filename_stem_match_beats_unrelated_chunk() {
+        let results = vec![
+            make_result(
+                "src/flask/sansio/blueprints.py",
+                Some("BlueprintSetupState"),
+                Some(SymbolType::Class),
+                "class BlueprintSetupState:\n    pass",
+            ),
+            make_result(
+                "src/flask/templating.py",
+                Some("render_template"),
+                Some(SymbolType::Function),
+                "def render_template(template_name_or_list, **context):\n    return _render(...)",
+            ),
+        ];
+
+        let ranked =
+            apply_query_ranking("template rendering pipeline", results, RankingStage::Initial);
+
+        assert_eq!(ranked[0].file_path, "src/flask/templating.py");
     }
 
     #[test]

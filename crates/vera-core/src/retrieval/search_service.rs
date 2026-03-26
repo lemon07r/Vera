@@ -265,6 +265,23 @@ fn augment_exact_match_candidates(
                 .then(a.line_start.cmp(&b.line_start))
         });
         supplemental.extend(chunks.into_iter().map(chunk_to_result));
+
+        if wants_related_identifier_context(query) {
+            let mut related = store.get_chunks_by_symbol_name_substring(&identifier_case, 256)?;
+            related.retain(|chunk| {
+                chunk.symbol_name
+                    .as_deref()
+                    .is_some_and(|name| !name.eq_ignore_ascii_case(&identifier_case))
+            });
+            related.sort_by(|a, b| {
+                related_symbol_priority(query, a)
+                    .cmp(&related_symbol_priority(query, b))
+                    .then(path_depth(&a.file_path).cmp(&path_depth(&b.file_path)))
+                    .then(a.file_path.cmp(&b.file_path))
+                    .then(a.line_start.cmp(&b.line_start))
+            });
+            supplemental.extend(related.into_iter().take(24).map(chunk_to_result));
+        }
     }
 
     supplemental.extend(expand_file_context(query, &store, &results)?);
@@ -395,6 +412,62 @@ fn query_keywords(query: &str) -> Vec<String> {
         })
         .map(|token| token.trim_end_matches('s').to_string())
         .collect()
+}
+
+fn wants_related_identifier_context(query: &str) -> bool {
+    let lower = query.to_ascii_lowercase();
+    [
+        "implementations",
+        "implementation",
+        "registration",
+        "register",
+        "mounted",
+        "mounting",
+        "route",
+        "routes",
+        "across languages",
+        "across",
+    ]
+    .iter()
+    .any(|needle| lower.contains(needle))
+}
+
+fn related_symbol_priority(query: &str, chunk: &Chunk) -> (u8, u32) {
+    let lower_query = query.to_ascii_lowercase();
+    let lines = chunk.line_end.saturating_sub(chunk.line_start) + 1;
+    let priority = if lower_query.contains("implement") {
+        if chunk
+            .symbol_name
+            .as_deref()
+            .is_some_and(|name| name.to_ascii_lowercase().contains("impl"))
+        {
+            0
+        } else if matches!(chunk.symbol_type, Some(SymbolType::Struct | SymbolType::Class)) {
+            1
+        } else {
+            2
+        }
+    } else if lower_query.contains("register")
+        || lower_query.contains("mount")
+        || lower_query.contains("route")
+    {
+        if chunk.symbol_name.as_deref().is_some_and(|name| {
+            let lower = name.to_ascii_lowercase();
+            lower.contains("register") || lower.contains("route")
+        }) {
+            0
+        } else if matches!(chunk.symbol_type, Some(SymbolType::Class | SymbolType::Struct)) {
+            1
+        } else {
+            2
+        }
+    } else if matches!(chunk.symbol_type, Some(SymbolType::Trait | SymbolType::Interface)) {
+        0
+    } else {
+        1
+    };
+
+    (priority, lines)
 }
 
 fn file_matches_query_keywords(file_path: &str, keywords: &[String]) -> bool {
@@ -684,5 +757,61 @@ mod tests {
                 .unwrap();
 
         assert!(expanded.is_empty());
+    }
+
+    #[test]
+    fn related_identifier_context_adds_impl_block_matches() {
+        let dir = tempdir().unwrap();
+        let metadata_path = dir.path().join("metadata.db");
+        let store = MetadataStore::open(&metadata_path).unwrap();
+        store
+            .insert_chunks(&[
+                Chunk {
+                    id: "sink:0".to_string(),
+                    file_path: "crates/searcher/src/sink.rs".to_string(),
+                    line_start: 102,
+                    line_end: 223,
+                    content: "pub trait Sink {}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Trait),
+                    symbol_name: Some("Sink".to_string()),
+                },
+                Chunk {
+                    id: "sink:1".to_string(),
+                    file_path: "crates/printer/src/standard.rs".to_string(),
+                    line_start: 763,
+                    line_end: 868,
+                    content: "impl Sink for StandardSink {}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Block),
+                    symbol_name: Some("impl Sink for StandardSink".to_string()),
+                },
+            ])
+            .unwrap();
+
+        let results = vec![SearchResult {
+            file_path: "crates/searcher/src/sink.rs".to_string(),
+            line_start: 102,
+            line_end: 223,
+            content: "pub trait Sink {}".to_string(),
+            language: Language::Rust,
+            score: 1.0,
+            symbol_name: Some("Sink".to_string()),
+            symbol_type: Some(SymbolType::Trait),
+        }];
+
+        let augmented = augment_exact_match_candidates(
+            dir.path(),
+            "Sink trait and its implementations",
+            results,
+            RankingStage::Initial,
+        )
+        .unwrap();
+
+        assert!(
+            augmented.iter().any(|result| {
+                result.symbol_name.as_deref() == Some("impl Sink for StandardSink")
+            })
+        );
     }
 }

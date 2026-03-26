@@ -213,6 +213,36 @@ impl MetadataStore {
         Ok(chunks)
     }
 
+    /// Get chunks whose symbol names contain the given term (case-insensitive).
+    pub fn get_chunks_by_symbol_name_substring(
+        &self,
+        symbol_name: &str,
+        limit: usize,
+    ) -> Result<Vec<Chunk>> {
+        let mut stmt = self
+            .conn
+            .prepare_cached(
+                "SELECT id, file_path, line_start, line_end, content, language,
+                        symbol_type, symbol_name
+                 FROM chunks
+                 WHERE symbol_name IS NOT NULL
+                   AND instr(lower(symbol_name), lower(?1)) > 0
+                 ORDER BY file_path, line_start
+                 LIMIT ?2",
+            )
+            .context("failed to prepare substring symbol chunks query")?;
+
+        let rows = stmt
+            .query_map(params![symbol_name, limit as i64], |row| Ok(row_to_chunk(row)))
+            .context("failed to query chunks by symbol name substring")?;
+
+        let mut chunks = Vec::new();
+        for row in rows {
+            chunks.push(row.context("failed to read substring symbol chunk row")??);
+        }
+        Ok(chunks)
+    }
+
     /// Count total chunks in the store.
     pub fn chunk_count(&self) -> Result<u64> {
         let count: i64 = self
@@ -520,6 +550,18 @@ mod tests {
 
         let lower = store.get_chunks_by_symbol_name_case_sensitive("config").unwrap();
         assert!(lower.is_empty());
+    }
+
+    #[test]
+    fn get_chunks_by_symbol_name_substring() {
+        let store = MetadataStore::open_in_memory().unwrap();
+        store.insert_chunks(&sample_chunks()).unwrap();
+
+        let chunks = store
+            .get_chunks_by_symbol_name_substring("fig", 10)
+            .unwrap();
+        assert_eq!(chunks.len(), 1);
+        assert_eq!(chunks[0].id, "src/main.rs:1");
     }
 
     #[test]
