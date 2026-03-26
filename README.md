@@ -195,9 +195,9 @@ Indexing ~3,100 chunks (Vera's own codebase, 239 files):
 | Backend | Hardware | Time |
 |---------|----------|------|
 | CUDA | RTX 4080 | **~8 s** |
-| CPU | 12-core (Zen 4) | ~6 min |
+| CPU | Ryzen 5 7600X3D (6c/12t) | ~6 min |
 
-CPU times scale with core count. Older or lower-core CPUs will be slower — expect 10–15+ minutes on a 4-core machine for a codebase this size. GPU acceleration is recommended for large repos.
+CPU local inference is compute-bound — the 239M parameter model runs matrix multiplications for each chunk, and more cores with AVX-512/VNNI help. RAM speed has minimal impact since the quantized model fits in cache. Expect slower times on older CPUs without AVX-512 or with fewer cores. GPU acceleration is recommended for large repos.
 
 ### Any OpenAI-Compatible Endpoint
 

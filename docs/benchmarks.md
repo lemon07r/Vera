@@ -71,7 +71,7 @@ Two caveats matter here:
 ## Limits And Caveats
 
 - The public benchmark summary uses the stable 17-task subset. A larger polyglot benchmark was not included in the public summary because API rate limits made it unreliable.
-- The hybrid numbers above use remote embedding and reranking services. Local CUDA inference indexes the same repos in seconds (e.g., ~8s for ripgrep on an RTX 4080); CPU-only takes ~6 min on a 12-core Zen 4.
+- The hybrid numbers above use remote embedding and reranking services. Local CUDA inference indexes the same repos in seconds (e.g., ~8s for ripgrep on an RTX 4080); CPU-only takes ~6 min on a Ryzen 5 7600X3D (6c/12t).
 - Benchmark data in this repository is intended to show comparative behavior, not guarantee exact performance on another machine or codebase.
 
 ## Related Docs
