@@ -24,17 +24,22 @@ Make sure the `vera` CLI is available on `PATH`. The preferred install flow is `
 
 For those, use `rg`.
 
+## Gitignore
+
+Vera stores its index in a `.vera/` directory at the repository root. **Always ensure `.vera/` is listed in the project's `.gitignore`** before indexing. These files are local, machine-specific, and should never be committed.
+
 ## Workflow
 
 1. Make sure Vera is installed. If it is missing, follow `references/install.md`.
-2. Make sure the repository is indexed.
+2. Make sure `.vera/` is in the project's `.gitignore`. If not, add it.
+3. Make sure the repository is indexed.
    - First time: `vera index .`
    - After edits: `vera update .`
-3. Run a focused search.
+4. Run a focused search.
    - Semantic: `vera search "authentication middleware"`
    - Symbol oriented: `vera search "parse_config"`
    - Narrow results: add `--lang`, `--path`, `--type`, `--limit`
-4. Use `--json` when you need to parse results or feed them into another tool.
+5. Use `--json` when you need to parse results or feed them into another tool.
 
 ## Query Tips
 
