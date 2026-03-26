@@ -137,6 +137,7 @@ pub struct OpenAiProvider {
 impl OpenAiProvider {
     /// Create a new provider from configuration.
     pub fn new(config: EmbeddingProviderConfig) -> Result<Self> {
+        crate::init_tls();
         let client = reqwest::Client::builder()
             .timeout(config.timeout)
             .build()

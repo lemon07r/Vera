@@ -145,6 +145,7 @@ pub struct ApiReranker {
 impl ApiReranker {
     /// Create a new API-based reranker from configuration.
     pub fn new(config: RerankerConfig) -> Result<Self> {
+        crate::init_tls();
         let client = reqwest::Client::builder()
             .timeout(config.timeout)
             .build()

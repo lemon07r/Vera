@@ -34,7 +34,8 @@ tantivy = "0.25"
 clap = { version = "4", features = ["derive"] }
 
 # HTTP client (for embedding/reranker API calls)
-reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls-no-provider"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "logging", "std", "tls12"] }
 
 # Internal crates
 vera-core = { path = "crates/vera-core" }

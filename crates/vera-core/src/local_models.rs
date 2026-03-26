@@ -183,6 +183,7 @@ pub async fn ensure_ort_library() -> Result<PathBuf> {
     eprintln!("Downloading ONNX Runtime v{ORT_VERSION}...");
     eprintln!("  {url}");
 
+    crate::init_tls();
     let client = Client::new();
     let res = client
         .get(&url)
@@ -469,6 +470,7 @@ async fn ensure_model_file_impl(
     let url = format!("{}/{}/resolve/main/{}", base_url, repo_id, file_path);
     eprintln!("Downloading {}...", url);
 
+    crate::init_tls();
     let client = Client::new();
     let res = client.get(&url).send().await?.error_for_status()?;
     let total_size = res.content_length();
