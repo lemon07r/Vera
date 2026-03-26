@@ -1,6 +1,6 @@
 ---
 name: vera
-description: Semantic code search and symbol lookup across a local repository. Returns ranked code capsules (file path, line range, content, score, symbol info) as JSON. Use when the user asks to find where logic lives, what calls a function, how a feature is implemented, which files handle a concept, or wants to explore unfamiliar code by intent. Also use for symbol lookup when the exact name appears in many files. Do NOT use for exact literal search, regex, counting occurrences, or bulk find-and-replace. use rg for those.
+description: Semantic code search and symbol lookup across a local repository. Returns compact JSON with file path, line range, content, and optional symbol info. Use when the user asks to find where logic lives, what calls a function, how a feature is implemented, which files handle a concept, or wants to explore unfamiliar code by intent. Also use for symbol lookup when the exact name appears in many files. Do NOT use for exact literal search, regex, counting occurrences, or bulk find-and-replace. use rg for those.
 ---
 
 # Vera
@@ -13,32 +13,23 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
 2. Index the repo: `vera index .` (first time) or `vera update .` (after edits).
 3. Search:
    ```sh
-   vera search "authentication middleware" --json
+   vera search "authentication middleware"
    vera search "parse_config" --type function --limit 5
    vera search "database connection" --lang rust --path "src/**"
    ```
-4. Use the highest-scored results first. Pass `--json` for machine-readable output.
+4. Use the first results (they are ranked by relevance). Output is compact JSON by default.
 
 ## Example Output
 
 ```sh
-vera search "hybrid search" --limit 1 --json
+vera search "hybrid search" --limit 1
 ```
 
 ```json
-[{
-  "file_path": "crates/vera-core/src/retrieval/hybrid.rs",
-  "line_start": 58,
-  "line_end": 110,
-  "content": "pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }",
-  "language": "rust",
-  "score": 2.28,
-  "symbol_name": "search_hybrid",
-  "symbol_type": "function"
-}]
+[{"file_path":"crates/vera-core/src/retrieval/hybrid.rs","line_start":58,"line_end":110,"content":"pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }","symbol_name":"search_hybrid","symbol_type":"function"}]
 ```
 
-Fields: `file_path`, `line_start`, `line_end`, `content`, `language`, `score`, and optional `symbol_name`/`symbol_type`.
+Fields: `file_path`, `line_start`, `line_end`, `content`, and optional `symbol_name`/`symbol_type`. Use `--raw` for verbose output with all fields (score, language, nulls).
 
 ## Query Strategy
 

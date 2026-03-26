@@ -1,5 +1,7 @@
 //! Shared helper functions for CLI command implementations.
 
+use serde::Serialize;
+
 /// Load the effective runtime configuration.
 pub fn load_runtime_config() -> anyhow::Result<vera_core::config::VeraConfig> {
     crate::state::load_runtime_config()
@@ -28,12 +30,53 @@ pub fn resolve_backend_flags(
     vera_core::config::resolve_backend(explicit)
 }
 
+/// Compact JSON representation that drops low-signal fields (`score`, `language`)
+/// and omits null optional fields. This is the default for AI agent consumption.
+#[derive(Serialize)]
+struct CompactResult<'a> {
+    file_path: &'a str,
+    line_start: u32,
+    line_end: u32,
+    content: &'a str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    symbol_name: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    symbol_type: Option<&'a vera_core::types::SymbolType>,
+}
+
+impl<'a> CompactResult<'a> {
+    fn from_search_result(r: &'a vera_core::types::SearchResult) -> Self {
+        Self {
+            file_path: &r.file_path,
+            line_start: r.line_start,
+            line_end: r.line_end,
+            content: &r.content,
+            symbol_name: r.symbol_name.as_deref(),
+            symbol_type: r.symbol_type.as_ref(),
+        }
+    }
+}
+
 /// Output search results in human-readable or JSON format.
-pub fn output_results(results: &[vera_core::types::SearchResult], json_output: bool) {
-    if json_output {
-        let json = serde_json::to_string_pretty(results)
-            .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
-        println!("{json}");
+///
+/// When `raw` is true, outputs the full `SearchResult` with all fields
+/// (pretty-printed JSON or verbose human text). When false (default),
+/// outputs compact single-line JSON optimized for AI agent token budgets.
+pub fn output_results(results: &[vera_core::types::SearchResult], json_output: bool, raw: bool) {
+    if json_output || !raw {
+        if raw {
+            // --raw --json: full pretty-printed output with all fields
+            let json = serde_json::to_string_pretty(results)
+                .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
+            println!("{json}");
+        } else {
+            // Default: compact single-line JSON, no score/language/nulls
+            let compact: Vec<CompactResult> =
+                results.iter().map(CompactResult::from_search_result).collect();
+            let json = serde_json::to_string(&compact)
+                .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
+            println!("{json}");
+        }
     } else if results.is_empty() {
         println!("No results found.");
     } else {

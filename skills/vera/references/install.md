@@ -6,7 +6,7 @@
 npx -y @vera-ai/cli install   # or: bunx @vera-ai/cli install / uvx vera-ai install
 vera setup                      # downloads local ONNX models + runtime
 vera index .
-vera search "your query" --json
+vera search "your query"
 ```
 
 Combined setup + index: `vera setup --index .`

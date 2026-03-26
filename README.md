@@ -217,7 +217,7 @@ Only model calls leave your machine. Indexing, storage, and search remain local.
 vera search "authentication logic"
 vera search "error handling" --lang rust
 vera search "routes" --path "src/**/*.ts"
-vera search "handler" --type function --limit 5 --json
+vera search "handler" --type function --limit 5
 ```
 
 For tips on writing effective queries, filtering results, and when to use `rg` instead, see the [query guide](docs/query-guide.md).
@@ -250,26 +250,17 @@ If something isn't working, see [troubleshooting](docs/troubleshooting.md).
 
 The skill file at [skills/vera/SKILL.md](skills/vera/SKILL.md) teaches AI agents how to use Vera effectively. If you're an AI agent reading this repo directly, start with [AGENT-USAGE.md](AGENT-USAGE.md).
 
-Sample JSON output (`--json`):
+Output is compact JSON by default, optimized for AI agent token budgets. It omits `score`, `language`, and null fields:
 
 ```json
-[
-  {
-    "file_path": "src/auth/login.rs",
-    "line_start": 42,
-    "line_end": 68,
-    "content": "pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }",
-    "language": "rust",
-    "score": 0.847,
-    "symbol_name": "authenticate",
-    "symbol_type": "function"
-  }
-]
+[{"file_path":"src/auth/login.rs","line_start":42,"line_end":68,"content":"pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }","symbol_name":"authenticate","symbol_type":"function"}]
 ```
+
+Use `--raw` for pretty-printed JSON with all fields (score, language, nulls included).
 
 ## Benchmark Snapshot
 
-The public comparison snapshot below is older and reflects the `v0.4.0` era pipeline and nearby public runs, not the current `v0.7.0` retrieval quality. It is kept here because it compares Vera against other tools on the same workload. Since then, Vera's local 21-task release benchmark improved from `0.2421` to `0.7183` Recall@1 and from `0.5016` to `0.9095` MRR@10. More detail: [`v0.7.0` accuracy improvements](docs/releases/v0.7.0-accuracy-improvements.md).
+The public comparison snapshot below is older and reflects the `v0.4.0` era pipeline and nearby public runs, not the current `v0.7.0` retrieval quality. It is kept here because it compares Vera against other tools on the same workload. Since `v0.4.0`, Vera's internal 21-task benchmark improved roughly 55% on Recall@5 and 83% on nDCG@10. More detail: [`v0.7.0` accuracy improvements](docs/releases/v0.7.0-accuracy-improvements.md).
 
 The older public benchmark suite covers 17 tasks across three open-source codebases (`ripgrep`, `flask`, `fastify`) and five workload categories: symbol lookup, intent search, cross-file discovery, config lookup, and disambiguation.
 
@@ -287,8 +278,7 @@ The current local Jina CUDA ONNX release benchmark for `v0.7.0` uses 21 tasks ac
 | Version | Recall@1 | Recall@5 | Recall@10 | MRR@10 | nDCG@10 |
 |--------|----------|----------|-----------|--------|---------|
 | `v0.4.0` | 0.2421 | 0.5040 | 0.5159 | 0.5016 | 0.4570 |
-| `v0.5.0` | 0.3135 | 0.5635 | 0.6349 | 0.5452 | 0.5293 |
-| `v0.7.0` | **0.7183** | **0.7778** | **0.8254** | **0.9095** | **0.8361** |
+| `v0.7.0+` | **0.7183** | **0.7778** | **0.8254** | **0.9095** | **0.8361** |
 
 More detail: [docs/benchmarks.md](docs/benchmarks.md) · [benchmarks/indexing-performance.md](benchmarks/indexing-performance.md) · [benchmarks/reports/reproduction-guide.md](benchmarks/reports/reproduction-guide.md)
 

@@ -11,6 +11,7 @@ pub fn run(
     limit: Option<usize>,
     filters: &vera_core::types::SearchFilters,
     json_output: bool,
+    raw: bool,
     backend: InferenceBackend,
 ) -> anyhow::Result<()> {
     let mut config = load_runtime_config()?;
@@ -37,6 +38,6 @@ pub fn run(
         backend,
     )?;
 
-    output_results(&results, json_output);
+    output_results(&results, json_output, raw);
     Ok(())
 }

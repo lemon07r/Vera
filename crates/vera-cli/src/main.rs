@@ -44,6 +44,14 @@ struct Cli {
     /// Logs and diagnostics always go to stderr regardless of this flag.
     #[arg(long, global = true)]
     json: bool,
+
+    /// Output all fields with pretty-printed formatting.
+    ///
+    /// By default, search output is compact JSON optimized for AI agent
+    /// token budgets (drops score, language, and null fields). Use --raw
+    /// to get the full verbose output with all fields.
+    #[arg(long, global = true)]
+    raw: bool,
 }
 
 #[derive(Subcommand)]
@@ -493,7 +501,7 @@ fn main() {
                 onnx_jina_directml,
                 local,
             );
-            commands::search::run(&query, limit, &filters, cli.json, backend)
+            commands::search::run(&query, limit, &filters, cli.json, cli.raw, backend)
         }
         Commands::Update {
             path,

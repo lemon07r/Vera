@@ -34,6 +34,6 @@ vera index . --onnx-jina-cuda
 - **60+ languages** via tree-sitter AST parsing
 - **Hybrid search**: BM25 keyword + vector similarity, fused with Reciprocal Rank Fusion
 - **Cross-encoder reranking** for precision
-- **JSON output** with file paths, line ranges, code content, and relevance scores
+- **Compact JSON output** with file paths, line ranges, code content, and optional symbol info (use `--raw` for verbose output)
 
 For full documentation, see the [GitHub repo](https://github.com/lemon07r/Vera).

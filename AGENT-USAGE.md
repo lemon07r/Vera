@@ -7,7 +7,7 @@ Vera is a semantic code search CLI. For the full skill definition, see [`skills/
 ```bash
 npx -y @vera-ai/cli install   # install binary
 vera index .                    # index the repo (add .vera/ to .gitignore)
-vera search "query" --json      # search. returns ranked JSON capsules
+vera search "query"              # search. returns compact ranked JSON
 vera update .                   # after code changes
 ```
 
@@ -18,7 +18,7 @@ vera update .                   # after code changes
 
 ## Output
 
-`--json` returns capsules with `file_path`, `line_start`, `line_end`, `content`, `language`, `score`, and optional `symbol_name`/`symbol_type`. Use highest-ranked results first.
+Default output is compact single-line JSON with `file_path`, `line_start`, `line_end`, `content`, and optional `symbol_name`/`symbol_type`. Use `--raw` for verbose output with all fields (score, language, nulls).
 
 ## References
 

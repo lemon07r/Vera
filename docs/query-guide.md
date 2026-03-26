@@ -60,15 +60,9 @@ Vera is a semantic search tool. For these tasks, use `rg` (ripgrep) or plain gre
 - Counting occurrences
 - Find-and-replace prep
 
-## JSON Output
+## Output Format
 
-For scripting or piping results into other tools:
-
-```bash
-vera search "authentication logic" --json
-```
-
-The JSON output includes file path, line range, source content, symbol name, symbol type, language, and relevance score. See the [README](../README.md#usage) for a sample output.
+Output is compact single-line JSON by default, optimized for AI agent token budgets. It includes file path, line range, content, and optional symbol info. Use `--raw` for verbose pretty-printed JSON with all fields (score, language, nulls). See the [README](../README.md#usage) for a sample.
 
 ## Keeping Results Fresh
 

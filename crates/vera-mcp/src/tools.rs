@@ -8,9 +8,42 @@
 
 use std::path::Path;
 
+use serde::Serialize;
 use serde_json::Value;
 
 use crate::protocol::{ToolCallResult, ToolDefinition};
+
+/// Compact result representation for MCP tool responses.
+/// Drops `score` and `language` (inferrable from extension), omits null fields.
+#[derive(Serialize)]
+struct CompactResult<'a> {
+    file_path: &'a str,
+    line_start: u32,
+    line_end: u32,
+    content: &'a str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    symbol_name: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    symbol_type: Option<&'a vera_core::types::SymbolType>,
+}
+
+/// Serialize search results as compact single-line JSON.
+fn compact_results_json(
+    results: &[vera_core::types::SearchResult],
+) -> Result<String, serde_json::Error> {
+    let compact: Vec<CompactResult> = results
+        .iter()
+        .map(|r| CompactResult {
+            file_path: &r.file_path,
+            line_start: r.line_start,
+            line_end: r.line_end,
+            content: &r.content,
+            symbol_name: r.symbol_name.as_deref(),
+            symbol_type: r.symbol_type.as_ref(),
+        })
+        .collect();
+    serde_json::to_string(&compact)
+}
 
 /// Return the list of tools the server advertises.
 pub fn tool_definitions() -> Vec<ToolDefinition> {
@@ -164,7 +197,7 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         Err(e) => return ToolCallResult::error(format!("Search failed: {e}")),
     };
 
-    match serde_json::to_string_pretty(&results) {
+    match compact_results_json(&results) {
         Ok(json) => ToolCallResult::success(json),
         Err(e) => ToolCallResult::error(format!("Failed to serialize results: {e}")),
     }
