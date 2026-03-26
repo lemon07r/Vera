@@ -60,14 +60,16 @@ jobs:
         if: matrix.use_cross
         run: cargo install cross --locked
 
+      - name: Set up MSVC environment
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Set MSVC build flags
         if: runner.os == 'Windows'
         shell: bash
         run: |
           echo "CFLAGS=/MD" >> "$GITHUB_ENV"
           echo "CXXFLAGS=/MD" >> "$GITHUB_ENV"
-          echo "CC=cl" >> "$GITHUB_ENV"
-          echo "CXX=cl" >> "$GITHUB_ENV"
 
       - name: Build (native)
         if: ${{ !matrix.use_cross }}
