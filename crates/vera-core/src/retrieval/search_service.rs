@@ -638,7 +638,7 @@ fn wants_related_identifier_context(query: &str) -> bool {
     .any(|needle| lower.contains(needle))
 }
 
-fn exact_match_priority(query: &str, identifier_case: &str, chunk: &Chunk) -> (u8, u8, u8) {
+fn exact_match_priority(query: &str, identifier_case: &str, chunk: &Chunk) -> (u8, u8, u8, u8) {
     let exact_case = u8::from(chunk.symbol_name.as_deref() != Some(identifier_case));
     let implementation_rank =
         if query_mentions_implementation(query) && chunk_looks_like_impl(chunk) {
@@ -646,6 +646,7 @@ fn exact_match_priority(query: &str, identifier_case: &str, chunk: &Chunk) -> (u
         } else {
             1
         };
+    let visibility_rank = u8::from(!chunk_is_public_symbol(chunk));
     let type_mismatch_rank = if identifier_case
         .chars()
         .next()
@@ -661,7 +662,12 @@ fn exact_match_priority(query: &str, identifier_case: &str, chunk: &Chunk) -> (u
         0
     };
 
-    (exact_case, implementation_rank, type_mismatch_rank)
+    (
+        exact_case,
+        implementation_rank,
+        visibility_rank,
+        type_mismatch_rank,
+    )
 }
 
 fn related_symbol_priority(query: &str, chunk: &Chunk) -> (u8, u32) {
@@ -827,6 +833,22 @@ fn chunk_looks_like_impl(chunk: &Chunk) -> bool {
             .lines()
             .find(|line| !line.trim().is_empty())
             .is_some_and(|line| line.trim_start().starts_with("impl "))
+}
+
+fn chunk_is_public_symbol(chunk: &Chunk) -> bool {
+    chunk.content.lines().find_map(|line| {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            return None;
+        }
+        Some(
+            trimmed.starts_with("pub ")
+                || trimmed.starts_with("export ")
+                || trimmed.starts_with("public ")
+                || trimmed.starts_with("class ")
+                || trimmed.starts_with("interface "),
+        )
+    }) == Some(true)
 }
 
 fn is_structural_result(result: &SearchResult) -> bool {
@@ -1398,6 +1420,53 @@ mod tests {
                 result.symbol_name.as_deref() == Some("impl Sink for StandardSink")
             })
         );
+    }
+
+    #[test]
+    fn exact_identifier_prefers_public_type_definition() {
+        let dir = tempdir().unwrap();
+        let metadata_path = dir.path().join("metadata.db");
+        let store = MetadataStore::open(&metadata_path).unwrap();
+        store
+            .insert_chunks(&[
+                Chunk {
+                    id: "config:0".to_string(),
+                    file_path: "crates/core/search.rs".to_string(),
+                    line_start: 19,
+                    line_end: 25,
+                    content: "struct Config {\n    search_zip: bool,\n}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Struct),
+                    symbol_name: Some("Config".to_string()),
+                },
+                Chunk {
+                    id: "config:1".to_string(),
+                    file_path: "crates/regex/src/config.rs".to_string(),
+                    line_start: 25,
+                    line_end: 43,
+                    content: "pub(crate) struct Config {\n    pub(crate) multi_line: bool,\n}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Struct),
+                    symbol_name: Some("Config".to_string()),
+                },
+                Chunk {
+                    id: "config:2".to_string(),
+                    file_path: "crates/searcher/src/searcher/mod.rs".to_string(),
+                    line_start: 151,
+                    line_end: 185,
+                    content: "pub struct Config {\n    line_term: LineTerminator,\n    multi_line: bool,\n}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Struct),
+                    symbol_name: Some("Config".to_string()),
+                },
+            ])
+            .unwrap();
+
+        let augmented =
+            augment_exact_match_candidates(dir.path(), "Config", Vec::new(), RankingStage::Initial)
+                .unwrap();
+
+        assert_eq!(augmented[0].file_path, "crates/searcher/src/searcher/mod.rs");
     }
 
     #[test]

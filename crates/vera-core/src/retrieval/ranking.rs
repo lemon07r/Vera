@@ -581,7 +581,6 @@ fn is_public_symbol(result: &SearchResult) -> bool {
         }
         Some(
             trimmed.starts_with("pub ")
-                || trimmed.starts_with("pub(")
                 || trimmed.starts_with("export ")
                 || trimmed.starts_with("public ")
                 || trimmed.starts_with("class ")
