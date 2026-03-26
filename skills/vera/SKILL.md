@@ -26,8 +26,8 @@ For those, use `rg`.
 
 ## Workflow
 
-1. Make sure Vera is installed. If it is missing, follow `references/install.md`.
-2. Make sure the repository is indexed (add `.vera/` to `.gitignore` on first use).
+1. Make sure Vera is installed (add `.vera/` to `.gitignore` on first use). If it is missing, follow `references/install.md`.
+2. Make sure the repository is indexed.
    - First time: `vera index .`
    - After edits: `vera update .`
 3. Run a focused search.
