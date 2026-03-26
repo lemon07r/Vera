@@ -77,9 +77,13 @@ impl LocalEmbeddingProvider {
         })?;
 
         let session = task::spawn_blocking(move || {
-            let threads = std::thread::available_parallelism()
-                .map(|n| n.get().min(4))
+            let available = std::thread::available_parallelism()
+                .map(|n| n.get())
                 .unwrap_or(1);
+            // CPU EP benefits from all cores; GPU EPs do compute on device,
+            // so limit CPU threads to avoid contention.
+            let threads = if ep == OnnxExecutionProvider::Cpu { available } else { available.min(4) };
+            tracing::info!("ONNX session: {threads} intra-op threads (available: {available})");
             let builder = ort::session::builder::SessionBuilder::new()?
                 .with_optimization_level(GraphOptimizationLevel::Level3)?
                 .with_intra_threads(threads)?;
@@ -239,14 +243,24 @@ fn register_execution_provider(
     ep: OnnxExecutionProvider,
 ) -> ort::Result<ort::session::builder::SessionBuilder> {
     match ep {
-        OnnxExecutionProvider::Cpu => Ok(builder),
+        OnnxExecutionProvider::Cpu => {
+            tracing::info!("using CPU execution provider");
+            Ok(builder)
+        }
         OnnxExecutionProvider::Cuda => {
-            builder.with_execution_providers([ort::execution_providers::CUDAExecutionProvider::default().build()])
+            tracing::info!("registering CUDA execution provider");
+            let result = builder.with_execution_providers([ort::execution_providers::CUDAExecutionProvider::default().build()]);
+            if result.is_ok() {
+                tracing::info!("CUDA execution provider registered (will fall back to CPU if unavailable)");
+            }
+            result
         }
         OnnxExecutionProvider::Rocm => {
+            tracing::info!("registering ROCm execution provider");
             builder.with_execution_providers([ort::execution_providers::ROCmExecutionProvider::default().build()])
         }
         OnnxExecutionProvider::DirectMl => {
+            tracing::info!("registering DirectML execution provider");
             builder.with_execution_providers([ort::execution_providers::DirectMLExecutionProvider::default().build()])
         }
     }

@@ -27,7 +27,8 @@ pub fn run(path: &str, json_output: bool, backend: InferenceBackend) -> anyhow::
     let rt = tokio::runtime::Runtime::new()
         .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
 
-    let config = load_runtime_config()?;
+    let mut config = load_runtime_config()?;
+    config.adjust_for_backend(backend);
 
     let (provider, model_name) = rt.block_on(vera_core::embedding::create_dynamic_provider(
         &config, backend,

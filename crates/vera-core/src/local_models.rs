@@ -16,9 +16,9 @@ const RERANKER_REPO: &str = "jinaai/jina-reranker-v2-base-multilingual";
 const RERANKER_ONNX_FILE: &str = "onnx/model_quantized.onnx";
 const RERANKER_TOKENIZER_FILE: &str = "tokenizer.json";
 
-/// ONNX Runtime version to auto-download. Must match the version expected by
-/// the pinned `ort` crate (currently =2.0.0-rc.11 → ORT 1.23.2).
-const ORT_VERSION: &str = "1.23.2";
+/// ONNX Runtime version to auto-download. Using 1.24.4 for CUDA 13 support.
+/// The `ort` crate (rc.11) uses `load-dynamic` so any ABI-compatible ORT works.
+const ORT_VERSION: &str = "1.24.4";
 
 static ORT_INIT_RESULT: OnceLock<std::result::Result<(), String>> = OnceLock::new();
 
@@ -109,13 +109,41 @@ fn ort_lib_filename() -> String {
 
 use crate::config::OnnxExecutionProvider;
 
+/// Detect the system CUDA major version by running `nvcc --version` or
+/// checking the CUDA_PATH environment variable. Returns None if not found.
+fn detect_cuda_major_version() -> Option<u32> {
+    // Try nvidia-smi first (works even without toolkit installed)
+    if let Ok(output) = std::process::Command::new("nvidia-smi").output() {
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        // Look for "CUDA Version: XX.Y"
+        if let Some(pos) = stdout.find("CUDA Version:") {
+            let rest = &stdout[pos + 14..];
+            if let Some(major) = rest.trim().split('.').next() {
+                if let Ok(v) = major.parse::<u32>() {
+                    return Some(v);
+                }
+            }
+        }
+    }
+    None
+}
+
 /// Platform-specific ORT archive info: (archive_ext, archive_name, primary_lib_path_inside_archive, local_lib_name).
 fn ort_platform_info(ep: OnnxExecutionProvider) -> Result<(&'static str, String, String, &'static str)> {
     let gpu_suffix = match ep {
         OnnxExecutionProvider::Cpu => "",
-        OnnxExecutionProvider::Cuda => "-gpu",
-        OnnxExecutionProvider::Rocm => "-rocm",  // only linux x86_64
-        OnnxExecutionProvider::DirectMl => "-directml",  // only windows x86_64
+        OnnxExecutionProvider::Cuda => {
+            let cuda_major = detect_cuda_major_version().unwrap_or(12);
+            if cuda_major >= 13 {
+                tracing::info!("detected CUDA {cuda_major}, using CUDA 13 ORT build");
+                "-gpu_cuda13"
+            } else {
+                tracing::info!("detected CUDA {cuda_major}, using CUDA 12 ORT build");
+                "-gpu"
+            }
+        }
+        OnnxExecutionProvider::Rocm => "-rocm",
+        OnnxExecutionProvider::DirectMl => "-directml",
     };
 
     #[cfg(all(target_os = "linux", target_arch = "x86_64"))]

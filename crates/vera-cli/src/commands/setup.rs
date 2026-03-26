@@ -52,7 +52,11 @@ pub fn run(
             .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
         let prefetched = rt.block_on(vera_core::local_models::prefetch_default_local_models_for_ep(ep))?;
         models_prefetched = prefetched.len();
-        onnx_runtime_ready = vera_core::local_models::ensure_ort_runtime(None).is_ok();
+        // Use the downloaded library path (first prefetched file) for the readiness check.
+        onnx_runtime_ready = vera_core::local_models::ensure_ort_runtime(
+            prefetched.first().map(|p| p.as_path()),
+        )
+        .is_ok();
     } else {
         let embedding = read_required_api_env(
             "EMBEDDING_MODEL_BASE_URL",

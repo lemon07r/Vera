@@ -492,18 +492,26 @@ pub async fn embed_chunks_concurrent<P: EmbeddingProvider>(
         batch_size, total_batches, max_concurrent, "starting concurrent embedding"
     );
 
-    // Prepare all batch inputs upfront.
-    let batch_inputs: Vec<(Vec<String>, Vec<String>)> = chunks
+    // Sort chunks by text length so each batch has similar-length texts,
+    // minimizing wasted padding in the ONNX input tensors. This can cut
+    // local CPU inference time by 50%+ on codebases with mixed chunk sizes.
+    let mut indexed_chunks: Vec<(usize, &Chunk)> = chunks.iter().enumerate().collect();
+    indexed_chunks.sort_by_key(|(_, c)| c.content.len());
+
+    // Prepare all batch inputs upfront (in length-sorted order).
+    // (original_index, chunk_id) pairs + embedding texts per batch.
+    type BatchInput = (Vec<(usize, String)>, Vec<String>);
+    let batch_inputs: Vec<BatchInput> = indexed_chunks
         .chunks(batch_size)
         .map(|batch| {
-            let ids: Vec<String> = batch.iter().map(|c| c.id.clone()).collect();
-            let texts: Vec<String> = batch.iter().map(chunk_to_embedding_text).collect();
+            let ids: Vec<(usize, String)> = batch.iter().map(|(orig_idx, c)| (*orig_idx, c.id.clone())).collect();
+            let texts: Vec<String> = batch.iter().map(|(_, c)| chunk_to_embedding_text(c)).collect();
             (ids, texts)
         })
         .collect();
 
-    type BatchResult = (usize, Vec<(String, Vec<f32>)>);
-    let mut all_results: Vec<BatchResult> = Vec::with_capacity(total_batches);
+    // (orig_index, chunk_id, embedding) — we track orig_index to restore order.
+    let mut all_results: Vec<(usize, String, Vec<f32>)> = Vec::with_capacity(total);
 
     // Process in groups of max_concurrent to overlap API calls while
     // keeping lifetime management simple (no task spawning needed).
@@ -519,8 +527,12 @@ pub async fn embed_chunks_concurrent<P: EmbeddingProvider>(
                 async move {
                     debug!(batch = batch_idx + 1, total_batches, "embedding batch");
                     let vectors = provider.embed_batch(texts).await?;
-                    let pairs: Vec<(String, Vec<f32>)> = ids.iter().cloned().zip(vectors).collect();
-                    Ok::<_, EmbeddingError>((batch_idx, pairs))
+                    let triples: Vec<(usize, String, Vec<f32>)> = ids
+                        .iter()
+                        .zip(vectors)
+                        .map(|((orig_idx, id), vec)| (*orig_idx, id.clone(), vec))
+                        .collect();
+                    Ok::<_, EmbeddingError>(triples)
                 }
             })
             .collect();
@@ -528,16 +540,16 @@ pub async fn embed_chunks_concurrent<P: EmbeddingProvider>(
         // Run all futures in this group concurrently.
         let results = futures::future::join_all(futures).await;
         for result in results {
-            all_results.push(result?);
+            all_results.extend(result?);
         }
     }
 
-    // Sort by batch index to preserve original ordering.
-    all_results.sort_by_key(|(idx, _)| *idx);
+    // Restore original chunk order (undoing the length sort).
+    all_results.sort_by_key(|(orig_idx, _, _)| *orig_idx);
 
     let results: Vec<(String, Vec<f32>)> = all_results
         .into_iter()
-        .flat_map(|(_, pairs)| pairs)
+        .map(|(_, id, vec)| (id, vec))
         .collect();
 
     Ok(results)

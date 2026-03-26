@@ -133,7 +133,9 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         .and_then(|v| v.as_u64())
         .map(|v| v as usize);
 
-    let config = vera_core::config::VeraConfig::default();
+    let backend = vera_core::config::resolve_backend(None);
+    let mut config = vera_core::config::VeraConfig::default();
+    config.adjust_for_backend(backend);
     let result_limit = limit.unwrap_or(config.retrieval.default_limit);
 
     // Look for index in current working directory.
@@ -148,8 +150,6 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
             "No index found in current directory. Run index_project first.",
         );
     }
-
-    let backend = vera_core::config::resolve_backend(None);
 
     // Use the shared search service from vera-core.
     let results = match vera_core::retrieval::search_service::execute_search(
@@ -186,8 +186,8 @@ fn handle_index_project(args: &Value) -> ToolCallResult {
     }
 
     let backend = vera_core::config::resolve_backend(None);
-
-    let config = vera_core::config::VeraConfig::default();
+    let mut config = vera_core::config::VeraConfig::default();
+    config.adjust_for_backend(backend);
 
     let rt = match tokio::runtime::Runtime::new() {
         Ok(r) => r,
@@ -233,8 +233,8 @@ fn handle_update_project(args: &Value) -> ToolCallResult {
     }
 
     let backend = vera_core::config::resolve_backend(None);
-
-    let config = vera_core::config::VeraConfig::default();
+    let mut config = vera_core::config::VeraConfig::default();
+    config.adjust_for_backend(backend);
 
     let rt = match tokio::runtime::Runtime::new() {
         Ok(r) => r,

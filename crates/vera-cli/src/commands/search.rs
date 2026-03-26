@@ -13,7 +13,8 @@ pub fn run(
     json_output: bool,
     backend: InferenceBackend,
 ) -> anyhow::Result<()> {
-    let config = load_runtime_config()?;
+    let mut config = load_runtime_config()?;
+    config.adjust_for_backend(backend);
     let result_limit = limit.unwrap_or(config.retrieval.default_limit);
 
     let cwd = std::env::current_dir()

@@ -179,6 +179,30 @@ pub fn is_local_mode() -> bool {
         .unwrap_or(false)
 }
 
+impl VeraConfig {
+    /// Adjust embedding parameters to match the actual backend.
+    ///
+    /// Saved configs may have API-mode defaults (batch 128, concurrency 8)
+    /// even when the user switches to local mode. CPU inference needs small
+    /// batches; GPU can handle larger ones.
+    pub fn adjust_for_backend(&mut self, backend: InferenceBackend) {
+        match backend {
+            InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu) => {
+                self.embedding.batch_size = self.embedding.batch_size.min(4);
+                self.embedding.max_concurrent_requests = self.embedding.max_concurrent_requests.min(1);
+            }
+            InferenceBackend::OnnxJina(_) => {
+                // GPU EPs benefit from larger batches but shouldn't exceed 32
+                // (VRAM-limited for the nano model). Single concurrent request
+                // since the GPU is already saturated by one batch.
+                self.embedding.batch_size = self.embedding.batch_size.min(32);
+                self.embedding.max_concurrent_requests = self.embedding.max_concurrent_requests.min(1);
+            }
+            InferenceBackend::Api => {}
+        }
+    }
+}
+
 /// Resolve the effective inference backend from a CLI flag or environment.
 pub fn resolve_backend(backend: Option<InferenceBackend>) -> InferenceBackend {
     if let Some(b) = backend {
