@@ -184,7 +184,7 @@ Vera downloads the matching ONNX Runtime build automatically. The same flag work
 
 #### Local Inference Speed
 
-Local mode runs neural networks (239M embedding + 278M reranker) on your machine. The indexing time is compute-bound matrix math, not file I/O. These models are designed for GPU inference; CPU works but is slow. After the initial index, `vera update .` only re-embeds changed files, so subsequent updates are fast.
+Local mode runs neural networks (239M embedding + 278M reranker) on your machine. The indexing time is compute-bound matrix math, not file I/O. These models are designed for GPU inference; CPU works but will be slow indexing a codebase for the first time. After the initial index, `vera update .` only re-embeds changed files, so subsequent updates will be fast enough even for CPU.
 
 | Backend | Hardware | Time | Notes |
 |---------|----------|------|-------|
