@@ -35,10 +35,10 @@ From `v0.4.0` to `v0.6.0`, Vera improved by:
 
 Committed artifacts:
 
-- [v0.4.0 benchmark](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.4.0-jina-cuda-onnx.json)
-- [v0.5.0 benchmark](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.5.0-jina-cuda-onnx.json)
-- [v0.6.0 benchmark](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.6.0-jina-cuda-onnx.json)
-- [Accuracy improvements from `v0.4.0` to `v0.6.0`](/home/lamim/Development/Tools/Vera/docs/accuracy-improvements-v0.4-to-v0.6.md)
+- [v0.4.0 benchmark](../benchmarks/results/local-binaries/v0.4.0-jina-cuda-onnx.json)
+- [v0.5.0 benchmark](../benchmarks/results/local-binaries/v0.5.0-jina-cuda-onnx.json)
+- [v0.6.0 benchmark](../benchmarks/results/local-binaries/v0.6.0-jina-cuda-onnx.json)
+- [Accuracy improvements from `v0.4.0` to `v0.6.0`](./accuracy-improvements-v0.4-to-v0.6.md)
 
 ### Current Performance Snapshot
 
@@ -125,6 +125,6 @@ From the same older benchmark set:
 
 ## Related Docs
 
-- [Accuracy improvements from `v0.4.0` to `v0.6.0`](/home/lamim/Development/Tools/Vera/docs/accuracy-improvements-v0.4-to-v0.6.md)
-- [Indexing performance note](/home/lamim/Development/Tools/Vera/benchmarks/indexing-performance.md)
-- [Reproduction guide](/home/lamim/Development/Tools/Vera/benchmarks/reports/reproduction-guide.md)
+- [Accuracy improvements from `v0.4.0` to `v0.6.0`](./accuracy-improvements-v0.4-to-v0.6.md)
+- [Indexing performance note](../benchmarks/indexing-performance.md)
+- [Reproduction guide](../benchmarks/reports/reproduction-guide.md)

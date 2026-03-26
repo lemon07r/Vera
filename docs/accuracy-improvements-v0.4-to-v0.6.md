@@ -22,9 +22,9 @@ These three versions were measured with the same local-binary benchmark harness,
 
 Benchmark artifacts:
 
-- [v0.4.0](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.4.0-jina-cuda-onnx.json)
-- [v0.5.0](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.5.0-jina-cuda-onnx.json)
-- [v0.6.0](/home/lamim/Development/Tools/Vera/benchmarks/results/local-binaries/v0.6.0-jina-cuda-onnx.json)
+- [v0.4.0](../benchmarks/results/local-binaries/v0.4.0-jina-cuda-onnx.json)
+- [v0.5.0](../benchmarks/results/local-binaries/v0.5.0-jina-cuda-onnx.json)
+- [v0.6.0](../benchmarks/results/local-binaries/v0.6.0-jina-cuda-onnx.json)
 
 ## What Changed
 
@@ -90,4 +90,4 @@ That makes the current benchmark numbers easier to trust than earlier internal r
 
 The older public comparison tables in the README are still useful because they compare Vera against other tools on the same workload. They are not the best picture of Vera's current quality.
 
-If you want the current state of the retrieval pipeline, use the `v0.6.0` local benchmark numbers in [docs/benchmarks.md](/home/lamim/Development/Tools/Vera/docs/benchmarks.md). If you want the historical comparison, keep the older public snapshot in view as a baseline.
+If you want the current state of the retrieval pipeline, use the `v0.6.0` local benchmark numbers in the [benchmark overview](./benchmarks.md). If you want the historical comparison, keep the older public snapshot in view as a baseline.
