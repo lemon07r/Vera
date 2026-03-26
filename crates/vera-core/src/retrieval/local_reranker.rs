@@ -10,6 +10,7 @@ use tokio::task;
 const RERANKER_REPO: &str = "jinaai/jina-reranker-v2-base-multilingual";
 const ONNX_FILE: &str = "onnx/model_quantized.onnx";
 const TOKENIZER_FILE: &str = "tokenizer.json";
+const MAX_RERANK_BATCH_SIZE: usize = 8;
 
 #[derive(Clone)]
 pub struct LocalReranker {
@@ -87,11 +88,12 @@ impl LocalReranker {
     }
 
     #[allow(clippy::needless_range_loop)]
-    fn do_rerank(&self, query: &str, documents: &[String]) -> Result<Vec<RerankScore>> {
-        if documents.is_empty() {
-            return Ok(Vec::new());
-        }
-
+    fn do_rerank_batch(
+        &self,
+        query: &str,
+        documents: &[String],
+        index_offset: usize,
+    ) -> Result<Vec<RerankScore>> {
         let mut encodings = Vec::with_capacity(documents.len());
         for doc in documents {
             let encoding = self
@@ -152,7 +154,7 @@ impl LocalReranker {
             for i in 0..batch_size {
                 let score = data[i * dim];
                 results.push(RerankScore {
-                    index: i,
+                    index: index_offset + i,
                     relevance_score: score as f64,
                 });
             }
@@ -160,7 +162,7 @@ impl LocalReranker {
             for i in 0..batch_size {
                 let score = data[i];
                 results.push(RerankScore {
-                    index: i,
+                    index: index_offset + i,
                     relevance_score: score as f64,
                 });
             }
@@ -175,6 +177,26 @@ impl LocalReranker {
         });
 
         Ok(results)
+    }
+
+    fn do_rerank(&self, query: &str, documents: &[String]) -> Result<Vec<RerankScore>> {
+        if documents.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut combined = Vec::with_capacity(documents.len());
+        for (batch_index, batch) in documents.chunks(MAX_RERANK_BATCH_SIZE).enumerate() {
+            let mut scores =
+                self.do_rerank_batch(query, batch, batch_index * MAX_RERANK_BATCH_SIZE)?;
+            combined.append(&mut scores);
+        }
+
+        combined.sort_by(|a, b| {
+            b.relevance_score
+                .partial_cmp(&a.relevance_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        Ok(combined)
     }
 }
 

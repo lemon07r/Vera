@@ -190,7 +190,10 @@ impl MetadataStore {
     }
 
     /// Get all chunks whose symbol name matches exactly (case-sensitive).
-    pub fn get_chunks_by_symbol_name_case_sensitive(&self, symbol_name: &str) -> Result<Vec<Chunk>> {
+    pub fn get_chunks_by_symbol_name_case_sensitive(
+        &self,
+        symbol_name: &str,
+    ) -> Result<Vec<Chunk>> {
         let mut stmt = self
             .conn
             .prepare_cached(
@@ -233,7 +236,9 @@ impl MetadataStore {
             .context("failed to prepare substring symbol chunks query")?;
 
         let rows = stmt
-            .query_map(params![symbol_name, limit as i64], |row| Ok(row_to_chunk(row)))
+            .query_map(params![symbol_name, limit as i64], |row| {
+                Ok(row_to_chunk(row))
+            })
             .context("failed to query chunks by symbol name substring")?;
 
         let mut chunks = Vec::new();
@@ -544,11 +549,15 @@ mod tests {
         let store = MetadataStore::open_in_memory().unwrap();
         store.insert_chunks(&sample_chunks()).unwrap();
 
-        let chunks = store.get_chunks_by_symbol_name_case_sensitive("Config").unwrap();
+        let chunks = store
+            .get_chunks_by_symbol_name_case_sensitive("Config")
+            .unwrap();
         assert_eq!(chunks.len(), 1);
         assert_eq!(chunks[0].id, "src/main.rs:1");
 
-        let lower = store.get_chunks_by_symbol_name_case_sensitive("config").unwrap();
+        let lower = store
+            .get_chunks_by_symbol_name_case_sensitive("config")
+            .unwrap();
         assert!(lower.is_empty());
     }
 

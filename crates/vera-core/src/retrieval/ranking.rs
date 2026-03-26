@@ -113,12 +113,7 @@ impl QueryFeatures {
             wants_config_paths: is_path_weighted_query(query)
                 || mentions_any(
                     &lower,
-                    &[
-                        "configuration",
-                        "config",
-                        "workspace",
-                        "settings",
-                    ],
+                    &["configuration", "config", "workspace", "settings"],
                 ),
             wants_multi_file_diversity: !is_path_weighted_query(query)
                 && (query_type == QueryType::NaturalLanguage
@@ -632,10 +627,11 @@ fn symbol_keyword_bonus(symbol_name: &str, keywords: &[String]) -> f64 {
         return 0.5;
     }
 
-    if tokens
-        .iter()
-        .any(|token| keywords.iter().any(|keyword| shares_keyword_stem(token, keyword)))
-    {
+    if tokens.iter().any(|token| {
+        keywords
+            .iter()
+            .any(|keyword| shares_keyword_stem(token, keyword))
+    }) {
         return 0.32;
     }
 
@@ -654,7 +650,9 @@ fn structural_chunk_bias(result: &SearchResult) -> f64 {
     let mut bonus = 0.0;
 
     match result.symbol_type {
-        Some(SymbolType::Struct | SymbolType::Class | SymbolType::Trait | SymbolType::Interface) => {
+        Some(
+            SymbolType::Struct | SymbolType::Class | SymbolType::Trait | SymbolType::Interface,
+        ) => {
             bonus += 0.38;
         }
         Some(SymbolType::Enum | SymbolType::Module) => {
@@ -954,8 +952,11 @@ mod tests {
             ),
         ];
 
-        let ranked =
-            apply_query_ranking("template rendering pipeline", results, RankingStage::Initial);
+        let ranked = apply_query_ranking(
+            "template rendering pipeline",
+            results,
+            RankingStage::Initial,
+        );
 
         assert_eq!(ranked[0].file_path, "src/flask/templating.py");
     }
