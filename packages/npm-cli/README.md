@@ -1,4 +1,4 @@
-# vera-ai
+# @vera-ai/cli
 
 Code search for AI agents. Vera indexes your codebase using tree-sitter parsing and hybrid search (BM25 + vector similarity + cross-encoder reranking), then returns ranked code snippets as structured JSON.
 
@@ -7,21 +7,21 @@ This package downloads and wraps the native Vera binary for your platform.
 ## Install
 
 ```bash
-pip install vera-ai
+npm install -g @vera-ai/cli
 ```
 
 ## Usage
 
 ```bash
 # Index a project
-vera-ai index .
+vera index .
 
 # Search
-vera-ai search "authentication middleware"
+vera search "authentication middleware"
 
 # Local mode (no API keys needed — downloads models automatically)
-vera-ai index . --local
-vera-ai search "error handling" --local
+vera index . --local
+vera search "error handling" --local
 ```
 
 ## What you get

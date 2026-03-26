@@ -14,7 +14,8 @@
   },
   "bin": "./bin/vera.js",
   "files": [
-    "bin/vera.js"
+    "bin/vera.js",
+    "README.md"
   ],
   "keywords": [
     "vera",
