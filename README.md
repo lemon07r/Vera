@@ -269,7 +269,20 @@ Sample JSON output (`--json`):
 
 ## Benchmark Snapshot
 
-Current release benchmark: 21 tasks across four open-source codebases (`ripgrep`, `flask`, `fastify`, `turborepo`), using the local Jina embedding + reranker stack on CUDA. This is the benchmark used to recover the `v0.5.0` retrieval regressions and gate `v0.6.0`.
+The public comparison snapshot below is older and reflects the `v0.4.0` era pipeline and nearby public runs, not the current `v0.6.0` retrieval quality. It is kept here because it compares Vera against other tools on the same workload. Since then, Vera's local 21-task release benchmark improved from `0.2421` to `0.8135` Recall@1 and from `0.5016` to `1.0000` MRR@10. Full recovery details: [docs/accuracy-recovery-v0.4-to-v0.6.md](docs/accuracy-recovery-v0.4-to-v0.6.md).
+
+The older public benchmark suite covers 17 tasks across three open-source codebases (`ripgrep`, `flask`, `fastify`) and five workload categories: symbol lookup, intent search, cross-file discovery, config lookup, and disambiguation.
+
+| Metric | ripgrep | cocoindex-code | vector-only | Vera hybrid |
+|--------|---------|----------------|-------------|-------------|
+| Recall@5 | 0.2817 | 0.3730 | 0.4921 | **0.6961** |
+| Recall@10 | 0.3651 | 0.5040 | 0.6627 | **0.7549** |
+| MRR@10 | 0.2625 | 0.3517 | 0.2814 | **0.6009** |
+| nDCG@10 | 0.2929 | 0.5206 | 0.7077 | **0.8008** |
+
+#### Recovery Since `v0.4.0`
+
+The current local Jina CUDA ONNX release benchmark for `v0.6.0` uses 21 tasks across `ripgrep`, `flask`, `fastify`, and `turborepo`:
 
 | Version | Recall@1 | Recall@5 | Recall@10 | MRR@10 | nDCG@10 |
 |--------|----------|----------|-----------|--------|---------|
@@ -277,15 +290,7 @@ Current release benchmark: 21 tasks across four open-source codebases (`ripgrep`
 | `v0.5.0` | 0.3135 | 0.5635 | 0.6349 | 0.5452 | 0.5293 |
 | `v0.6.0` | **0.8135** | **1.0000** | **1.0000** | **1.0000** | **0.9832** |
 
-`Recall@1 = 0.8135` is the ceiling for this suite because several tasks have multiple ground-truth targets, so perfect top-1 recall is not possible on this benchmark.
-
-#### Latency And Indexing
-
-- Search latency: `3731 ms` p50, `5100 ms` p95
-- Combined indexing time for all 4 repos: `~70 s`
-- Same benchmark harness and pinned corpora were used for all three versions above
-
-The older 17-task public API snapshot is still documented in [docs/benchmarks.md](docs/benchmarks.md). The full recovery write-up for `v0.4.0` to `v0.6.0` is in [docs/accuracy-recovery-v0.4-to-v0.6.md](docs/accuracy-recovery-v0.4-to-v0.6.md).
+`Recall@1 = 0.8135` is the ceiling for that suite because several tasks have multiple ground-truth targets.
 
 More detail: [docs/benchmarks.md](docs/benchmarks.md) · [benchmarks/indexing-performance.md](benchmarks/indexing-performance.md) · [benchmarks/reports/reproduction-guide.md](benchmarks/reports/reproduction-guide.md)
 
