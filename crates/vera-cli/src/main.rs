@@ -130,15 +130,16 @@ enum Commands {
     /// indexes a repository immediately.
     #[command(
         long_about = "Persist a preferred model backend and bootstrap first-run state.\n\n\
-                      By default `vera setup` downloads Vera's built-in local models. Use \
-                      `--api` to persist OpenAI-compatible endpoint credentials from the \
-                      current shell environment instead.\n\n\
+                      Running `vera setup` with no flags shows an interactive backend menu \
+                      with auto-detected GPU as the default. Pass a --onnx-jina-* flag or \
+                      --api to skip the menu.\n\n\
                       Vera always keeps the index local in `.vera/`. The choice here only \
                       changes where embeddings and reranking are computed.\n\n\
                       Examples:\n  \
-                      vera setup                       # Download built-in local models\n  \
-                      vera setup --index .             # Configure defaults and index cwd\n  \
-                      vera setup --api                 # Persist API credentials from env"
+                      vera setup                       # Interactive backend selection\n  \
+                      vera setup --onnx-jina-cuda      # NVIDIA GPU (skip menu)\n  \
+                      vera setup --api                 # Persist API credentials from env\n  \
+                      vera setup --yes                 # Auto-detect GPU, no prompts"
     )]
     Setup {
         /// Use local Jina ONNX models on CPU.

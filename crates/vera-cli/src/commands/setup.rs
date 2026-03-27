@@ -1,5 +1,7 @@
 //! `vera setup` — persist a preferred Vera mode and bootstrap first-run state.
 
+use std::io::Write;
+
 use anyhow::{Context, bail};
 use serde::Serialize;
 use vera_core::config::{InferenceBackend, OnnxExecutionProvider};
@@ -25,11 +27,21 @@ pub fn run(
     json_output: bool,
     yes: bool,
 ) -> anyhow::Result<()> {
-    // Resolve: explicit backend flag wins, then --api, then default to local CPU.
+    // Resolve: explicit backend flag wins, then --api, then interactive menu.
     let effective_backend = if api {
         InferenceBackend::Api
+    } else if let Some(b) = backend {
+        b
+    } else if json_output || yes {
+        // Non-interactive: auto-detect GPU, fall back to CPU.
+        let detected = detect_gpu();
+        if !json_output {
+            eprintln!("Auto-detected backend: {detected}. Use a --onnx-jina-* flag to override.");
+        }
+        detected
     } else {
-        backend.unwrap_or(InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu))
+        // Interactive: show backend selection menu.
+        prompt_backend()?
     };
 
     let use_local = effective_backend.is_local();
@@ -112,6 +124,103 @@ pub fn run(
     }
 
     Ok(())
+}
+
+/// Probe the system for a usable GPU and return the best local backend.
+/// Falls back to CPU if nothing is detected.
+fn detect_gpu() -> InferenceBackend {
+    // NVIDIA: check for nvidia-smi
+    if std::process::Command::new("nvidia-smi")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .is_ok_and(|s| s.success())
+    {
+        return InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda);
+    }
+
+    // Apple Silicon: macOS + aarch64
+    if cfg!(target_os = "macos") && cfg!(target_arch = "aarch64") {
+        return InferenceBackend::OnnxJina(OnnxExecutionProvider::CoreMl);
+    }
+
+    // AMD ROCm: check for rocminfo (Linux only)
+    if cfg!(target_os = "linux")
+        && std::process::Command::new("rocminfo")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success())
+    {
+        return InferenceBackend::OnnxJina(OnnxExecutionProvider::Rocm);
+    }
+
+    // Intel OpenVINO: check for Intel GPU via sycl-ls or /dev/dri/renderD*
+    if cfg!(target_os = "linux") && cfg!(target_arch = "x86_64") {
+        let has_intel_gpu = std::path::Path::new("/dev/dri").exists()
+            && std::process::Command::new("sh")
+                .args(["-c", "ls /dev/dri/renderD* 2>/dev/null"])
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .is_ok_and(|s| s.success());
+        if has_intel_gpu {
+            // Only suggest OpenVINO if no discrete GPU was found above
+            return InferenceBackend::OnnxJina(OnnxExecutionProvider::OpenVino);
+        }
+    }
+
+    // Windows: DirectML works with any DirectX 12 GPU
+    if cfg!(target_os = "windows") {
+        return InferenceBackend::OnnxJina(OnnxExecutionProvider::DirectMl);
+    }
+
+    InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu)
+}
+
+/// Show an interactive backend selection menu. Auto-detect is the default (press Enter).
+fn prompt_backend() -> anyhow::Result<InferenceBackend> {
+    let detected = detect_gpu();
+    let detected_label = match detected {
+        InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda) => "NVIDIA GPU detected",
+        InferenceBackend::OnnxJina(OnnxExecutionProvider::CoreMl) => "Apple Silicon detected",
+        InferenceBackend::OnnxJina(OnnxExecutionProvider::Rocm) => "AMD GPU detected",
+        InferenceBackend::OnnxJina(OnnxExecutionProvider::OpenVino) => "Intel GPU detected",
+        InferenceBackend::OnnxJina(OnnxExecutionProvider::DirectMl) => "DirectX 12 GPU assumed",
+        _ => "no GPU detected, will use CPU",
+    };
+
+    println!("No backend specified. Select a backend:\n");
+    println!("  [1] Auto-detect ({detected_label} -> {detected})  [default]");
+    println!("  [2] API mode         (remote OpenAI-compatible endpoints)");
+    println!("  [3] CUDA             (NVIDIA GPU)");
+    println!("  [4] ROCm             (AMD GPU, Linux)");
+    println!("  [5] CoreML           (Apple Silicon, macOS)");
+    println!("  [6] OpenVINO         (Intel GPU/iGPU, Linux)");
+    println!("  [7] DirectML         (DirectX 12 GPU, Windows)");
+    println!("  [8] CPU              (slow, not recommended)");
+    println!();
+    print!("Choice [1]: ");
+    std::io::stdout()
+        .flush()
+        .context("failed to flush prompt")?;
+
+    let mut input = String::new();
+    std::io::stdin()
+        .read_line(&mut input)
+        .context("failed to read input")?;
+
+    match input.trim() {
+        "" | "1" => Ok(detected),
+        "2" => Ok(InferenceBackend::Api),
+        "3" => Ok(InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda)),
+        "4" => Ok(InferenceBackend::OnnxJina(OnnxExecutionProvider::Rocm)),
+        "5" => Ok(InferenceBackend::OnnxJina(OnnxExecutionProvider::CoreMl)),
+        "6" => Ok(InferenceBackend::OnnxJina(OnnxExecutionProvider::OpenVino)),
+        "7" => Ok(InferenceBackend::OnnxJina(OnnxExecutionProvider::DirectMl)),
+        "8" => Ok(InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu)),
+        other => bail!("invalid choice: {other}. Run `vera setup` again."),
+    }
 }
 
 fn confirm(backend: &InferenceBackend, index_path: Option<&str>) -> anyhow::Result<bool> {

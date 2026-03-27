@@ -81,11 +81,13 @@ bunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai inst
 This downloads the `vera` binary, adds it to your PATH, and installs agent skill files. After this, `vera` is a standalone command. You don't need `bunx`/`npx`/`uvx` again.
 
 ```bash
-vera setup          # download local models (or vera setup --api for remote endpoints)
+vera setup          # interactive backend menu (auto-detects your GPU)
 vera index .        # index the current project (creates .vera/ in project root)
 vera search "query" # search (each project gets its own index)
 vera update .       # after code changes
 ```
+
+`vera setup` with no flags shows a backend picker and auto-detects your GPU. You can also skip the menu: `vera setup --onnx-jina-cuda` (NVIDIA), `--onnx-jina-coreml` (Apple Silicon), `--api` (remote endpoints), etc. Run `vera setup --help` for all options.
 
 Use `vera doctor` if anything goes wrong.
 
