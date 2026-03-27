@@ -171,7 +171,7 @@ With both models cached, the full pipeline (BM25 + vector search + rerank) runs 
 | `--onnx-jina-coreml` | Apple Silicon (macOS) |
 | `--onnx-jina-openvino` | Intel GPU/iGPU (Linux) |
 
-Vera downloads the matching ONNX Runtime build automatically. The same flag works on `vera index` and `vera search` to override the configured backend per-command.
+Vera downloads the matching ONNX Runtime build automatically. For OpenVINO and ROCm (no pre-built binaries on GitHub), Vera installs via pip into a managed venv at `~/.vera/venv/`, falling back to direct PyPI wheel download if pip is unavailable. The same flag works on `vera index` and `vera search` to override the configured backend per-command.
 
 ### Inference Speed
 

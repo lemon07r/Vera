@@ -162,6 +162,17 @@ fn ort_platform_info(
         if matches!(ep, OnnxExecutionProvider::DirectMl) {
             anyhow::bail!("DirectML is only supported on Windows");
         }
+        if matches!(ep, OnnxExecutionProvider::OpenVino | OnnxExecutionProvider::Rocm) {
+            // These EPs are installed via pip wheels, not GitHub release archives.
+            // Return a dummy value; `ensure_ort_library_for_ep` handles them separately.
+            let base = format!("onnxruntime-linux-x64{gpu_suffix}-{ORT_VERSION}");
+            return Ok((
+                "tgz",
+                base.clone(),
+                format!("{base}/lib/libonnxruntime.so.{ORT_VERSION}"),
+                "libonnxruntime.so",
+            ));
+        }
         let base = format!("onnxruntime-linux-x64{gpu_suffix}-{ORT_VERSION}");
         Ok((
             "tgz",
@@ -244,11 +255,262 @@ fn ort_platform_info(
     }
 }
 
+/// Returns the pip package name for EPs that require pip-based installation, or None
+/// for EPs that have pre-built GitHub release archives.
+fn pip_package_for_ep(ep: OnnxExecutionProvider) -> Option<&'static str> {
+    match ep {
+        OnnxExecutionProvider::OpenVino => Some("onnxruntime-openvino"),
+        OnnxExecutionProvider::Rocm => Some("onnxruntime-rocm"),
+        _ => None,
+    }
+}
+
+/// Try installing ORT via pip into a managed venv under `~/.vera/venv/`.
+/// Returns the lib directory where .so files were copied on success.
+#[cfg(target_os = "linux")]
+async fn try_pip_install_ort(ep: OnnxExecutionProvider, lib_dir: &std::path::Path) -> Result<()> {
+    let pkg = pip_package_for_ep(ep).context("not a pip-based EP")?;
+    let vera_home = vera_home_dir()?;
+    let venv_dir = vera_home.join("venv");
+
+    // Find python3
+    let python = find_python3().context(
+        "python3 not found. Install Python 3.11+ to enable automatic ORT installation.",
+    )?;
+
+    eprintln!("Installing {pkg} via pip (this may take a minute)...");
+
+    // Create venv if it doesn't exist
+    if !venv_dir.join("bin").join("python3").exists() {
+        eprintln!("  Creating virtual environment at {}...", venv_dir.display());
+        let status = tokio::process::Command::new(&python)
+            .args(["-m", "venv", &venv_dir.to_string_lossy()])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::piped())
+            .status()
+            .await
+            .context("failed to create venv")?;
+        if !status.success() {
+            anyhow::bail!("failed to create virtual environment at {}", venv_dir.display());
+        }
+    }
+
+    let venv_pip = venv_dir.join("bin").join("pip");
+    let venv_python = venv_dir.join("bin").join("python3");
+
+    // Upgrade pip quietly, then install the package
+    let _ = tokio::process::Command::new(&venv_python)
+        .args(["-m", "pip", "install", "--upgrade", "pip"])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .await;
+
+    eprintln!("  Running: pip install {pkg}");
+    let output = tokio::process::Command::new(&venv_pip)
+        .args(["install", pkg])
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .output()
+        .await
+        .context("failed to run pip install")?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        anyhow::bail!("pip install {pkg} failed:\n{stderr}");
+    }
+
+    // Find and copy .so files from the installed package
+    let site_packages = find_site_packages(&venv_dir)?;
+    let capi_dir = site_packages.join("onnxruntime").join("capi");
+    if !capi_dir.exists() {
+        anyhow::bail!(
+            "pip install succeeded but onnxruntime/capi/ not found in {}",
+            site_packages.display()
+        );
+    }
+
+    copy_so_files_from_dir(&capi_dir, lib_dir).await?;
+    Ok(())
+}
+
+/// Try downloading a wheel directly from PyPI and extracting .so files.
+#[cfg(target_os = "linux")]
+async fn try_wheel_download_ort(
+    ep: OnnxExecutionProvider,
+    lib_dir: &std::path::Path,
+) -> Result<()> {
+    let pkg = pip_package_for_ep(ep).context("not a pip-based EP")?;
+    let pypi_name = pkg.replace('-', "_");
+
+    eprintln!("Trying direct wheel download from PyPI...");
+
+    crate::init_tls();
+    let client = Client::new();
+
+    // Query PyPI JSON API for the latest version's wheel URLs
+    let api_url = format!("https://pypi.org/pypi/{pkg}/json");
+    let resp = client
+        .get(&api_url)
+        .header("User-Agent", "vera")
+        .send()
+        .await?
+        .error_for_status()
+        .context("failed to query PyPI")?;
+    let body: serde_json::Value = resp.json().await?;
+
+    // Find a manylinux x86_64 wheel
+    let urls = body["urls"]
+        .as_array()
+        .context("unexpected PyPI response format")?;
+    let wheel_url = urls
+        .iter()
+        .filter_map(|entry| {
+            let filename = entry["filename"].as_str()?;
+            if filename.contains("linux") && filename.contains("x86_64") {
+                entry["url"].as_str().map(|u| u.to_string())
+            } else {
+                None
+            }
+        })
+        .next()
+        .context("no compatible Linux x86_64 wheel found on PyPI")?;
+
+    let version = body["info"]["version"]
+        .as_str()
+        .unwrap_or("unknown");
+    eprintln!("  Downloading {pypi_name} v{version} wheel...");
+    eprintln!("  {wheel_url}");
+
+    let res = client
+        .get(&wheel_url)
+        .header("User-Agent", "vera")
+        .send()
+        .await?
+        .error_for_status()?;
+    let bytes = res.bytes().await?;
+
+    // Wheels are zip files; extract .so files from onnxruntime/capi/
+    let lib_dir_owned = lib_dir.to_path_buf();
+    tokio::task::spawn_blocking(move || extract_wheel_libs(&bytes, &lib_dir_owned)).await??;
+
+    Ok(())
+}
+
+/// Extract all shared libraries from `onnxruntime/capi/` inside a wheel (zip).
+#[cfg(target_os = "linux")]
+fn extract_wheel_libs(data: &[u8], dest_dir: &std::path::Path) -> Result<()> {
+    let cursor = std::io::Cursor::new(data);
+    let mut archive = zip::ZipArchive::new(cursor)?;
+    let mut extracted = 0usize;
+
+    for i in 0..archive.len() {
+        let mut entry = archive.by_index(i)?;
+        let path = entry.name().to_string();
+        if !path.starts_with("onnxruntime/capi/") {
+            continue;
+        }
+        let filename = path.rsplit('/').next().unwrap_or("");
+        if !filename.contains(".so") {
+            continue;
+        }
+        let local_name = strip_so_version(filename);
+        let dest = dest_dir.join(local_name);
+        let mut out = std::fs::File::create(&dest)?;
+        std::io::copy(&mut entry, &mut out)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&dest, std::fs::Permissions::from_mode(0o755))?;
+        }
+        extracted += 1;
+    }
+
+    if extracted == 0 {
+        anyhow::bail!("no shared libraries found in wheel");
+    }
+    eprintln!("  Extracted {extracted} libraries from wheel");
+    Ok(())
+}
+
+/// Find a working python3 binary.
+#[cfg(target_os = "linux")]
+fn find_python3() -> Option<String> {
+    for name in ["python3", "python"] {
+        if std::process::Command::new(name)
+            .arg("--version")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success())
+        {
+            return Some(name.to_string());
+        }
+    }
+    None
+}
+
+/// Find the site-packages directory inside a venv.
+#[cfg(target_os = "linux")]
+fn find_site_packages(venv_dir: &std::path::Path) -> Result<PathBuf> {
+    let lib_dir = venv_dir.join("lib");
+    if !lib_dir.exists() {
+        anyhow::bail!("venv lib directory not found");
+    }
+    for entry in std::fs::read_dir(&lib_dir)? {
+        let entry = entry?;
+        let sp = entry.path().join("site-packages");
+        if sp.exists() {
+            return Ok(sp);
+        }
+    }
+    anyhow::bail!("site-packages not found in venv")
+}
+
+/// Copy all .so files from a directory to the target lib directory.
+#[cfg(target_os = "linux")]
+async fn copy_so_files_from_dir(
+    src_dir: &std::path::Path,
+    dest_dir: &std::path::Path,
+) -> Result<()> {
+    let mut extracted = 0usize;
+    let mut entries = fs::read_dir(src_dir).await?;
+    while let Some(entry) = entries.next_entry().await? {
+        let path = entry.path();
+        let filename = path
+            .file_name()
+            .and_then(|f| f.to_str())
+            .unwrap_or("");
+        if !filename.contains(".so") {
+            continue;
+        }
+        let local_name = strip_so_version(filename);
+        let dest = dest_dir.join(local_name);
+        fs::copy(&path, &dest).await?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(&dest, std::fs::Permissions::from_mode(0o755)).await?;
+        }
+        extracted += 1;
+    }
+    if extracted == 0 {
+        anyhow::bail!("no .so files found in {}", src_dir.display());
+    }
+    eprintln!("  Copied {extracted} libraries from pip package");
+    Ok(())
+}
+
 /// Ensure the ONNX Runtime shared library is available locally.
 ///
 /// Returns the path to the library. Downloads it automatically if needed.
 /// Respects `ORT_DYLIB_PATH` — if set, skips auto-download.
 /// GPU execution providers download a different (larger) ORT build.
+///
+/// For OpenVINO and ROCm (no pre-built GitHub archives), tries in order:
+/// 1. `pip install` into a managed venv at `~/.vera/venv/`
+/// 2. Direct wheel download from PyPI
+/// 3. Bail with manual instructions
 pub async fn ensure_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<PathBuf> {
     let target_path = ort_library_path_for_ep(ep)?;
     if let Ok(path) = std::env::var("ORT_DYLIB_PATH") {
@@ -257,18 +519,26 @@ pub async fn ensure_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<Path
         }
     }
 
-    let lib_dir = target_path
-        .parent()
-        .context("failed to determine ONNX Runtime directory")?
-        .to_path_buf();
-    let (ext, archive_name, lib_path_in_archive, local_lib_name) = ort_platform_info(ep)?;
-    let is_gpu = ep != OnnxExecutionProvider::Cpu;
-
     if target_path.exists() {
         return Ok(target_path);
     }
 
+    let lib_dir = target_path
+        .parent()
+        .context("failed to determine ONNX Runtime directory")?
+        .to_path_buf();
+
     fs::create_dir_all(&lib_dir).await?;
+
+    // OpenVINO and ROCm: pip-based install with fallback chain
+    #[cfg(target_os = "linux")]
+    if pip_package_for_ep(ep).is_some() {
+        return ensure_ort_via_pip_chain(ep, &lib_dir, &target_path).await;
+    }
+
+    // Standard path: download from GitHub releases
+    let (ext, archive_name, lib_path_in_archive, local_lib_name) = ort_platform_info(ep)?;
+    let is_gpu = ep != OnnxExecutionProvider::Cpu;
 
     let archive_filename = if ext == "tgz" {
         format!("{archive_name}.tgz")
@@ -325,6 +595,52 @@ pub async fn ensure_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<Path
         lib_dir.display()
     );
     Ok(target_path)
+}
+
+/// Pip-based fallback chain for OpenVINO and ROCm.
+#[cfg(target_os = "linux")]
+async fn ensure_ort_via_pip_chain(
+    ep: OnnxExecutionProvider,
+    lib_dir: &std::path::Path,
+    target_path: &std::path::Path,
+) -> Result<PathBuf> {
+    let pkg = pip_package_for_ep(ep).unwrap();
+
+    // Option 1: pip install into managed venv
+    match try_pip_install_ort(ep, lib_dir).await {
+        Ok(()) => {
+            eprintln!("ONNX Runtime ({ep}) installed via pip to {}", lib_dir.display());
+            return Ok(target_path.to_path_buf());
+        }
+        Err(e) => {
+            tracing::warn!("pip install failed, trying direct wheel download: {e:#}");
+            eprintln!("  pip install failed, trying direct wheel download...");
+        }
+    }
+
+    // Option 2: download wheel directly from PyPI
+    match try_wheel_download_ort(ep, lib_dir).await {
+        Ok(()) => {
+            eprintln!("ONNX Runtime ({ep}) installed via wheel to {}", lib_dir.display());
+            return Ok(target_path.to_path_buf());
+        }
+        Err(e) => {
+            tracing::warn!("wheel download failed: {e:#}");
+            eprintln!("  Wheel download also failed.");
+        }
+    }
+
+    // Option 3: bail with manual instructions
+    anyhow::bail!(
+        "Could not automatically install ONNX Runtime with {ep} support.\n\
+         Install manually:\n\
+         \n\
+         1. pip install {pkg}\n\
+         2. Locate libonnxruntime.so inside the installed package:\n\
+            python3 -c \"import onnxruntime; import os; print(os.path.join(os.path.dirname(onnxruntime.__file__), 'capi'))\"\n\
+         3. Set ORT_DYLIB_PATH to the full path of libonnxruntime.so\n\
+         4. Run `vera setup` again"
+    )
 }
 
 pub fn ort_library_path_for_ep(ep: OnnxExecutionProvider) -> Result<PathBuf> {

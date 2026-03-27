@@ -148,13 +148,20 @@ pub(crate) fn configure_backend(
 /// Probe the system for a usable GPU and return the best local backend.
 /// Falls back to CPU if nothing is detected.
 fn detect_gpu() -> InferenceBackend {
-    // NVIDIA: check for nvidia-smi
-    if std::process::Command::new("nvidia-smi")
+    // NVIDIA: check for nvidia-smi or vendor ID (0x10de) in sysfs
+    let has_nvidia = std::process::Command::new("nvidia-smi")
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status()
         .is_ok_and(|s| s.success())
-    {
+        || (cfg!(target_os = "linux")
+            && std::process::Command::new("sh")
+                .args(["-c", "grep -rql 0x10de /sys/class/drm/*/device/vendor 2>/dev/null"])
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .is_ok_and(|s| s.success()));
+    if has_nvidia {
         return InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda);
     }
 
@@ -174,17 +181,15 @@ fn detect_gpu() -> InferenceBackend {
         return InferenceBackend::OnnxJina(OnnxExecutionProvider::Rocm);
     }
 
-    // Intel OpenVINO: check for Intel GPU via sycl-ls or /dev/dri/renderD*
+    // Intel OpenVINO: check for Intel GPU via vendor ID (0x8086) in sysfs
     if cfg!(target_os = "linux") && cfg!(target_arch = "x86_64") {
-        let has_intel_gpu = std::path::Path::new("/dev/dri").exists()
-            && std::process::Command::new("sh")
-                .args(["-c", "ls /dev/dri/renderD* 2>/dev/null"])
-                .stdout(std::process::Stdio::null())
-                .stderr(std::process::Stdio::null())
-                .status()
-                .is_ok_and(|s| s.success());
+        let has_intel_gpu = std::process::Command::new("sh")
+            .args(["-c", "grep -rql 0x8086 /sys/class/drm/*/device/vendor 2>/dev/null"])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success());
         if has_intel_gpu {
-            // Only suggest OpenVINO if no discrete GPU was found above
             return InferenceBackend::OnnxJina(OnnxExecutionProvider::OpenVino);
         }
     }
