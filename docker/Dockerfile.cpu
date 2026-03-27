@@ -1,0 +1,25 @@
+# Vera CPU Docker image
+# Usage: docker build -f docker/Dockerfile.cpu -t vera:cpu .
+
+# --- Build stage ---
+FROM rust:1.94.1-trixie AS builder
+
+WORKDIR /build
+COPY . .
+
+RUN bash scripts/bootstrap-vendored-grammars.sh
+RUN cargo build --release -p vera-cli -p vera-mcp
+
+# --- Runtime stage ---
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /build/target/release/vera /usr/local/bin/vera
+
+ENV VERA_LOCAL=1
+
+ENTRYPOINT ["vera"]
+CMD ["mcp"]

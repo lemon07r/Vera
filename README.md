@@ -28,7 +28,7 @@ Every decision made is intentional, with ample research, testing, analysis, benc
 - [How It Works](#how-it-works)
 - [Contributing](#contributing)
 
-**Docs:** [Query Guide](docs/query-guide.md) · [Benchmarks](docs/benchmarks.md) · [How It Works](docs/how-it-works.md) · [Supported Languages](docs/supported-languages.md) · [Troubleshooting](docs/troubleshooting.md)
+**Docs:** [Query Guide](docs/query-guide.md) · [Benchmarks](docs/benchmarks.md) · [How It Works](docs/how-it-works.md) · [Docker](docs/docker.md) · [Supported Languages](docs/supported-languages.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Quick Start
 
@@ -103,6 +103,17 @@ vera mcp   # or: bunx @vera-ai/cli mcp / uvx vera-ai mcp
 ```
 
 Exposes `search_code`, `index_project`, `update_project`, and `get_stats` tools.
+
+</details>
+
+<details>
+<summary>Docker (MCP server)</summary>
+
+```bash
+docker run --rm -i -v $(pwd):/workspace ghcr.io/lemon07r/vera:cpu
+```
+
+CPU, CUDA (NVIDIA), and ROCm (AMD) images available. See [docs/docker.md](docs/docker.md) for GPU flags and MCP client configuration.
 
 </details>
 
