@@ -38,28 +38,20 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
 
-    /// Output results as JSON (machine-readable).
+    /// Output results as compact JSON (machine-readable).
     ///
-    /// When enabled, all data output goes to stdout as valid JSON.
-    /// Logs and diagnostics always go to stderr regardless of this flag.
+    /// By default, search output uses markdown codeblocks optimized for
+    /// AI agent token budgets. Use --json for compact single-line JSON
+    /// (useful for programmatic consumption or piping to other tools).
     #[arg(long, global = true)]
     json: bool,
 
-    /// Output all fields with pretty-printed formatting.
+    /// Output all fields with pretty-printed verbose formatting.
     ///
-    /// By default, search output is compact JSON optimized for AI agent
-    /// token budgets (drops score, language, and null fields). Use --raw
-    /// to get the full verbose output with all fields.
+    /// Shows numbered results with scores, language, symbol info, and
+    /// decorated code previews. Useful for human debugging.
     #[arg(long, global = true)]
     raw: bool,
-
-    /// Output results as markdown codeblocks.
-    ///
-    /// The most token-efficient format for LLM agents reading results as
-    /// text context. Each result is a fenced codeblock with file path and
-    /// line range in the info string.
-    #[arg(long, alias = "md", global = true)]
-    markdown: bool,
 
     /// Print search pipeline step timings to stderr.
     #[arg(long, global = true)]
@@ -532,7 +524,7 @@ fn main() {
                 onnx_jina_coreml,
                 local,
             );
-            commands::search::run(&query, limit, &filters, cli.json, cli.raw, cli.markdown, cli.timing, backend)
+            commands::search::run(&query, limit, &filters, cli.json, cli.raw, cli.timing, backend)
         }
         Commands::Update {
             path,

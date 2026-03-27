@@ -13,7 +13,6 @@ pub fn run(
     filters: &vera_core::types::SearchFilters,
     json_output: bool,
     raw: bool,
-    markdown: bool,
     timing: bool,
     backend: InferenceBackend,
 ) -> anyhow::Result<()> {
@@ -41,7 +40,7 @@ pub fn run(
         backend,
     )?;
 
-    output_results(&results, json_output, raw, markdown);
+    output_results(&results, json_output, raw);
 
     if timing {
         use std::io::Write;

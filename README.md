@@ -262,13 +262,15 @@ If something isn't working, see [troubleshooting](docs/troubleshooting.md).
 
 The skill file at [skills/vera/SKILL.md](skills/vera/SKILL.md) teaches AI agents how to use Vera effectively. If you're an AI agent reading this repo directly, start with [AGENT-USAGE.md](AGENT-USAGE.md).
 
-Output is compact JSON by default, optimized for AI agent token budgets. It omits `score`, `language`, and null fields:
+Output uses markdown codeblocks by default, the most token-efficient format for AI agents:
 
-```json
-[{"file_path":"src/auth/login.rs","line_start":42,"line_end":68,"content":"pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }","symbol_name":"authenticate","symbol_type":"function"}]
+````
+```src/auth/login.rs:42-68 function:authenticate
+pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }
 ```
+````
 
-Use `--markdown` for token-efficient markdown codeblocks, or `--raw` for pretty-printed JSON with all fields. Use `--timing` to print pipeline step durations to stderr.
+Use `--json` for compact single-line JSON (useful for programmatic consumption or piping to other tools), or `--raw` for verbose human-readable output with all fields. Use `--timing` to print pipeline step durations to stderr.
 
 ## Benchmark Snapshot
 

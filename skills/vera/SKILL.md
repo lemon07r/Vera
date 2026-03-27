@@ -1,6 +1,6 @@
 ---
 name: vera
-description: Semantic code search and symbol lookup across a local repository. Returns compact JSON with file path, line range, content, and optional symbol info. Use when the user asks to find where logic lives, what calls a function, how a feature is implemented, which files handle a concept, or wants to explore unfamiliar code by intent. Also use for symbol lookup when the exact name appears in many files. Do NOT use for exact literal search, regex, counting occurrences, or bulk find-and-replace. use rg for those.
+description: Semantic code search and symbol lookup across a local repository. Returns ranked markdown codeblocks with file path, line range, content, and optional symbol info. Use when the user asks to find where logic lives, what calls a function, how a feature is implemented, which files handle a concept, or wants to explore unfamiliar code by intent. Also use for symbol lookup when the exact name appears in many files. Do NOT use for exact literal search, regex, counting occurrences, or bulk find-and-replace. use rg for those.
 ---
 
 # Vera
@@ -17,7 +17,7 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
    vera search "parse_config" --type function --limit 5
    vera search "database connection" --lang rust --path "src/**"
    ```
-4. Use the first results (they are ranked by relevance). Output is compact JSON by default.
+4. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
 
 ## Example Output
 
@@ -25,11 +25,13 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
 vera search "hybrid search" --limit 1
 ```
 
-```json
-[{"file_path":"crates/vera-core/src/retrieval/hybrid.rs","line_start":58,"line_end":110,"content":"pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }","symbol_name":"search_hybrid","symbol_type":"function"}]
+````
+```crates/vera-core/src/retrieval/hybrid.rs:58-110 function:search_hybrid
+pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }
 ```
+````
 
-Fields: `file_path`, `line_start`, `line_end`, `content`, and optional `symbol_name`/`symbol_type`. Use `--markdown` for token-efficient markdown codeblocks, or `--raw` for verbose output with all fields (score, language, nulls). Use `--timing` to print pipeline step durations to stderr.
+The info string contains `file_path:line_start-line_end` and optional `symbol_type:symbol_name`. Use `--json` for compact single-line JSON (programmatic consumption), or `--raw` for verbose human-readable output. Use `--timing` to print pipeline step durations to stderr.
 
 ## Query Strategy
 

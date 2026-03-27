@@ -34,6 +34,6 @@ vera-ai index . --onnx-jina-cuda
 - **60+ languages** via tree-sitter AST parsing
 - **Hybrid search**: BM25 keyword + vector similarity, fused with Reciprocal Rank Fusion
 - **Cross-encoder reranking** for precision
-- **Compact JSON output** with file paths, line ranges, code content, and optional symbol info (use `--markdown` for markdown codeblocks, `--raw` for verbose output, `--timing` for step durations)
+- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON, `--raw` for verbose output, `--timing` for step durations)
 
 For full documentation, see the [GitHub repo](https://github.com/lemon07r/Vera).

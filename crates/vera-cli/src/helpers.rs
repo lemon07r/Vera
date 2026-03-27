@@ -62,76 +62,67 @@ impl<'a> CompactResult<'a> {
 
 /// Output search results.
 ///
-/// Priority: `markdown` > default compact JSON > `raw` verbose.
+/// Priority: `--json` compact JSON > `--raw` verbose > default markdown codeblocks.
 pub fn output_results(
     results: &[vera_core::types::SearchResult],
     json_output: bool,
     raw: bool,
-    markdown: bool,
 ) {
-    if markdown {
-        format_markdown(results);
-    } else if json_output || !raw {
-        if raw {
-            let json = serde_json::to_string_pretty(results)
-                .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
-            println!("{json}");
+    if json_output {
+        let compact: Vec<CompactResult> =
+            results.iter().map(CompactResult::from_search_result).collect();
+        let json = serde_json::to_string(&compact)
+            .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
+        println!("{json}");
+    } else if raw {
+        if results.is_empty() {
+            println!("No results found.");
         } else {
-            let compact: Vec<CompactResult> =
-                results.iter().map(CompactResult::from_search_result).collect();
-            let json = serde_json::to_string(&compact)
-                .unwrap_or_else(|e| format!("{{\"error\": \"failed to serialize: {e}\"}}"));
-            println!("{json}");
-        }
-    } else if results.is_empty() {
-        println!("No results found.");
-    } else {
-        for (i, result) in results.iter().enumerate() {
-            println!(
-                "{}. {} (lines {}-{}, {})",
-                i + 1,
-                result.file_path,
-                result.line_start,
-                result.line_end,
-                result.language,
-            );
-            if let Some(ref name) = result.symbol_name {
-                if let Some(ref stype) = result.symbol_type {
-                    println!("   {stype} {name}");
-                } else {
-                    println!("   {name}");
+            for (i, result) in results.iter().enumerate() {
+                println!(
+                    "{}. {} (lines {}-{}, {})",
+                    i + 1,
+                    result.file_path,
+                    result.line_start,
+                    result.line_end,
+                    result.language,
+                );
+                if let Some(ref name) = result.symbol_name {
+                    if let Some(ref stype) = result.symbol_type {
+                        println!("   {stype} {name}");
+                    } else {
+                        println!("   {name}");
+                    }
                 }
+                println!("   score: {:.6}", result.score);
+                let preview: String = result
+                    .content
+                    .lines()
+                    .take(3)
+                    .map(|l| format!("   │ {l}"))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                println!("{preview}");
+                println!();
             }
-            println!("   score: {:.6}", result.score);
-            let preview: String = result
-                .content
-                .lines()
-                .take(3)
-                .map(|l| format!("   │ {l}"))
-                .collect::<Vec<_>>()
-                .join("\n");
-            println!("{preview}");
-            println!();
         }
-    }
-}
-
-/// Format results as markdown codeblocks for token-efficient LLM consumption.
-fn format_markdown(results: &[vera_core::types::SearchResult]) {
-    for (i, r) in results.iter().enumerate() {
-        if i > 0 {
-            println!();
+    } else {
+        // Default: markdown codeblocks (most token-efficient for LLM agents).
+        for (i, r) in results.iter().enumerate() {
+            if i > 0 {
+                println!();
+            }
+            let mut info = format!("{}:{}-{}", r.file_path, r.line_start, r.line_end);
+            if let (Some(stype), Some(name)) = (&r.symbol_type, &r.symbol_name) {
+                info.push_str(&format!(" {stype}:{name}"));
+            }
+            println!("```{info}");
+            print!("{}", r.content);
+            if !r.content.ends_with('\n') {
+                println!();
+            }
+            println!("```");
         }
-        let mut info = format!("{}:{}-{}", r.file_path, r.line_start, r.line_end);
-        if let (Some(stype), Some(name)) = (&r.symbol_type, &r.symbol_name) {
-            info.push_str(&format!(" {stype}:{name}"));
-        }
-        println!("```{info}");
-        print!("{}", r.content);
-        if !r.content.ends_with('\n') {
-            println!();
-        }
-        println!("```");
     }
 }
 

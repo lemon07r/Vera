@@ -7,7 +7,7 @@ Vera is a semantic code search CLI. For the full skill definition, see [`skills/
 ```bash
 npx -y @vera-ai/cli install   # install binary
 vera index .                    # index the repo (add .vera/ to .gitignore)
-vera search "query"              # search. returns compact ranked JSON
+vera search "query"              # search. returns ranked markdown codeblocks
 vera update .                   # after code changes
 ```
 
@@ -18,7 +18,7 @@ vera update .                   # after code changes
 
 ## Output
 
-Default output is compact single-line JSON with `file_path`, `line_start`, `line_end`, `content`, and optional `symbol_name`/`symbol_type`. Use `--markdown` for token-efficient markdown codeblocks, or `--raw` for verbose output with all fields (score, language, nulls). Use `--timing` to print pipeline step durations to stderr.
+Default output is markdown codeblocks with file path, line range, and optional symbol info in the info string. This is the most token-efficient format for reading results as context. Use `--json` for compact single-line JSON (programmatic consumption or piping to other tools), or `--raw` for verbose human-readable output with all fields. Use `--timing` to print pipeline step durations to stderr.
 
 ## References
 
