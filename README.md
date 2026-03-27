@@ -90,16 +90,6 @@ vera update .       # after code changes
 Use `vera doctor` if anything goes wrong.
 
 <details>
-<summary>Global install via package manager</summary>
-
-```bash
-npm install -g @vera-ai/cli   # Node.js
-pip install vera-ai            # Python
-```
-
-</details>
-
-<details>
 <summary>MCP server (JSON-RPC over stdio)</summary>
 
 ```bash
@@ -150,13 +140,11 @@ vera agent install && vera setup
 
 ### Updating
 
-Vera checks for new releases once per day and prints a hint with the exact update command for your install method. To update manually:
+Vera checks for new releases once per day and prints a hint with the exact update command. To update manually:
 
 ```bash
 bunx @vera-ai/cli install   # re-downloads latest binary + refreshes skill files
 ```
-
-Or if you used a global install: `npm update -g @vera-ai/cli`, `pip install --upgrade vera-ai`, then `vera agent install` to refresh skill files.
 
 Set `VERA_NO_UPDATE_CHECK=1` to disable the automatic check.
 
