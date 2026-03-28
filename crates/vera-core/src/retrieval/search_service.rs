@@ -45,7 +45,7 @@ pub fn execute_search(
     backend: InferenceBackend,
 ) -> Result<(Vec<SearchResult>, SearchTimings)> {
     let total_start = Instant::now();
-    let fetch_limit = compute_fetch_limit(filters, result_limit);
+    let fetch_limit = compute_fetch_limit(query, filters, result_limit);
     let rt = tokio::runtime::Runtime::new()?;
 
     // Try to create embedding provider for hybrid search.
@@ -132,8 +132,12 @@ pub fn execute_search(
     let query_params = params_for_query_type(query_type);
     let rrf_k = query_params.rrf_k;
     let vector_candidates = effective_vector_candidates(fetch_limit, query_params, query);
-    let rerank_candidates =
-        effective_rerank_candidates(config.retrieval.rerank_candidates, fetch_limit, query);
+    let rerank_candidates = effective_rerank_candidates(
+        config.retrieval.rerank_candidates,
+        fetch_limit,
+        query,
+        filters,
+    );
 
     let ranking_stage = if reranker_enabled {
         RankingStage::PostRerank
@@ -186,16 +190,33 @@ pub fn execute_search(
     Ok((apply_filters(results, filters, result_limit), timings))
 }
 
-/// Compute how many candidates to fetch before filtering.
+/// Compute how many candidates to keep through fusion before final truncation.
 ///
-/// When filters are active, fetch more candidates to ensure we have enough
-/// results after filtering.
-fn compute_fetch_limit(filters: &SearchFilters, result_limit: usize) -> usize {
-    if filters.is_empty() {
+/// Broad natural-language queries need a larger pool even without explicit
+/// filters so deterministic ranking can surface structural chunks that raw RRF
+/// scores placed outside the requested result window.
+fn compute_fetch_limit(query: &str, filters: &SearchFilters, result_limit: usize) -> usize {
+    let mut fetch_limit = if filters.is_empty() {
         result_limit
     } else {
         result_limit.saturating_mul(3).max(result_limit + 20)
+    };
+
+    if needs_structural_overfetch(query, filters) {
+        fetch_limit = fetch_limit.max(result_limit.saturating_mul(8).max(result_limit + 140));
+    } else if matches!(classify_query(query), QueryType::NaturalLanguage) {
+        fetch_limit = fetch_limit.max(result_limit.saturating_mul(3).max(result_limit + 40));
     }
+
+    fetch_limit
+}
+
+fn needs_structural_overfetch(query: &str, filters: &SearchFilters) -> bool {
+    matches!(classify_query(query), QueryType::NaturalLanguage)
+        && query.split_whitespace().count() >= 4
+        && filters.path_glob.is_none()
+        && filters.symbol_type.is_none()
+        && !is_path_weighted_query(query)
 }
 
 fn effective_vector_candidates(
@@ -206,7 +227,16 @@ fn effective_vector_candidates(
     compute_vector_candidates(fetch_limit, query_params.vector_candidate_multiplier)
 }
 
-fn effective_rerank_candidates(base: usize, fetch_limit: usize, _query: &str) -> usize {
+fn effective_rerank_candidates(
+    base: usize,
+    fetch_limit: usize,
+    query: &str,
+    filters: &SearchFilters,
+) -> usize {
+    if needs_structural_overfetch(query, filters) {
+        return base;
+    }
+
     base.max(fetch_limit)
 }
 
@@ -538,14 +568,41 @@ mod tests {
     #[test]
     fn effective_candidates_use_base_multipliers() {
         // Rerank candidates just return base.max(fetch_limit)
-        assert_eq!(effective_rerank_candidates(50, 10, "anything"), 50);
-        assert_eq!(effective_rerank_candidates(5, 10, "anything"), 10);
+        let filters = SearchFilters::default();
+        assert_eq!(
+            effective_rerank_candidates(50, 10, "anything", &filters),
+            50
+        );
+        assert_eq!(effective_rerank_candidates(5, 10, "anything", &filters), 10);
+        assert_eq!(
+            effective_rerank_candidates(50, 160, "file type detection and filtering", &filters),
+            50
+        );
 
         // Vector candidates use query_params multiplier without inflation
         let nl_params =
             params_for_query_type(crate::retrieval::query_classifier::QueryType::NaturalLanguage);
         let vc = effective_vector_candidates(10, nl_params, "some query");
         assert!(vc >= 50); // at least the minimum from compute_vector_candidates
+    }
+
+    #[test]
+    fn broad_nl_queries_overfetch_before_ranking() {
+        let filters = SearchFilters::default();
+
+        assert_eq!(compute_fetch_limit("Config", &filters, 20), 20);
+        assert_eq!(
+            compute_fetch_limit("file type detection and filtering", &filters, 20),
+            160
+        );
+        assert_eq!(
+            compute_fetch_limit(
+                "how are HTTP errors handled and returned to clients",
+                &filters,
+                5
+            ),
+            145
+        );
     }
 
     #[test]

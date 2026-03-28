@@ -182,7 +182,7 @@ With the embedding model and reranker cached, the full pipeline (BM25 + vector s
 
 Vera downloads the matching ONNX Runtime build automatically. For OpenVINO and ROCm (no pre-built binaries on GitHub), Vera installs via pip into a managed venv at `~/.vera/venv/`, falling back to direct PyPI wheel download if pip is unavailable. The same flag works on `vera index` and `vera search` to override the configured backend per-command.
 
-Vera auto-detects available VRAM and scales batch size accordingly. On GPUs with less than 8 GB VRAM, it also caps the ONNX Runtime memory arena to 80% of free VRAM. For very constrained GPUs (4 GB or less), pass `--low-vram` to `vera index` to force batch size 1 and a 1 GB memory limit.
+Vera uses free VRAM to choose a coarse batch ceiling, then shapes local GPU micro-batches from actual token lengths. Long batches shrink roughly with the square of sequence length, and Vera learns safer limits per length bucket from real successes and allocation failures. Those learned limits persist under `~/.vera/adaptive-batch-scaler.json`, keyed by backend, device fingerprint, and model, so later runs can warm-start instead of relearning from scratch. On GPUs with less than 8 GB free VRAM, it also caps the ONNX Runtime memory arena to 80% of free VRAM. For very constrained GPUs (4 GB or less), pass `--low-vram` to `vera index` to force batch size 1 and a 1 GB memory limit.
 
 ### Custom Local Embeddings
 

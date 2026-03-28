@@ -46,6 +46,8 @@ This stage handles cases that dense retrieval alone is bad at:
 - broad natural-language queries that need structural results instead of tiny helpers
 - same-file and cross-file answer completion
 
+For broad intent queries, Vera also keeps a deeper fused candidate pool before final truncation. This matters when raw RRF pushes the right `struct` or `impl` block just outside the requested top N and a tiny helper would otherwise win by default.
+
 This is also where Vera adds a small amount of query-aware candidate expansion, such as pulling in related implementation blocks or same-file structural context when the initial hit is too narrow.
 
 ## Reranking: Cross-Encoder
@@ -68,6 +70,12 @@ The index is a single SQLite database file plus a Tantivy directory. No external
 ## Incremental Updates
 
 `vera update .` detects changed files by comparing content hashes against the stored index. Only modified files are re-parsed, re-chunked, and re-embedded. For small changes this takes seconds, not minutes.
+
+## Local GPU Batching
+
+Local ONNX indexing does not treat `embedding.batch_size` as a fixed GPU launch size. Vera sorts chunks by length, tokenizes each local batch, then shapes micro-batches from the actual sequence lengths. Long inputs shrink roughly with the square of padded sequence length, and Vera keeps learned safe and failed batch windows per length bucket so it can push harder on roomy GPUs without repeating the same OOM on smaller ones.
+
+Those learned windows persist under `~/.vera/adaptive-batch-scaler.json`. The persisted state is keyed by backend, device fingerprint, and model identity. On the next run, Vera treats the saved window as a warm-start hint with a small safety margin, not as a blind guarantee, then promotes or demotes it again based on live results.
 
 ## Pipeline Summary
 

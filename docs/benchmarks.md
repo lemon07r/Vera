@@ -47,6 +47,53 @@ Committed artifacts:
 | Search latency p50 | `3716 ms` |
 | Search latency p95 | `4185 ms` |
 
+### Recent Local Tuning Loop
+
+These runs were used for retrieval tuning after `v0.7.0`. They are useful for regression tracking, but they are not the public release snapshot above.
+
+Method:
+
+- `benchmarks/scripts/run_local_binary_benchmarks.py` against the same 21-task, 4-repo corpus
+- forced model paths on CUDA so quantized and fp16 runs did not silently switch models
+- judged by the full suite, not Vera usage rate or one benchmark hole
+
+Artifacts:
+
+- pre-fix quantized: [c7bdc09-jina-cuda-onnx-quantized-embed](../benchmarks/results/local-binaries/c7bdc09-jina-cuda-onnx-quantized-embed.json)
+- pre-fix fp16: [c7bdc09-jina-cuda-onnx-fp16-embed](../benchmarks/results/local-binaries/c7bdc09-jina-cuda-onnx-fp16-embed.json)
+- current fp16 candidate-pool fix: [candidate-pool-fix-rerank50-jina-cuda-onnx-fp16-embed](../benchmarks/results/local-binaries/candidate-pool-fix-rerank50-jina-cuda-onnx-fp16-embed.json)
+- current quantized candidate-pool fix: [oom-fix-jina-cuda-onnx-quantized-embed](../benchmarks/results/local-binaries/oom-fix-jina-cuda-onnx-quantized-embed.json)
+- current quantized dynamic scaler: [dynamic-scaler-jina-cuda-onnx-quantized-embed](../benchmarks/results/local-binaries/dynamic-scaler-jina-cuda-onnx-quantized-embed.json)
+
+Current fp16 candidate-pool fix vs pre-fix fp16:
+
+| Metric | Pre-fix fp16 | Current fp16 |
+|--------|--------------|--------------|
+| Recall@1 | 0.7183 | **0.7659** |
+| Recall@5 | 0.8254 | **0.8968** |
+| Recall@10 | 0.8254 | **0.8968** |
+| MRR@10 | 0.9206 | **0.9683** |
+| nDCG@10 | 0.8425 | **0.9027** |
+
+What changed:
+
+- `intent-004` (`file type detection and filtering`) moved from a miss to a perfect hit by returning `crates/ignore/src/types.rs:224-301` instead of a tiny helper method
+- `cross-file-002` improved because the deeper pool also kept the second relevant blueprint registration chunk alive long enough to rank
+- no task regressed in the fp16 full-suite rerun
+
+Tradeoff:
+
+- search latency went up on the fp16 tuning run (`p50 4103 ms`, `p95 10772 ms`)
+- most of the extra cost came from broad intent queries that now search a deeper candidate pool before truncation
+
+Quantized note:
+
+- the full forced-quantized 21-task rerun now completes and matches the fp16 aggregate metrics on this suite
+- on this machine, quantized ended up slightly faster on search (`p50 3617 ms` vs `4103 ms`) but slower on indexing
+- the original blocker was a large `turborepo` embedding batch that hit a CUDA ONNX allocation spike inside `MultiHeadAttention`; Vera now retries those local batches at smaller sizes instead of aborting the index
+- the dynamic sequence-aware scaler keeps the same aggregate metrics as `oom-fix-jina-cuda-onnx-quantized-embed`, then trims quantized indexing time on every benchmark repo in the same 21-task run (`ripgrep 13.08s -> 12.96s`, `fastify 15.24s -> 14.57s`, `turborepo 55.28s -> 54.71s`, `flask 6.37s -> 5.82s`)
+- the scaler now also persists learned GPU windows across runs in `~/.vera/adaptive-batch-scaler.json`; when you compare cold indexing throughput, clear that file first or run all candidates against the same warmed state
+
 ### Optional CodeRankEmbed Preset
 
 Vera now ships CodeRankEmbed as an optional local embedding preset. This is the short no-rerank sanity check used to decide whether it was worth exposing as a first-class option:

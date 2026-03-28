@@ -45,6 +45,8 @@ vera-ai upgrade
 
 `vera-ai doctor --probe` runs a deeper read-only ONNX session check. `vera-ai upgrade` shows the binary update plan and can apply it when the install method is known.
 
+On GPU backends, Vera uses a free-VRAM-aware batch ceiling and sequence-aware local micro-batching, and it reuses learned device-specific batch windows across runs.
+
 ## What you get
 
 - **60+ languages** via tree-sitter AST parsing

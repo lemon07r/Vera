@@ -217,8 +217,9 @@ impl VeraConfig {
     ///
     /// Saved configs may have API-mode defaults (batch 128, concurrency 8)
     /// even when the user switches to local mode. CPU inference needs small
-    /// batches; GPU can handle larger ones. For GPU backends, auto-detects
-    /// available VRAM and scales batch_size accordingly.
+    /// batches; GPU can handle larger ones. For GPU backends, this picks a
+    /// coarse outer batch ceiling from available VRAM. The local ONNX provider
+    /// still shapes the actual micro-batches from sequence length at runtime.
     pub fn adjust_for_backend(&mut self, backend: InferenceBackend) {
         match backend {
             InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu) => {

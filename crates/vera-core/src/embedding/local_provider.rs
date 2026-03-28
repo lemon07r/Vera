@@ -3,15 +3,244 @@ use crate::embedding::provider::{EmbeddingError, EmbeddingProvider};
 use crate::local_models::{LocalEmbeddingModelConfig, LocalEmbeddingPooling};
 use anyhow::{Context, Result};
 use ort::session::{Session, builder::GraphOptimizationLevel};
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use tokenizers::Tokenizer;
+use std::time::{SystemTime, UNIX_EPOCH};
+use tokenizers::{Encoding, Tokenizer};
 use tokio::task;
+
+const ADAPTIVE_BATCH_SCALER_STATE_VERSION: u32 = 1;
 
 #[derive(Clone)]
 pub struct LocalEmbeddingProvider {
     session: Arc<Mutex<Session>>,
     tokenizer: Arc<Tokenizer>,
     config: Arc<LocalEmbeddingModelConfig>,
+    batch_scaler: Option<Arc<PersistedAdaptiveBatchScaler>>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+struct BatchBucketWindow {
+    max_safe_batch: Option<usize>,
+    min_failed_batch: Option<usize>,
+    #[serde(skip)]
+    loaded_from_disk: bool,
+}
+
+#[derive(Debug, Clone, Default)]
+struct AdaptiveBatchScaler {
+    max_length: usize,
+    buckets: BTreeMap<usize, BatchBucketWindow>,
+}
+
+impl AdaptiveBatchScaler {
+    fn new(max_length: usize) -> Self {
+        Self {
+            max_length: max_length.max(1),
+            buckets: BTreeMap::new(),
+        }
+    }
+
+    fn recommend_batch_len(&self, requested: usize, seq_len: usize) -> usize {
+        let requested = requested.max(1);
+        let bucket = self.bucket_for(seq_len);
+        let seq_guided = self.sequence_guided_batch_len(requested, bucket);
+        let learned = match self.buckets.get(&bucket) {
+            Some(window) => match (window.max_safe_batch, window.min_failed_batch) {
+                (Some(safe), Some(failed)) if safe + 1 < failed => (safe + failed) / 2,
+                (Some(safe), Some(_)) => safe,
+                (Some(safe), None) if window.loaded_from_disk => safe,
+                (Some(safe), None) => safe.saturating_add(safe.div_ceil(2)),
+                (None, Some(failed)) => failed.saturating_div(2).max(1),
+                (None, None) => seq_guided,
+            },
+            None => seq_guided,
+        };
+        learned.clamp(1, requested)
+    }
+
+    fn note_success(&mut self, seq_len: usize, batch_len: usize) {
+        let window = self.buckets.entry(self.bucket_for(seq_len)).or_default();
+        window.loaded_from_disk = false;
+        window.max_safe_batch = Some(
+            window
+                .max_safe_batch
+                .map_or(batch_len, |current| current.max(batch_len)),
+        );
+        if window
+            .min_failed_batch
+            .is_some_and(|failed| batch_len >= failed)
+        {
+            window.min_failed_batch = None;
+        }
+    }
+
+    fn note_failure(&mut self, seq_len: usize, batch_len: usize) {
+        let window = self.buckets.entry(self.bucket_for(seq_len)).or_default();
+        window.loaded_from_disk = false;
+        window.min_failed_batch = Some(
+            window
+                .min_failed_batch
+                .map_or(batch_len, |current| current.min(batch_len)),
+        );
+        if window.max_safe_batch.is_some_and(|safe| safe >= batch_len) {
+            window.max_safe_batch = batch_len.checked_sub(1);
+        }
+    }
+
+    fn bucket_for(&self, seq_len: usize) -> usize {
+        let width = (self.max_length / 8).max(1);
+        seq_len.max(1).div_ceil(width) * width
+    }
+
+    fn sequence_guided_batch_len(&self, requested: usize, seq_len: usize) -> usize {
+        let reference_len = (self.max_length / 2).max(1) as u64;
+        let seq_len = seq_len.max(1) as u64;
+        let requested = requested.max(1) as u64;
+        let scaled = requested
+            .saturating_mul(reference_len.saturating_mul(reference_len))
+            .div_ceil(seq_len.saturating_mul(seq_len));
+        scaled.clamp(1, requested) as usize
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct AdaptiveBatchScalerProfile {
+    key: String,
+    backend: OnnxExecutionProvider,
+    device_fingerprint: String,
+    model_identity: String,
+    max_length: usize,
+}
+
+#[derive(Debug, Clone)]
+struct AdaptiveBatchScalerPersistenceTarget {
+    path: PathBuf,
+    profile: AdaptiveBatchScalerProfile,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+struct PersistedAdaptiveBatchScalerRegistry {
+    #[serde(default = "default_adaptive_batch_scaler_state_version")]
+    version: u32,
+    #[serde(default)]
+    profiles: BTreeMap<String, PersistedAdaptiveBatchScalerRecord>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct PersistedAdaptiveBatchScalerRecord {
+    backend: OnnxExecutionProvider,
+    device_fingerprint: String,
+    model_identity: String,
+    max_length: usize,
+    updated_at_secs: u64,
+    #[serde(default)]
+    buckets: BTreeMap<usize, BatchBucketWindow>,
+}
+
+#[derive(Debug)]
+struct PersistedAdaptiveBatchScaler {
+    inner: Mutex<PersistedAdaptiveBatchScalerState>,
+}
+
+#[derive(Debug)]
+struct PersistedAdaptiveBatchScalerState {
+    scaler: AdaptiveBatchScaler,
+    persistence: Option<AdaptiveBatchScalerPersistenceTarget>,
+    dirty: bool,
+}
+
+impl PersistedAdaptiveBatchScaler {
+    fn load_or_new(
+        max_length: usize,
+        persistence: Option<AdaptiveBatchScalerPersistenceTarget>,
+    ) -> Self {
+        let mut scaler = AdaptiveBatchScaler::new(max_length);
+
+        if let Some(target) = persistence.as_ref() {
+            match load_persisted_batch_scaler(&target.path, &target.profile) {
+                Ok(Some(loaded)) => {
+                    tracing::info!(
+                        backend = %target.profile.backend,
+                        device = %target.profile.device_fingerprint,
+                        buckets = loaded.buckets.len(),
+                        "loaded persisted adaptive batch scaler"
+                    );
+                    scaler = loaded;
+                }
+                Ok(None) => {}
+                Err(error) => {
+                    tracing::warn!(
+                        path = %target.path.display(),
+                        error = %error,
+                        "failed to load persisted adaptive batch scaler"
+                    );
+                }
+            }
+        }
+
+        Self {
+            inner: Mutex::new(PersistedAdaptiveBatchScalerState {
+                scaler,
+                persistence,
+                dirty: false,
+            }),
+        }
+    }
+
+    fn recommend_batch_len(&self, requested: usize, seq_len: usize) -> usize {
+        self.inner
+            .lock()
+            .unwrap()
+            .scaler
+            .recommend_batch_len(requested, seq_len)
+    }
+
+    fn note_success(&self, seq_len: usize, batch_len: usize) {
+        let mut inner = self.inner.lock().unwrap();
+        inner.scaler.note_success(seq_len, batch_len);
+        inner.dirty = true;
+    }
+
+    fn note_failure(&self, seq_len: usize, batch_len: usize) {
+        let mut inner = self.inner.lock().unwrap();
+        inner.scaler.note_failure(seq_len, batch_len);
+        inner.dirty = true;
+    }
+
+    fn flush(&self) -> Result<()> {
+        let (persistence, scaler, dirty) = {
+            let inner = self.inner.lock().unwrap();
+            (
+                inner.persistence.clone(),
+                inner.scaler.clone(),
+                inner.dirty && !inner.scaler.buckets.is_empty(),
+            )
+        };
+        if !dirty {
+            return Ok(());
+        }
+        let Some(persistence) = persistence else {
+            return Ok(());
+        };
+
+        save_persisted_batch_scaler(&persistence.path, &persistence.profile, &scaler)
+    }
+}
+
+impl Drop for PersistedAdaptiveBatchScaler {
+    fn drop(&mut self) {
+        if let Err(error) = self.flush() {
+            tracing::warn!(error = %error, "failed to save adaptive batch scaler state");
+        }
+    }
+}
+
+fn default_adaptive_batch_scaler_state_version() -> u32 {
+    ADAPTIVE_BATCH_SCALER_STATE_VERSION
 }
 
 impl LocalEmbeddingProvider {
@@ -29,6 +258,24 @@ impl LocalEmbeddingProvider {
                 message: e.to_string(),
             })?;
         config.adjust_for_gpu(ep);
+        let batch_scaler = if ep == OnnxExecutionProvider::Cpu {
+            None
+        } else {
+            let persistence = match build_batch_scaler_persistence_target(ep, &config) {
+                Ok(target) => target,
+                Err(error) => {
+                    tracing::warn!(
+                        error = %error,
+                        "failed to configure adaptive batch scaler persistence; continuing with in-memory state"
+                    );
+                    None
+                }
+            };
+            Some(Arc::new(PersistedAdaptiveBatchScaler::load_or_new(
+                config.max_length,
+                persistence,
+            )))
+        };
         let ort_path = crate::local_models::ensure_ort_library_for_ep(ep)
             .await
             .map_err(|e| EmbeddingError::ApiError {
@@ -84,6 +331,7 @@ impl LocalEmbeddingProvider {
             session: Arc::new(Mutex::new(session)),
             tokenizer: Arc::new(tokenizer),
             config: Arc::new(config),
+            batch_scaler,
         })
     }
 
@@ -118,21 +366,46 @@ impl LocalEmbeddingProvider {
 
     #[allow(clippy::needless_range_loop)]
     fn do_embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
-        let mut encodings = Vec::with_capacity(texts.len());
-        for text in texts {
-            let encoding = self
-                .tokenizer
-                .encode(text.as_str(), true)
-                .map_err(|e| anyhow::anyhow!("Tokenizer error: {}", e))?;
-            encodings.push(encoding);
+        let encodings = self.tokenize_texts(texts)?;
+        if encodings.is_empty() {
+            return Ok(Vec::new());
         }
 
-        let batch_size = texts.len();
-        let mut max_len = encodings
-            .iter()
-            .map(|e| e.get_ids().len())
-            .max()
-            .unwrap_or(0);
+        if self.batch_scaler.is_none() {
+            return self.do_embed_once(&encodings);
+        }
+
+        let mut results = Vec::with_capacity(encodings.len());
+        let mut start = 0;
+        while start < encodings.len() {
+            let remaining = &encodings[start..];
+            let seq_len = batch_max_len(remaining);
+            let planned_batch_len = self
+                .batch_scaler
+                .as_ref()
+                .unwrap()
+                .recommend_batch_len(remaining.len(), seq_len)
+                .min(remaining.len())
+                .max(1);
+            let end = start + planned_batch_len;
+            tracing::debug!(
+                requested_batch_size = remaining.len(),
+                planned_batch_size = planned_batch_len,
+                seq_len,
+                "planning local ONNX embedding sub-batch"
+            );
+            let mut batch = self.embed_with_adaptive_batching(&encodings[start..end])?;
+            results.append(&mut batch);
+            start = end;
+        }
+
+        Ok(results)
+    }
+
+    #[allow(clippy::needless_range_loop)]
+    fn do_embed_once(&self, encodings: &[Encoding]) -> Result<Vec<Vec<f32>>> {
+        let batch_size = encodings.len();
+        let mut max_len = batch_max_len(encodings);
         if max_len == 0 {
             max_len = 1;
         }
@@ -160,8 +433,8 @@ impl LocalEmbeddingProvider {
             "attention_mask" => attention_mask_tensor,
         ];
 
-        let mut session = self.session.lock().unwrap();
         let t0 = std::time::Instant::now();
+        let mut session = self.session.lock().unwrap();
         let outputs = session.run(inputs)?;
         tracing::debug!(
             batch_size,
@@ -221,6 +494,273 @@ impl LocalEmbeddingProvider {
 
         Ok(result)
     }
+
+    fn tokenize_texts(&self, texts: &[String]) -> Result<Vec<Encoding>> {
+        let mut encodings = Vec::with_capacity(texts.len());
+        for text in texts {
+            let encoding = self
+                .tokenizer
+                .encode(text.as_str(), true)
+                .map_err(|e| anyhow::anyhow!("Tokenizer error: {}", e))?;
+            encodings.push(encoding);
+        }
+        Ok(encodings)
+    }
+
+    fn embed_with_adaptive_batching(&self, encodings: &[Encoding]) -> Result<Vec<Vec<f32>>> {
+        match self.do_embed_once(encodings) {
+            Ok(results) => {
+                self.note_batch_success(encodings);
+                Ok(results)
+            }
+            Err(error) if encodings.len() > 1 && is_retryable_onnx_allocation_error(&error) => {
+                self.note_batch_failure(encodings);
+                let split_at = self.retry_split_at(encodings);
+                tracing::warn!(
+                    batch_size = encodings.len(),
+                    seq_len = batch_max_len(encodings),
+                    split_at,
+                    error = %error,
+                    "embedding batch hit an ONNX allocation error, retrying with smaller batches"
+                );
+                let mut left = self.embed_with_adaptive_batching(&encodings[..split_at])?;
+                let mut right = self.embed_with_adaptive_batching(&encodings[split_at..])?;
+                left.append(&mut right);
+                Ok(left)
+            }
+            Err(error) => Err(error),
+        }
+    }
+
+    fn retry_split_at(&self, encodings: &[Encoding]) -> usize {
+        if encodings.len() <= 1 {
+            return 1;
+        }
+        let seq_len = batch_max_len(encodings);
+        let suggested = self
+            .batch_scaler
+            .as_ref()
+            .map(|scaler| scaler.recommend_batch_len(encodings.len() - 1, seq_len))
+            .unwrap_or_else(|| encodings.len() / 2);
+        suggested.clamp(1, encodings.len() - 1)
+    }
+
+    fn note_batch_success(&self, encodings: &[Encoding]) {
+        if let Some(scaler) = &self.batch_scaler {
+            scaler.note_success(batch_max_len(encodings), encodings.len());
+        }
+    }
+
+    fn note_batch_failure(&self, encodings: &[Encoding]) {
+        if let Some(scaler) = &self.batch_scaler {
+            scaler.note_failure(batch_max_len(encodings), encodings.len());
+        }
+    }
+}
+
+fn build_batch_scaler_persistence_target(
+    ep: OnnxExecutionProvider,
+    config: &LocalEmbeddingModelConfig,
+) -> Result<Option<AdaptiveBatchScalerPersistenceTarget>> {
+    let path = crate::local_models::vera_home_dir()?.join("adaptive-batch-scaler.json");
+    let device_fingerprint = detect_device_fingerprint(ep);
+    let model_identity = config.model_identity();
+    let max_length = config.max_length;
+    let key =
+        format!("{ep}|device={device_fingerprint}|model={model_identity}|max_length={max_length}");
+    Ok(Some(AdaptiveBatchScalerPersistenceTarget {
+        path,
+        profile: AdaptiveBatchScalerProfile {
+            key,
+            backend: ep,
+            device_fingerprint,
+            model_identity,
+            max_length,
+        },
+    }))
+}
+
+fn load_persisted_batch_scaler(
+    path: &Path,
+    profile: &AdaptiveBatchScalerProfile,
+) -> Result<Option<AdaptiveBatchScaler>> {
+    if !path.exists() {
+        return Ok(None);
+    }
+
+    let data = fs::read(path).with_context(|| {
+        format!(
+            "failed to read adaptive batch scaler state {}",
+            path.display()
+        )
+    })?;
+    let registry: PersistedAdaptiveBatchScalerRegistry = serde_json::from_slice(&data)
+        .with_context(|| {
+            format!(
+                "failed to parse adaptive batch scaler state {}",
+                path.display()
+            )
+        })?;
+    if registry.version != ADAPTIVE_BATCH_SCALER_STATE_VERSION {
+        return Ok(None);
+    }
+
+    let Some(record) = registry.profiles.get(&profile.key) else {
+        return Ok(None);
+    };
+    if record.backend != profile.backend
+        || record.device_fingerprint != profile.device_fingerprint
+        || record.model_identity != profile.model_identity
+        || record.max_length != profile.max_length
+    {
+        return Ok(None);
+    }
+
+    Ok(Some(AdaptiveBatchScaler {
+        max_length: record.max_length.max(1),
+        buckets: record
+            .buckets
+            .iter()
+            .map(|(bucket, window)| {
+                let mut window = window.clone();
+                window.loaded_from_disk = true;
+                window.max_safe_batch = window.max_safe_batch.map(persisted_batch_margin);
+                (*bucket, window)
+            })
+            .collect(),
+    }))
+}
+
+fn save_persisted_batch_scaler(
+    path: &Path,
+    profile: &AdaptiveBatchScalerProfile,
+    scaler: &AdaptiveBatchScaler,
+) -> Result<()> {
+    let mut registry = if path.exists() {
+        let data = fs::read(path).with_context(|| {
+            format!(
+                "failed to read adaptive batch scaler state before saving {}",
+                path.display()
+            )
+        })?;
+        serde_json::from_slice::<PersistedAdaptiveBatchScalerRegistry>(&data).with_context(
+            || {
+                format!(
+                    "failed to parse adaptive batch scaler state before saving {}",
+                    path.display()
+                )
+            },
+        )?
+    } else {
+        PersistedAdaptiveBatchScalerRegistry::default()
+    };
+    registry.version = ADAPTIVE_BATCH_SCALER_STATE_VERSION;
+    registry.profiles.insert(
+        profile.key.clone(),
+        PersistedAdaptiveBatchScalerRecord {
+            backend: profile.backend,
+            device_fingerprint: profile.device_fingerprint.clone(),
+            model_identity: profile.model_identity.clone(),
+            max_length: profile.max_length,
+            updated_at_secs: now_unix_secs(),
+            buckets: scaler.buckets.clone(),
+        },
+    );
+
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).with_context(|| {
+            format!(
+                "failed to create adaptive batch scaler directory {}",
+                parent.display()
+            )
+        })?;
+    }
+    let json = serde_json::to_vec_pretty(&registry)
+        .context("failed to serialize adaptive batch scaler state")?;
+    fs::write(path, json).with_context(|| {
+        format!(
+            "failed to write adaptive batch scaler state {}",
+            path.display()
+        )
+    })
+}
+
+fn now_unix_secs() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_secs())
+        .unwrap_or(0)
+}
+
+fn persisted_batch_margin(batch_len: usize) -> usize {
+    let margin = batch_len.div_ceil(8).max(1);
+    batch_len.saturating_sub(margin).max(1)
+}
+
+fn detect_device_fingerprint(ep: OnnxExecutionProvider) -> String {
+    match ep {
+        OnnxExecutionProvider::Cuda => command_fingerprint(
+            "nvidia-smi",
+            &[
+                "--query-gpu=name,memory.total,driver_version",
+                "--format=csv,noheader,nounits",
+            ],
+        )
+        .unwrap_or_else(|| host_fingerprint(ep)),
+        OnnxExecutionProvider::Rocm => command_fingerprint(
+            "rocm-smi",
+            &["--showproductname", "--showmeminfo", "vram", "--csv"],
+        )
+        .unwrap_or_else(|| host_fingerprint(ep)),
+        _ => host_fingerprint(ep),
+    }
+}
+
+fn command_fingerprint(program: &str, args: &[&str]) -> Option<String> {
+    let output = std::process::Command::new(program)
+        .args(args)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    stdout
+        .lines()
+        .find_map(|line| {
+            let trimmed = line.trim();
+            (!trimmed.is_empty() && !trimmed.starts_with("GPU")).then(|| trimmed.to_string())
+        })
+        .map(|line| line.replace(", ", "|").replace(',', "|"))
+}
+
+fn host_fingerprint(ep: OnnxExecutionProvider) -> String {
+    let host = std::env::var("HOSTNAME")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| command_fingerprint("hostname", &[]))
+        .unwrap_or_else(|| "unknown-host".to_string());
+    format!(
+        "{host}|os={}|arch={}|backend={ep}",
+        std::env::consts::OS,
+        std::env::consts::ARCH
+    )
+}
+
+fn batch_max_len(encodings: &[Encoding]) -> usize {
+    encodings
+        .iter()
+        .map(|encoding| encoding.get_ids().len())
+        .max()
+        .unwrap_or(0)
+}
+
+fn is_retryable_onnx_allocation_error(error: &anyhow::Error) -> bool {
+    let message = error.to_string().to_ascii_lowercase();
+    message.contains("failed to allocate memory")
+        || message.contains("cuda out of memory")
+        || message.contains("out of memory")
+        || message.contains("bfcarena")
 }
 
 fn load_tokenizer(tokenizer_path: std::path::PathBuf, max_length: usize) -> Result<Tokenizer> {
@@ -415,6 +955,7 @@ fn register_execution_provider(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::tempdir;
 
     #[tokio::test]
     async fn test_local_embedding_provider() {
@@ -435,5 +976,121 @@ mod tests {
         assert!(embeddings[0].iter().all(|x| x.is_finite()));
         let sum_abs: f32 = embeddings[0].iter().map(|x| x.abs()).sum();
         assert!(sum_abs > 0.1);
+    }
+
+    #[test]
+    fn adaptive_batch_scaler_shrinks_long_batches_quadratically() {
+        let scaler = AdaptiveBatchScaler::new(512);
+        assert_eq!(scaler.recommend_batch_len(128, 64), 128);
+        assert_eq!(scaler.recommend_batch_len(128, 512), 32);
+    }
+
+    #[test]
+    fn adaptive_batch_scaler_learns_safe_windows_per_length_bucket() {
+        let mut scaler = AdaptiveBatchScaler::new(512);
+        assert_eq!(scaler.recommend_batch_len(128, 512), 32);
+
+        scaler.note_success(512, 32);
+        assert_eq!(scaler.recommend_batch_len(128, 512), 48);
+
+        scaler.note_failure(512, 48);
+        assert_eq!(scaler.recommend_batch_len(128, 512), 40);
+
+        scaler.note_success(512, 40);
+        assert_eq!(scaler.recommend_batch_len(128, 512), 44);
+    }
+
+    #[test]
+    fn adaptive_batch_scaler_keeps_short_and_long_buckets_independent() {
+        let mut scaler = AdaptiveBatchScaler::new(512);
+        scaler.note_failure(512, 48);
+
+        assert_eq!(scaler.recommend_batch_len(128, 512), 24);
+        assert_eq!(scaler.recommend_batch_len(128, 128), 128);
+    }
+
+    #[test]
+    fn persisted_scaler_round_trips_by_profile_key() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("adaptive-batch-scaler.json");
+        let profile = AdaptiveBatchScalerProfile {
+            key: "cuda|device=rtx-4080|model=jina|max_length=512".to_string(),
+            backend: OnnxExecutionProvider::Cuda,
+            device_fingerprint: "rtx-4080".to_string(),
+            model_identity: "jina".to_string(),
+            max_length: 512,
+        };
+        let mut scaler = AdaptiveBatchScaler::new(512);
+        scaler.note_success(512, 40);
+        scaler.note_failure(512, 48);
+
+        save_persisted_batch_scaler(&path, &profile, &scaler).unwrap();
+        let loaded = load_persisted_batch_scaler(&path, &profile)
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(loaded.recommend_batch_len(128, 512), 41);
+    }
+
+    #[test]
+    fn persisted_scaler_ignores_mismatched_device_or_model() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("adaptive-batch-scaler.json");
+        let profile = AdaptiveBatchScalerProfile {
+            key: "cuda|device=rtx-4080|model=jina|max_length=512".to_string(),
+            backend: OnnxExecutionProvider::Cuda,
+            device_fingerprint: "rtx-4080".to_string(),
+            model_identity: "jina".to_string(),
+            max_length: 512,
+        };
+        let mut scaler = AdaptiveBatchScaler::new(512);
+        scaler.note_success(512, 40);
+        save_persisted_batch_scaler(&path, &profile, &scaler).unwrap();
+
+        let mismatched = AdaptiveBatchScalerProfile {
+            key: "cuda|device=rtx-4090|model=jina|max_length=512".to_string(),
+            device_fingerprint: "rtx-4090".to_string(),
+            ..profile
+        };
+
+        assert!(
+            load_persisted_batch_scaler(&path, &mismatched)
+                .unwrap()
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn persisted_scaler_applies_margin_before_first_reuse() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("adaptive-batch-scaler.json");
+        let profile = AdaptiveBatchScalerProfile {
+            key: "cuda|device=rtx-4080|model=jina|max_length=512".to_string(),
+            backend: OnnxExecutionProvider::Cuda,
+            device_fingerprint: "rtx-4080".to_string(),
+            model_identity: "jina".to_string(),
+            max_length: 512,
+        };
+        let mut scaler = AdaptiveBatchScaler::new(512);
+        scaler.note_success(512, 128);
+
+        save_persisted_batch_scaler(&path, &profile, &scaler).unwrap();
+        let loaded = load_persisted_batch_scaler(&path, &profile)
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(loaded.recommend_batch_len(128, 512), 112);
+    }
+
+    #[test]
+    fn retryable_onnx_allocation_error_detection_matches_cuda_oom_messages() {
+        let error = anyhow::anyhow!(
+            "Non-zero status code returned while running MultiHeadAttention node. \
+             Status Message: BFCArena::AllocateRawInternal Failed to allocate memory"
+        );
+        assert!(is_retryable_onnx_allocation_error(&error));
+
+        let non_oom = anyhow::anyhow!("invalid graph input");
+        assert!(!is_retryable_onnx_allocation_error(&non_oom));
     }
 }

@@ -66,6 +66,10 @@ vera index . --low-vram
 
 This forces batch size 1 and caps the ONNX Runtime memory arena to 1 GB. You can also manually tune batch size with `vera config set embedding.batch_size 1`.
 
+On newer builds, Vera does not send every local GPU batch to ONNX at the configured `embedding.batch_size`. It tokenizes first, shrinks long-sequence micro-batches aggressively, and learns safer limits per sequence-length bucket from real runs. Those learned windows are stored in `~/.vera/adaptive-batch-scaler.json` and reused on later runs for the same backend, device, and model. If a pathological batch still trips an allocation error, Vera retries it at a smaller size instead of aborting the whole index.
+
+If you still see repeated retries or very slow indexing, lower `embedding.batch_size` manually or use `--low-vram`.
+
 ## Too many irrelevant results
 
 Try narrowing your search:
