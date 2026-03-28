@@ -29,7 +29,9 @@ Vera is a code search tool built in Rust that combines BM25 keyword matching, ve
 
 </div>
 
-After trying many other tools and maintaining Pampax, a fork of someone's code search tool, I ran into constant issues. The upstream project was hastily thrown together with deep-rooted bugs. Despite significantly improving Pampax over time, the foundation was too fragile to build on reliably. Nothing supported all the things I wanted (like provider-agnostic reranking), so I built something better from scratch. Every design choice in Vera (the retrieval pipeline, the model selection, the output format) comes from hours of research, real benchmarking and evaluation.
+<h2></h2>
+
+After trying many other tools and maintaining Pampax, a fork of someone's code search tool, I ran into constant issues. The upstream project was hastily thrown together with deep-rooted bugs. Despite significantly improving Pampax over time, the foundation was too fragile to build on reliably. Nothing supported all the things I wanted (like provider-agnostic reranking), so I wanted to build something better from scratch. Every design choice in Vera (the retrieval pipeline, the model selection, the output format) comes from months of research, real benchmarking and evaluation.
 
 ## Quick Start
 
