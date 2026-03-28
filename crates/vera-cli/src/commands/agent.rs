@@ -222,11 +222,14 @@ fn install_interactive() -> anyhow::Result<()> {
         .interact()?;
 
     let all_clients = AgentClient::all_concrete();
-    let mut multi = cliclack::multiselect("Select agents (space to toggle)");
+    let mut multi = cliclack::multiselect("Select agents (space to toggle, all selected by default)");
     for &client in all_clients {
         multi = multi.item(client, client.display_name(), "");
     }
-    let selected: Vec<AgentClient> = multi.required(true).interact()?;
+    let selected: Vec<AgentClient> = multi
+        .initial_values(all_clients.to_vec())
+        .required(true)
+        .interact()?;
 
     let mut locations = Vec::new();
     let cwd = std::env::current_dir().context("failed to resolve current directory")?;
