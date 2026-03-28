@@ -209,7 +209,11 @@ fn install(
     };
 
     let locations = resolve_locations(resolved_client, resolved_scope)?;
-    do_install(&locations, json_output)
+    do_install(&locations, json_output)?;
+    if !json_output {
+        offer_agents_md_snippet()?;
+    }
+    Ok(())
 }
 
 fn install_interactive() -> anyhow::Result<()> {
@@ -222,7 +226,8 @@ fn install_interactive() -> anyhow::Result<()> {
         .interact()?;
 
     let all_clients = AgentClient::all_concrete();
-    let mut multi = cliclack::multiselect("Select agents (space to toggle, all selected by default)");
+    let mut multi =
+        cliclack::multiselect("Select agents (space to toggle, all selected by default)");
     for &client in all_clients {
         multi = multi.item(client, client.display_name(), "");
     }
@@ -249,6 +254,7 @@ fn install_interactive() -> anyhow::Result<()> {
     }
 
     do_install(&locations, false)?;
+    offer_agents_md_snippet()?;
     cliclack::outro("Done!")?;
     Ok(())
 }
@@ -625,6 +631,93 @@ fn skill_path_for(
     };
 
     Ok(base.join(VERA_SKILL_NAME))
+}
+
+/// The snippet Vera offers to inject into agent config files.
+const AGENTS_MD_SNIPPET: &str = r#"## Code Search
+
+This project is indexed with Vera. Use `vera search "query"` for semantic code search
+and `vera grep "pattern"` for regex search. Run `vera update .` after code changes.
+For query tips and output format details, see the Vera skill in your skills directory.
+"#;
+
+/// Known agent config filenames to check (in priority order).
+const AGENT_CONFIG_FILES: &[&str] = &[
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".cursorrules",
+    ".windsurfrules",
+    "COPILOT.md",
+];
+
+/// Check if any agent config file in the current directory already mentions Vera.
+/// Returns the path of the first config file found (if any) and whether it mentions Vera.
+fn find_agent_config(cwd: &Path) -> (Option<PathBuf>, bool) {
+    for &name in AGENT_CONFIG_FILES {
+        let path = cwd.join(name);
+        if path.is_file() {
+            let mentions_vera = fs::read_to_string(&path)
+                .map(|content| {
+                    let lower = content.to_lowercase();
+                    lower.contains("vera search")
+                        || lower.contains("vera grep")
+                        || lower.contains("vera update")
+                })
+                .unwrap_or(false);
+            return (Some(path), mentions_vera);
+        }
+    }
+    (None, false)
+}
+
+/// After skill install, offer to add a Vera snippet to the project's agent config file.
+fn offer_agents_md_snippet() -> anyhow::Result<()> {
+    let cwd = std::env::current_dir().context("failed to resolve current directory")?;
+    let (existing, mentions_vera) = find_agent_config(&cwd);
+
+    if mentions_vera {
+        return Ok(());
+    }
+
+    let (action, target_path) = if let Some(ref path) = existing {
+        let name = path.file_name().unwrap_or_default().to_string_lossy();
+        let yes: bool = cliclack::confirm(format!("Add Vera usage snippet to {name}?"))
+            .initial_value(true)
+            .interact()?;
+        if !yes {
+            return Ok(());
+        }
+        ("Appended", path.clone())
+    } else {
+        let yes: bool =
+            cliclack::confirm("No AGENTS.md found. Create one with Vera usage instructions?")
+                .initial_value(true)
+                .interact()?;
+        if !yes {
+            return Ok(());
+        }
+        ("Created", cwd.join("AGENTS.md"))
+    };
+
+    let mut content = if target_path.is_file() {
+        let mut c = fs::read_to_string(&target_path)?;
+        if !c.ends_with('\n') {
+            c.push('\n');
+        }
+        c.push('\n');
+        c
+    } else {
+        String::new()
+    };
+    content.push_str(AGENTS_MD_SNIPPET);
+    fs::write(&target_path, &content)?;
+
+    let name = target_path
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy();
+    cliclack::log::success(format!("{action} Vera snippet in {name}"))?;
+    Ok(())
 }
 
 #[cfg(test)]

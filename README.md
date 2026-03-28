@@ -346,6 +346,22 @@ More detail: [docs/benchmarks.md](docs/benchmarks.md) · [benchmarks/indexing-pe
 
 BM25 keyword search and vector similarity run in parallel, merge via Reciprocal Rank Fusion, then a cross-encoder reranks the top candidates. Full breakdown: [docs/how-it-works.md](docs/how-it-works.md).
 
+## Configure Your AI Agent
+
+`vera agent install` installs the Vera skill for your coding agents and offers to add a usage snippet to your project's `AGENTS.md` (or `CLAUDE.md`, `.cursorrules`, etc.). This gives agents persistent context about Vera so they use it automatically.
+
+If you skipped the prompt or want to add it manually, put this in your project's agent config file:
+
+```markdown
+## Code Search
+
+This project is indexed with Vera. Use `vera search "query"` for semantic code search
+and `vera grep "pattern"` for regex search. Run `vera update .` after code changes.
+For query tips and output format details, see the Vera skill in your skills directory.
+```
+
+Why this matters: agents always read `AGENTS.md` but don't reliably discover installed skills on their own. A 3-5 line block is enough to tell the agent Vera exists and when to use it. Keep it short; don't paste the full skill definition here.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions, project layout, how to add a language, and coding conventions.
