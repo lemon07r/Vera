@@ -3777,6 +3777,7 @@ dependencies = [
  "anyhow",
  "clap",
  "cliclack",
+ "console",
  "dirs",
  "reqwest",
  "serde",

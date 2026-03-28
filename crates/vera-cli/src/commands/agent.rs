@@ -279,14 +279,18 @@ fn do_install(locations: &[SkillLocation], json_output: bool) -> anyhow::Result<
     if json_output {
         println!("{}", serde_json::to_string_pretty(&reports)?);
     } else {
+        let green = console::Style::new().green();
+        let dim = console::Style::new().dim();
         println!("Installed Vera skill:");
         println!();
         for report in &reports {
+            let name = format!("{:?}", report.client).to_lowercase();
+            let scope = format!("{:?}", report.scope).to_lowercase();
             println!(
-                "  {:<14} {:<7} {}",
-                format!("{:?}", report.client).to_lowercase(),
-                format!("{:?}", report.scope).to_lowercase(),
-                report.path
+                "  {} {:<7} {}",
+                green.apply_to(format!("{:<14}", name)),
+                scope,
+                dim.apply_to(&report.path)
             );
         }
     }
@@ -386,14 +390,18 @@ fn do_remove(locations: &[SkillLocation], json_output: bool) -> anyhow::Result<(
     if json_output {
         println!("{}", serde_json::to_string_pretty(&reports)?);
     } else {
+        let red = console::Style::new().red();
+        let dim = console::Style::new().dim();
         println!("Removed Vera skill from:");
         println!();
         for report in &reports {
+            let name = format!("{:?}", report.client).to_lowercase();
+            let scope = format!("{:?}", report.scope).to_lowercase();
             println!(
-                "  {:<14} {:<7} {}",
-                format!("{:?}", report.client).to_lowercase(),
-                format!("{:?}", report.scope).to_lowercase(),
-                report.path
+                "  {} {:<7} {}",
+                red.apply_to(format!("{:<14}", name)),
+                scope,
+                dim.apply_to(&report.path)
             );
         }
     }
@@ -415,20 +423,47 @@ fn status(client: AgentClient, scope: AgentScope, json_output: bool) -> anyhow::
     if json_output {
         println!("{}", serde_json::to_string_pretty(&reports)?);
     } else {
-        println!("Vera skill status:");
-        println!();
-        for report in &reports {
-            let status = if report.installed {
-                "installed"
-            } else {
-                "missing"
-            };
+        let style = console::Style::new();
+        let bold = style.clone().bold();
+        let green = style.clone().green();
+        let dim = style.clone().dim();
+
+        let installed: Vec<_> = reports.iter().filter(|r| r.installed).collect();
+        let missing: Vec<_> = reports.iter().filter(|r| !r.installed).collect();
+
+        if installed.is_empty() {
+            println!("{}", dim.apply_to("No Vera skills installed."));
+        } else {
+            println!("{}", bold.apply_to("Installed:"));
+            println!();
+            for report in &installed {
+                let name = format!("{:?}", report.client).to_lowercase();
+                let scope = format!("{:?}", report.scope).to_lowercase();
+                println!(
+                    "  {} {:<7} {}",
+                    green.apply_to(format!("{:<14}", name)),
+                    scope,
+                    dim.apply_to(&report.path)
+                );
+            }
+        }
+
+        if !missing.is_empty() {
+            println!();
+            let names: Vec<_> = missing
+                .iter()
+                .map(|r| {
+                    format!(
+                        "{} ({})",
+                        format!("{:?}", r.client).to_lowercase(),
+                        format!("{:?}", r.scope).to_lowercase()
+                    )
+                })
+                .collect();
             println!(
-                "  {:<14} {:<7} {:<10} {}",
-                format!("{:?}", report.client).to_lowercase(),
-                format!("{:?}", report.scope).to_lowercase(),
-                status,
-                report.path
+                "{} {}",
+                bold.apply_to("Not installed:"),
+                dim.apply_to(names.join(", "))
             );
         }
     }
