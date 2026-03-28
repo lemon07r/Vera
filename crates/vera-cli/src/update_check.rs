@@ -256,9 +256,9 @@ pub fn binary_version_status(force_refresh: bool) -> BinaryVersionStatus {
 
 pub fn suggested_update_command(install_method: Option<&str>) -> String {
     match install_method {
-        Some("npm") => "npm update -g @vera-ai/cli && vera agent install".to_string(),
-        Some("bun") => "bunx @vera-ai/cli install".to_string(),
-        Some("pip") => "pip install --upgrade vera-ai && vera agent install".to_string(),
+        Some("npm") => "npm update -g @vera-ai/cli && npx @vera-ai/cli install".to_string(),
+        Some("bun") => "bun update -g @vera-ai/cli && bunx @vera-ai/cli install".to_string(),
+        Some("pip") => "pip install --upgrade vera-ai && vera-ai install".to_string(),
         Some("uv") => "uvx vera-ai install".to_string(),
         _ => "vera upgrade".to_string(),
     }
@@ -385,12 +385,15 @@ pub fn apply_update(method: &str) -> Result<()> {
     match method {
         "npm" => {
             run_update_step("npm", &["update", "-g", "@vera-ai/cli"])?;
-            run_update_step("vera", &["agent", "install"])?;
+            run_update_step("npx", &["@vera-ai/cli", "install"])?;
         }
-        "bun" => run_update_step("bunx", &["@vera-ai/cli", "install"])?,
+        "bun" => {
+            run_update_step("bun", &["update", "-g", "@vera-ai/cli"])?;
+            run_update_step("bunx", &["@vera-ai/cli", "install"])?;
+        }
         "pip" => {
             run_update_step("pip", &["install", "--upgrade", "vera-ai"])?;
-            run_update_step("vera", &["agent", "install"])?;
+            run_update_step("vera-ai", &["install"])?;
         }
         "uv" => run_update_step("uvx", &["vera-ai", "install"])?,
         other => bail!("unsupported install method: {other}"),
