@@ -1,3 +1,5 @@
+<div align="center">
+
 <img width="1584" height="539" alt="vera" src="https://github.com/user-attachments/assets/c866fc70-b1e6-400b-aaf7-fa68721a4955" />
 
 # Vera
@@ -6,8 +8,20 @@
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 [![GitHub release](https://img.shields.io/github/v/release/lemon07r/Vera?include_prereleases&sort=semver)](https://github.com/lemon07r/Vera/releases)
 [![Languages](https://img.shields.io/badge/languages-63%2B-green.svg)](docs/supported-languages.md)
-[![npm](https://img.shields.io/npm/v/@vera-ai/cli)](https://www.npmjs.com/package/@vera-ai/cli)
-[![PyPI](https://img.shields.io/pypi/v/vera-ai)](https://pypi.org/project/vera-ai/)
+
+[Query Guide](docs/query-guide.md)
+·
+[Benchmarks](docs/benchmarks.md)
+·
+[How It Works](docs/how-it-works.md)
+·
+[Models](docs/models.md)
+·
+[Docker](docs/docker.md)
+·
+[Supported Languages](docs/supported-languages.md)
+·
+[Troubleshooting](docs/troubleshooting.md)
 
 **V**ector **E**nhanced **R**eranking **A**gent
 
@@ -15,20 +29,7 @@ Vera is a code search tool built in Rust that combines BM25 keyword matching, ve
 
 After trying many other tools and maintaining Pampax, a fork of someone's code search tool, I ran into constant issues. The upstream project was hastily thrown together with deep-rooted bugs. Despite significantly improving Pampax over time, the foundation was too fragile to build on reliably. Nothing supported all the things I wanted (like provider-agnostic reranking), so I built something better from scratch. Every design choice in Vera (the retrieval pipeline, the model selection, the output format) comes from hours of research, real benchmarking and evaluation.
 
-## Table of Contents
-
-- [Quick Start](#quick-start)
-- [Why Vera is Better](#why-vera-is-better)
-- [Features](#features)
-- [Installation](#installation)
-- [Model Backend](#model-backend)
-- [Usage](#usage)
-- [Benchmark Snapshot](#benchmark-snapshot)
-- [Supported Languages](#supported-languages)
-- [How It Works](#how-it-works)
-- [Contributing](#contributing)
-
-**Docs:** [Query Guide](docs/query-guide.md) · [Benchmarks](docs/benchmarks.md) · [How It Works](docs/how-it-works.md) · [Models](docs/models.md) · [Docker](docs/docker.md) · [Supported Languages](docs/supported-languages.md) · [Troubleshooting](docs/troubleshooting.md)
+</div>
 
 ## Quick Start
 
