@@ -347,6 +347,20 @@ pub fn resolve_backend(backend: Option<InferenceBackend>) -> InferenceBackend {
     InferenceBackend::Api
 }
 
+/// Check whether two model names refer to the same model.
+///
+/// Model names may differ only by an org/repo prefix (e.g.
+/// `"jinaai/jina-embeddings-v5-text-nano-retrieval"` vs
+/// `"jina-embeddings-v5-text-nano-retrieval"`). This function
+/// normalises both names by stripping everything up to and including
+/// the last `/` and then comparing case-insensitively.
+pub fn model_names_match(a: &str, b: &str) -> bool {
+    let norm = |s: &str| {
+        s.rsplit('/').next().unwrap_or(s).to_ascii_lowercase()
+    };
+    norm(a) == norm(b)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -443,5 +457,28 @@ mod tests {
         );
 
         remove_env("VERA_LOCAL");
+    }
+
+    #[test]
+    fn model_names_match_exact() {
+        assert!(model_names_match("jina-embeddings-v5", "jina-embeddings-v5"));
+    }
+
+    #[test]
+    fn model_names_match_with_org_prefix() {
+        assert!(model_names_match(
+            "jinaai/jina-embeddings-v5-text-nano-retrieval",
+            "jina-embeddings-v5-text-nano-retrieval"
+        ));
+    }
+
+    #[test]
+    fn model_names_match_case_insensitive() {
+        assert!(model_names_match("Jina-Embeddings-V5", "jina-embeddings-v5"));
+    }
+
+    #[test]
+    fn model_names_match_different_models() {
+        assert!(!model_names_match("jina-embeddings-v5", "jina-reranker-v2"));
     }
 }

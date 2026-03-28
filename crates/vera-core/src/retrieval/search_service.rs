@@ -84,7 +84,7 @@ pub fn execute_search(
                 .get_index_meta("embedding_dim")
                 .unwrap_or(None),
         ) {
-            if s_model != model_name {
+            if !crate::config::model_names_match(&s_model, &model_name) {
                 anyhow::bail!(
                     "Index was created with model '{}' ({} dimensions), but you are using model '{}'. Please re-index with matching provider.",
                     s_model,
