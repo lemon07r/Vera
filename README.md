@@ -182,7 +182,7 @@ Local mode runs neural networks on your machine. GPU is recommended; CPU works b
 | Backend | Hardware | Time | Notes |
 |---------|----------|------|-------|
 | CUDA | RTX 4080 | **~8 s** | Recommended for large repos |
-| API mode | Remote GPU | ~30 s | Requires API key, no local compute |
+| API mode | Remote GPU | ~56 s | Requires API key, no local compute |
 | CPU | Ryzen 5 7600X3D (6c/12t) | ~6 min | Use GPU or API mode if this is too slow |
 
 ### API Mode
