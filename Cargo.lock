@@ -3765,6 +3765,7 @@ dependencies = [
  "ndarray",
  "ort",
  "rayon",
+ "regex",
  "reqwest",
  "rusqlite",
  "rustls",

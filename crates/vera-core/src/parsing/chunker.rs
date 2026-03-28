@@ -138,8 +138,9 @@ pub fn whole_file_chunk(source: &str, file_path: &str, language: Language) -> Ve
 
 /// Split a large symbol into sub-chunks of at most `max_lines` lines.
 ///
-/// Sub-chunks have no content gaps — every line of the symbol appears
-/// in exactly one sub-chunk. Each sub-chunk inherits the symbol's metadata.
+/// Uses smart boundary detection: prefers splitting after closing braces (`}`),
+/// semicolons, or blank lines rather than at arbitrary line counts. Falls back
+/// to the hard `max_lines` limit when no good boundary exists nearby.
 fn split_large_symbol(
     symbol: &RawSymbol,
     lines: &[&str],
@@ -155,7 +156,12 @@ fn split_large_symbol(
     let mut part = 1u32;
 
     while current <= end {
-        let chunk_end = (current + max_lines - 1).min(end);
+        let ideal_end = (current + max_lines - 1).min(end);
+        let chunk_end = if ideal_end >= end {
+            end
+        } else {
+            find_split_boundary(lines, current, ideal_end, max_lines)
+        };
         let content = join_lines(lines, current, chunk_end);
         let sub_name = symbol.name.as_ref().map(|n| format!("{n} (part {part})"));
 
@@ -176,6 +182,34 @@ fn split_large_symbol(
     }
 
     chunks
+}
+
+/// Find the best line to split at, searching backward from `ideal_end`.
+///
+/// Looks for (in priority order): closing brace on its own line, semicolon at
+/// end of line, blank line. Searches up to 30% of `max_lines` backward. If no
+/// good boundary is found, returns `ideal_end` (hard split).
+fn find_split_boundary(lines: &[&str], start: u32, ideal_end: u32, max_lines: u32) -> u32 {
+    let lookback = (max_lines * 3 / 10).max(3).min(ideal_end - start);
+    let search_start = ideal_end.saturating_sub(lookback);
+
+    // Pass 1: closing brace alone on a line (strongest boundary).
+    for row in (search_start..=ideal_end).rev() {
+        let trimmed = lines.get(row as usize).map(|l| l.trim()).unwrap_or("");
+        if trimmed == "}" || trimmed == "};" || trimmed == "}," {
+            return row;
+        }
+    }
+
+    // Pass 2: line ending with semicolon or blank line.
+    for row in (search_start..=ideal_end).rev() {
+        let trimmed = lines.get(row as usize).map(|l| l.trim()).unwrap_or("");
+        if trimmed.is_empty() || trimmed.ends_with(';') {
+            return row;
+        }
+    }
+
+    ideal_end
 }
 
 /// Split a markdown file into section-based chunks.

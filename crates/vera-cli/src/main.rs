@@ -321,6 +321,10 @@ enum Commands {
         #[arg(long, rename_all = "snake_case")]
         r#type: Option<String>,
 
+        /// Multi-hop iterative search: follow up on symbols found in initial results.
+        #[arg(long)]
+        deep: bool,
+
         #[command(flatten)]
         backend: helpers::LocalBackendFlags,
     },
@@ -393,6 +397,41 @@ enum Commands {
         /// Show what this symbol calls instead of what calls it.
         #[arg(long)]
         callees: bool,
+    },
+
+    /// Regex pattern search over indexed files.
+    ///
+    /// Searches file contents using a regex pattern, returning matches
+    /// with surrounding context. Only searches files in the index.
+    ///
+    /// Examples:
+    ///   vera grep "fn\s+main"
+    ///   vera grep "TODO|FIXME" -i
+    ///   vera grep "impl.*Display" --context 5
+    #[command(long_about = "Regex pattern search over indexed files.\n\n\
+                      Searches file contents using a regex pattern, returning matches \
+                      with surrounding context lines. Only searches files that are in \
+                      the Vera index, so .gitignore and .veraignore rules apply.\n\n\
+                      Examples:\n  \
+                      vera grep \"fn\\s+main\"              # Find main functions\n  \
+                      vera grep \"TODO|FIXME\" -i           # Case-insensitive\n  \
+                      vera grep \"impl.*Display\" -n 5      # 5 results\n  \
+                      vera grep \"use std::\" --context 0   # No context lines")]
+    Grep {
+        /// Regex pattern to search for.
+        pattern: String,
+
+        /// Maximum number of results (default: 20).
+        #[arg(long, short = 'n')]
+        limit: Option<usize>,
+
+        /// Case-insensitive matching.
+        #[arg(long, short = 'i')]
+        ignore_case: bool,
+
+        /// Number of context lines before and after each match (default: 2).
+        #[arg(long, default_value = "2")]
+        context: usize,
     },
 
     /// Find symbols with no callers (potential dead code).
@@ -557,9 +596,10 @@ fn main() {
             path,
             limit,
             r#type,
+            deep,
             backend,
         } => {
-            tracing::info!(query = %query, "searching");
+            tracing::info!(query = %query, deep, "searching");
             let filters = vera_core::types::SearchFilters {
                 language: lang,
                 path_glob: path,
@@ -572,6 +612,7 @@ fn main() {
                 cli.json,
                 cli.raw,
                 cli.timing,
+                deep,
                 backend.resolve(),
             )
         }
@@ -599,6 +640,15 @@ fn main() {
         Commands::References { symbol, callees } => {
             tracing::info!(symbol = %symbol, callees, "references query");
             commands::references::run(&symbol, callees, cli.json)
+        }
+        Commands::Grep {
+            pattern,
+            limit,
+            ignore_case,
+            context,
+        } => {
+            tracing::info!(pattern = %pattern, "grep");
+            commands::grep::run(&pattern, limit, ignore_case, context, cli.json, cli.raw)
         }
         Commands::DeadCode => {
             tracing::info!("dead code analysis");

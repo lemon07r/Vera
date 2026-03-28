@@ -27,9 +27,12 @@ pub use reranker::{
 pub mod dynamic_reranker;
 pub use dynamic_reranker::{DynamicReranker, create_dynamic_reranker};
 
+pub mod iterative_search;
 pub mod local_reranker;
+pub mod regex_search;
 
 pub use local_reranker::LocalReranker;
+pub use regex_search::search_regex;
 
 pub use vector::{VectorSearchError, search_vector, search_vector_with_stores};
 

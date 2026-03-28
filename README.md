@@ -90,7 +90,7 @@ If your network blocks CLI downloads and only allows browser downloads, use the 
 vera mcp   # or: bunx @vera-ai/cli mcp / uvx vera-ai mcp
 ```
 
-Exposes `search_code`, `index_project`, `update_project`, `get_stats`, `get_overview`, `watch_project`, `find_references`, and `find_dead_code` tools.
+Exposes `search_code`, `index_project`, `update_project`, `get_stats`, `get_overview`, `watch_project`, `find_references`, `find_dead_code`, and `regex_search` tools.
 
 </details>
 
@@ -244,6 +244,7 @@ vera search "authentication logic"
 vera search "error handling" --lang rust
 vera search "routes" --path "src/**/*.ts"
 vera search "handler" --type function --limit 5
+vera search "config loading" --deep              # multi-hop: follows symbols from initial results
 ```
 
 See the [query guide](docs/query-guide.md) for tips on writing effective queries and when to use `rg` instead.
@@ -284,6 +285,8 @@ pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }
 ### Other Commands
 
 ```bash
+vera grep "fn\s+main"              # regex search over indexed files
+vera grep "TODO|FIXME" -i          # case-insensitive regex
 vera doctor                    # diagnose setup issues
 vera doctor --probe            # deeper read-only ONNX probe
 vera doctor --probe --json     # machine-readable deep diagnostics

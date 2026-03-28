@@ -13,8 +13,10 @@ vera update .                   # after code changes
 
 ## When to Use
 
-- **Vera**: semantic search, symbol lookup, cross-file discovery, ranked context
-- **rg**: exact text, regex, bulk find-and-replace
+- **Vera search**: semantic search, symbol lookup, cross-file discovery, ranked context
+- **Vera search --deep**: multi-hop search that follows symbols from initial results for broader exploration
+- **Vera grep**: regex pattern search scoped to indexed files (respects .gitignore/.veraignore)
+- **rg**: exact text, regex, bulk find-and-replace across all files
 
 ## Output
 

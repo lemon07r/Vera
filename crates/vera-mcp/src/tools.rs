@@ -206,6 +206,35 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }
             }),
         },
+        ToolDefinition {
+            name: "regex_search".to_string(),
+            description: "Search indexed files using a regex pattern. Returns matches \
+                          with surrounding context lines. Useful for exact pattern matching \
+                          (imports, TODOs, specific syntax) where semantic search is too broad."
+                .to_string(),
+            input_schema: serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "pattern": {
+                        "type": "string",
+                        "description": "Regex pattern to search for"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of matches (default: 20)"
+                    },
+                    "ignore_case": {
+                        "type": "boolean",
+                        "description": "Case-insensitive matching (default: false)"
+                    },
+                    "context": {
+                        "type": "integer",
+                        "description": "Context lines before and after each match (default: 2)"
+                    }
+                },
+                "required": ["pattern"]
+            }),
+        },
     ]
 }
 
@@ -223,6 +252,7 @@ pub fn handle_tool_call(name: &str, arguments: &Value) -> ToolCallResult {
         "watch_project" => handle_watch_project(arguments),
         "find_references" => handle_find_references(arguments),
         "find_dead_code" => handle_find_dead_code(arguments),
+        "regex_search" => handle_regex_search(arguments),
         _ => ToolCallResult::error(format!("Unknown tool: {name}")),
     }
 }
@@ -497,14 +527,57 @@ fn handle_find_dead_code(args: &Value) -> ToolCallResult {
     }
 }
 
+/// Handle the `regex_search` tool.
+fn handle_regex_search(args: &Value) -> ToolCallResult {
+    let pattern = match args.get("pattern").and_then(|v| v.as_str()) {
+        Some(p) => p,
+        None => return ToolCallResult::error("Missing required parameter: pattern"),
+    };
+
+    let limit = args
+        .get("limit")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize)
+        .unwrap_or(20);
+    let ignore_case = args
+        .get("ignore_case")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let context = args
+        .get("context")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize)
+        .unwrap_or(2);
+
+    let cwd = match std::env::current_dir() {
+        Ok(d) => d,
+        Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
+    };
+    let index_dir = vera_core::indexing::index_dir(&cwd);
+
+    if !index_dir.exists() {
+        return ToolCallResult::error(
+            "No index found in current directory. Run index_project first.",
+        );
+    }
+
+    match vera_core::retrieval::search_regex(&index_dir, pattern, limit, ignore_case, context) {
+        Ok(results) => match compact_results_json(&results) {
+            Ok(json) => ToolCallResult::success(json),
+            Err(e) => ToolCallResult::error(format!("Failed to serialize results: {e}")),
+        },
+        Err(e) => ToolCallResult::error(format!("Regex search failed: {e}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn tool_definitions_has_eight_tools() {
+    fn tool_definitions_has_nine_tools() {
         let tools = tool_definitions();
-        assert_eq!(tools.len(), 8);
+        assert_eq!(tools.len(), 9);
 
         let names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
         assert!(names.contains(&"search_code"));
@@ -515,6 +588,7 @@ mod tests {
         assert!(names.contains(&"watch_project"));
         assert!(names.contains(&"find_references"));
         assert!(names.contains(&"find_dead_code"));
+        assert!(names.contains(&"regex_search"));
     }
 
     #[test]

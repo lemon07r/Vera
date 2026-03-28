@@ -38,6 +38,7 @@ The server exposes:
 - `watch_project`
 - `find_references`
 - `find_dead_code`
+- `regex_search`
 
 ## Guidance
 

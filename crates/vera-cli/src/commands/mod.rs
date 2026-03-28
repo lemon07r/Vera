@@ -6,6 +6,7 @@
 pub mod agent;
 pub mod config;
 pub mod doctor;
+pub mod grep;
 pub mod index;
 pub mod mcp;
 pub mod overview;

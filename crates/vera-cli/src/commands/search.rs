@@ -14,6 +14,7 @@ pub fn run(
     json_output: bool,
     raw: bool,
     timing: bool,
+    deep: bool,
     backend: InferenceBackend,
 ) -> anyhow::Result<()> {
     let mut config = load_runtime_config()?;
@@ -31,14 +32,26 @@ pub fn run(
         );
     }
 
-    let (results, timings) = vera_core::retrieval::search_service::execute_search(
-        &index_dir,
-        query,
-        &config,
-        filters,
-        result_limit,
-        backend,
-    )?;
+    let (results, timings) = if deep {
+        vera_core::retrieval::iterative_search::execute_iterative_search(
+            &index_dir,
+            query,
+            &config,
+            filters,
+            result_limit,
+            backend,
+            1,
+        )?
+    } else {
+        vera_core::retrieval::search_service::execute_search(
+            &index_dir,
+            query,
+            &config,
+            filters,
+            result_limit,
+            backend,
+        )?
+    };
 
     output_results(&results, json_output, raw);
 

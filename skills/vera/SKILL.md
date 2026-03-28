@@ -1,6 +1,6 @@
 ---
 name: vera
-description: Semantic code search and symbol lookup across a local repository. Returns ranked markdown codeblocks with file path, line range, content, and optional symbol info. Use when the user asks to find where logic lives, what calls a function, how a feature is implemented, which files handle a concept, or wants to explore unfamiliar code by intent. Also use for symbol lookup when the exact name appears in many files. Do NOT use for exact literal search, regex, counting occurrences, or bulk find-and-replace. use rg for those.
+description: Semantic code search, regex pattern search, and symbol lookup across a local repository. Returns ranked markdown codeblocks with file path, line range, content, and optional symbol info. Use when the user asks to find where logic lives, what calls a function, how a feature is implemented, which files handle a concept, or wants to explore unfamiliar code by intent. Also use for symbol lookup when the exact name appears in many files. Use `vera grep` for regex pattern matching scoped to indexed files. Use rg for bulk find-and-replace or searching outside the index.
 ---
 
 # Vera
@@ -18,8 +18,15 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
    vera search "authentication middleware"
    vera search "parse_config" --type function --limit 5
    vera search "database connection" --lang rust --path "src/**"
+   vera search "config loading" --deep    # multi-hop: follows symbols from initial results
    ```
-6. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
+6. Regex search (exact patterns, imports, TODOs):
+   ```sh
+   vera grep "fn\s+main"
+   vera grep "TODO|FIXME" -i
+   vera grep "use std::collections" --context 0
+   ```
+7. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
 
 ## Example Output
 
@@ -41,7 +48,9 @@ The info string contains `file_path:line_start-line_end` and optional `symbol_ty
 - For known symbol names, search the exact name: `vera search "parse_config"`.
 - Start broad, then narrow with `--lang`, `--path`, `--type`, `--limit`.
 - After code changes mid-session, run `vera update .` before searching again.
-- If the user wants exact text or regex, use `rg` instead.
+- Use `vera grep` for regex patterns scoped to indexed files (respects .gitignore/.veraignore).
+- Use `vera search --deep` when initial results need broader context (follows symbols from first results).
+- Use `rg` for bulk find-and-replace or searching outside the index.
 
 ## Failure Recovery
 
