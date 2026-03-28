@@ -13,8 +13,10 @@ use tracing::warn;
 use crate::chunk_text::file_name;
 use crate::config::{InferenceBackend, VeraConfig};
 use crate::retrieval::hybrid::compute_vector_candidates;
-use crate::retrieval::query_classifier::{classify_query, params_for_query_type};
-use crate::retrieval::ranking::{RankingStage, apply_query_ranking, is_path_weighted_query};
+use crate::retrieval::query_classifier::{QueryType, classify_query, params_for_query_type};
+use crate::retrieval::ranking::{
+    RankingStage, apply_query_ranking_with_filters, is_path_weighted_query,
+};
 use crate::retrieval::{apply_filters, search_bm25, search_hybrid, search_hybrid_reranked};
 use crate::types::{Chunk, SearchFilters, SearchResult, SymbolType};
 
@@ -51,25 +53,18 @@ pub fn execute_search(
         match rt.block_on(crate::embedding::create_dynamic_provider(config, backend)) {
             Ok(res) => res,
             Err(e) => {
-                if backend.is_local() {
-                    anyhow::bail!("{}", e);
-                }
                 warn!(
                     "Failed to create embedding provider ({}), using BM25-only search",
                     e
                 );
-                let bm25_start = Instant::now();
-                let results = apply_query_ranking(
+                return run_bm25_only(
+                    index_dir,
                     query,
-                    search_bm25(index_dir, query, fetch_limit)?,
-                    RankingStage::Initial,
+                    filters,
+                    fetch_limit,
+                    result_limit,
+                    total_start,
                 );
-                let timings = SearchTimings {
-                    bm25: Some(bm25_start.elapsed()),
-                    total: Some(total_start.elapsed()),
-                    ..Default::default()
-                };
-                return Ok((apply_filters(results, filters, result_limit), timings));
             }
         };
 
@@ -85,21 +80,34 @@ pub fn execute_search(
                 .unwrap_or(None),
         ) {
             if !crate::config::model_names_match(&s_model, &model_name) {
-                anyhow::bail!(
-                    "Index was created with model '{}' ({} dimensions), but you are using model '{}'. Please re-index with matching provider.",
-                    s_model,
-                    s_dim,
-                    model_name
+                warn!(
+                    "Index model '{}' does not match active model '{}'; using BM25-only search",
+                    s_model, model_name
+                );
+                return run_bm25_only(
+                    index_dir,
+                    query,
+                    filters,
+                    fetch_limit,
+                    result_limit,
+                    total_start,
                 );
             }
             if let Ok(dim) = s_dim.parse::<usize>() {
                 use crate::embedding::EmbeddingProvider;
                 if let Some(provider_dim) = provider.expected_dim() {
                     if provider_dim != dim {
-                        anyhow::bail!(
-                            "Dimension mismatch: index has {} dimensions but active provider expects {}. Please re-index with matching provider.",
-                            dim,
-                            provider_dim
+                        warn!(
+                            "Index dimension {} does not match provider dimension {}; using BM25-only search",
+                            dim, provider_dim
+                        );
+                        return run_bm25_only(
+                            index_dir,
+                            query,
+                            filters,
+                            fetch_limit,
+                            result_limit,
+                            total_start,
                         );
                     }
                 }
@@ -117,6 +125,7 @@ pub fn execute_search(
             warn!("Failed to create reranker ({})", e);
             None
         });
+    let reranker_enabled = reranker.is_some() && !should_skip_reranking(query, filters);
 
     // Classify query to adapt fusion parameters.
     let query_type = classify_query(query);
@@ -126,13 +135,16 @@ pub fn execute_search(
     let rerank_candidates =
         effective_rerank_candidates(config.retrieval.rerank_candidates, fetch_limit, query);
 
-    let ranking_stage = if reranker.is_some() {
+    let ranking_stage = if reranker_enabled {
         RankingStage::PostRerank
     } else {
         RankingStage::Initial
     };
 
-    let (results, hybrid_timings) = if let Some(ref reranker) = reranker {
+    let (results, hybrid_timings) = if reranker_enabled {
+        let reranker = reranker
+            .as_ref()
+            .expect("reranker_enabled requires an initialized reranker");
         rt.block_on(search_hybrid_reranked(
             index_dir,
             &provider,
@@ -166,7 +178,8 @@ pub fn execute_search(
     };
 
     let aug_start = Instant::now();
-    let results = augment_exact_match_candidates(index_dir, query, results, ranking_stage)?;
+    let results =
+        augment_exact_match_candidates(index_dir, query, results, ranking_stage, filters)?;
     timings.augmentation = Some(aug_start.elapsed());
 
     timings.total = Some(total_start.elapsed());
@@ -197,15 +210,49 @@ fn effective_rerank_candidates(base: usize, fetch_limit: usize, _query: &str) ->
     base.max(fetch_limit)
 }
 
+fn should_skip_reranking(query: &str, filters: &SearchFilters) -> bool {
+    let word_count = query.split_whitespace().count();
+    filters.path_glob.is_some()
+        || filters.symbol_type.is_some()
+        || is_path_weighted_query(query)
+        || (matches!(classify_query(query), QueryType::Identifier) && word_count <= 2)
+}
+
+fn run_bm25_only(
+    index_dir: &Path,
+    query: &str,
+    filters: &SearchFilters,
+    fetch_limit: usize,
+    result_limit: usize,
+    total_start: Instant,
+) -> Result<(Vec<SearchResult>, SearchTimings)> {
+    let bm25_start = Instant::now();
+    let results = search_bm25(index_dir, query, fetch_limit)?;
+    let bm25_elapsed = bm25_start.elapsed();
+    let aug_start = Instant::now();
+    let results =
+        augment_exact_match_candidates(index_dir, query, results, RankingStage::Initial, filters)?;
+    let timings = SearchTimings {
+        bm25: Some(bm25_elapsed),
+        augmentation: Some(aug_start.elapsed()),
+        total: Some(total_start.elapsed()),
+        ..Default::default()
+    };
+    Ok((apply_filters(results, filters, result_limit), timings))
+}
+
 fn augment_exact_match_candidates(
     index_dir: &Path,
     query: &str,
     results: Vec<SearchResult>,
     stage: RankingStage,
+    filters: &SearchFilters,
 ) -> Result<Vec<SearchResult>> {
     let metadata_path = index_dir.join("metadata.db");
     let Ok(store) = crate::storage::metadata::MetadataStore::open(&metadata_path) else {
-        return Ok(apply_query_ranking(query, results, stage));
+        return Ok(apply_query_ranking_with_filters(
+            query, results, stage, filters,
+        ));
     };
 
     let mut supplemental = Vec::new();
@@ -256,7 +303,9 @@ fn augment_exact_match_candidates(
     }
 
     if supplemental.is_empty() {
-        return Ok(apply_query_ranking(query, results, stage));
+        return Ok(apply_query_ranking_with_filters(
+            query, results, stage, filters,
+        ));
     }
 
     // Merge: supplemental first (exact matches), then original results, deduped.
@@ -269,7 +318,9 @@ fn augment_exact_match_candidates(
         }
     }
 
-    Ok(apply_query_ranking(query, merged, stage))
+    Ok(apply_query_ranking_with_filters(
+        query, merged, stage, filters,
+    ))
 }
 
 fn extract_exact_filename(query: &str) -> Option<String> {
@@ -430,7 +481,8 @@ mod tests {
         let config = VeraConfig::default();
         let filters = SearchFilters::default();
 
-        // This will attempt to create local provider and should fail at mismatch
+        // This attempts local provider creation first, then falls back to BM25 when possible.
+        // In this synthetic test fixture the BM25 index is absent, so either path may surface.
         {
             let res = execute_search(
                 index_dir,
@@ -442,18 +494,17 @@ mod tests {
                     crate::config::OnnxExecutionProvider::Cpu,
                 ),
             );
-            assert!(res.is_err());
-            let err_msg = res.unwrap_err().to_string();
-            // With load-dynamic ort, if ONNX Runtime is not present the error will be
-            // about loading the runtime. If it IS present, it will be a dimension mismatch.
-            // Either way the search correctly fails.
-            assert!(
-                err_msg.contains(
-                    "Dimension mismatch: index has 1024 dimensions but active provider expects 768"
-                ) || err_msg.contains("Failed to initialize local embedding provider"),
-                "{}",
-                err_msg
-            );
+            if let Err(err) = res {
+                let err_msg = err.to_string();
+                assert!(
+                    err_msg.contains("tantivy")
+                        || err_msg.contains("Failed to initialize local embedding provider")
+                        || err_msg.contains("No such file")
+                        || err_msg.contains("not found"),
+                    "{}",
+                    err_msg
+                );
+            }
         }
 
         // 2. Test metadata-dimension inference path (API provider returns None for expected_dim)
@@ -498,6 +549,19 @@ mod tests {
     }
 
     #[test]
+    fn exact_identifier_queries_skip_reranking() {
+        assert!(should_skip_reranking("Config", &SearchFilters::default()));
+        assert!(should_skip_reranking(
+            "src/config.ts",
+            &SearchFilters::default()
+        ));
+        assert!(!should_skip_reranking(
+            "how are HTTP errors handled",
+            &SearchFilters::default()
+        ));
+    }
+
+    #[test]
     fn exact_identifier_lookup_finds_matching_symbol() {
         let dir = tempdir().unwrap();
         let metadata_path = dir.path().join("metadata.db");
@@ -520,6 +584,7 @@ mod tests {
             "Sink trait and its implementations",
             Vec::new(),
             RankingStage::Initial,
+            &SearchFilters::default(),
         )
         .unwrap();
 
@@ -570,9 +635,14 @@ mod tests {
             ])
             .unwrap();
 
-        let augmented =
-            augment_exact_match_candidates(dir.path(), "Config", Vec::new(), RankingStage::Initial)
-                .unwrap();
+        let augmented = augment_exact_match_candidates(
+            dir.path(),
+            "Config",
+            Vec::new(),
+            RankingStage::Initial,
+            &SearchFilters::default(),
+        )
+        .unwrap();
 
         assert_eq!(
             augmented[0].file_path,

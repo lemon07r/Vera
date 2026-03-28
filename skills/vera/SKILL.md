@@ -19,12 +19,15 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
    vera search "authentication middleware"
    vera search "parse_config" --type function --limit 5
    vera search "database connection" --lang rust --path "src/**"
+   vera search "keybind handling" --scope docs
+   vera search "mod loader" --scope runtime --include-generated
    vera search "config loading" --deep    # multi-hop: follows symbols from initial results
    ```
 7. Regex search (exact patterns, imports, TODOs):
    ```sh
    vera grep "fn\s+main"
    vera grep "TODO|FIXME" -i
+   vera grep "keybind" --scope docs
    vera grep "use std::collections" --context 0
    ```
 8. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
@@ -48,6 +51,7 @@ The info string contains `file_path:line_start-line_end` and optional `symbol_ty
 - Describe behavior or intent: "JWT token validation", "request rate limiting", not "code" or "utils".
 - For known symbol names, search the exact name: `vera search "parse_config"`.
 - Start broad, then narrow with `--lang`, `--path`, `--type`, `--limit`.
+- Vera favors source files by default. Use `--scope docs` for prose and ADRs, `--scope runtime` for extracted bundles, and `--include-generated` for minified/dist artifacts.
 - After code changes mid-session, run `vera update .` before searching again (or use `vera watch .` to auto-update).
 - Use `vera grep` for regex patterns scoped to indexed files (respects .gitignore/.veraignore).
 - Use `vera search --deep` when initial results need broader context (follows symbols from first results).

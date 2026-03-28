@@ -2,6 +2,42 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Coarse scope filter for retrieval.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SearchScope {
+    Source,
+    Docs,
+    Runtime,
+    All,
+}
+
+impl std::fmt::Display for SearchScope {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            Self::Source => "source",
+            Self::Docs => "docs",
+            Self::Runtime => "runtime",
+            Self::All => "all",
+        };
+        write!(f, "{value}")
+    }
+}
+
+impl std::str::FromStr for SearchScope {
+    type Err = ();
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value.to_ascii_lowercase().as_str() {
+            "source" => Ok(Self::Source),
+            "docs" => Ok(Self::Docs),
+            "runtime" => Ok(Self::Runtime),
+            "all" => Ok(Self::All),
+            _ => Err(()),
+        }
+    }
+}
+
 /// Filters that can be applied to search results.
 ///
 /// All filters are optional. When set, they restrict results to only those
@@ -14,12 +50,24 @@ pub struct SearchFilters {
     pub path_glob: Option<String>,
     /// Filter by symbol type (case-insensitive match).
     pub symbol_type: Option<String>,
+    /// Coarse corpus scope filter.
+    pub scope: Option<SearchScope>,
+    /// Whether generated/minified files are allowed through filtering.
+    ///
+    /// `None` means "do not apply a generated-code filter". CLI and MCP
+    /// commands set this explicitly so user-facing searches default to
+    /// source-first behavior without changing internal callers.
+    pub include_generated: Option<bool>,
 }
 
 impl SearchFilters {
     /// Returns true if no filters are set.
     pub fn is_empty(&self) -> bool {
-        self.language.is_none() && self.path_glob.is_none() && self.symbol_type.is_none()
+        self.language.is_none()
+            && self.path_glob.is_none()
+            && self.symbol_type.is_none()
+            && self.scope.is_none()
+            && self.include_generated.is_none()
     }
 
     /// Check whether a search result matches all active filters.
@@ -48,6 +96,29 @@ impl SearchFilters {
                 }
                 None => return false,
             }
+        }
+
+        let mut class = None;
+        let mut content_class = || {
+            *class.get_or_insert_with(|| {
+                crate::corpus::classify_content(&result.file_path, result.language, &result.content)
+            })
+        };
+
+        if let Some(scope) = self.scope {
+            if !crate::corpus::matches_scope(
+                content_class(),
+                scope,
+                self.include_generated.unwrap_or(true),
+            ) {
+                return false;
+            }
+        }
+
+        if self.include_generated == Some(false)
+            && matches!(content_class(), crate::corpus::ContentClass::Generated)
+        {
+            return false;
         }
 
         true
@@ -1168,6 +1239,52 @@ mod tests {
         assert!(filters.matches(&rust_struct));
         assert!(!filters.matches(&rust_func));
         assert!(!filters.matches(&py_class));
+    }
+
+    #[test]
+    fn filter_by_scope_source_rejects_docs() {
+        let filters = SearchFilters {
+            scope: Some(SearchScope::Source),
+            ..Default::default()
+        };
+        let source = make_test_result("src/lib.rs", Language::Rust, None, None);
+        let docs = make_test_result("docs/query-guide.md", Language::Markdown, None, None);
+        assert!(filters.matches(&source));
+        assert!(!filters.matches(&docs));
+    }
+
+    #[test]
+    fn filter_excludes_generated_when_requested() {
+        let filters = SearchFilters {
+            include_generated: Some(false),
+            ..Default::default()
+        };
+        let generated = SearchResult {
+            file_path: "dist/app.min.js".to_string(),
+            line_start: 1,
+            line_end: 1,
+            content: format!("function x(){{{}}}", "a=1;".repeat(600)),
+            language: Language::JavaScript,
+            score: 1.0,
+            symbol_name: None,
+            symbol_type: None,
+        };
+        assert!(!filters.matches(&generated));
+    }
+
+    #[test]
+    fn scope_runtime_accepts_runtime_extracts() {
+        let filters = SearchFilters {
+            scope: Some(SearchScope::Runtime),
+            ..Default::default()
+        };
+        let runtime = make_test_result(
+            "/tmp/installed-game-runtime/Game.pretty.js",
+            Language::JavaScript,
+            None,
+            None,
+        );
+        assert!(filters.matches(&runtime));
     }
 
     // ── glob_matches tests ──────────────────────────────────────

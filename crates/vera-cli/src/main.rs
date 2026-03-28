@@ -295,12 +295,17 @@ enum Commands {
                       Performs hybrid search combining BM25 keyword matching and vector \
                       similarity via Reciprocal Rank Fusion (RRF). Optional cross-encoder \
                       reranking for improved precision.\n\n\
+                      Source files are favored by default. Use `--scope docs` for prose, \
+                      `--scope runtime` for extracted runtime trees, and `--include-generated` \
+                      when you intentionally want dist/minified artifacts.\n\n\
                       Falls back gracefully: if embedding API is unavailable, uses BM25-only \
                       search. If reranker is unavailable, returns unreranked hybrid results.\n\n\
                       Requires an existing index (run `vera index <path>` first).\n\n\
                       Examples:\n  \
                       vera search \"auth logic\"                  # Semantic search\n  \
                       vera search \"parse_config\"                 # Symbol lookup\n  \
+                      vera search \"hotkeys\" --scope docs         # Search docs only\n  \
+                      vera search \"mod loader\" --scope runtime --include-generated\n  \
                       vera search \"error handling\" --lang rust   # Filter by language\n  \
                       vera search \"routes\" --path \"src/**/*.ts\"  # Filter by path\n  \
                       vera search \"DB queries\" --type function   # Filter by symbol type\n  \
@@ -332,6 +337,14 @@ enum Commands {
         /// interface, type_alias, constant, variable, module, block.
         #[arg(long, rename_all = "snake_case")]
         r#type: Option<String>,
+
+        /// Restrict results to a coarse corpus scope.
+        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
+        scope: Option<String>,
+
+        /// Include generated or minified files such as dist bundles.
+        #[arg(long)]
+        include_generated: bool,
 
         /// Multi-hop iterative search: follow up on symbols found in initial results.
         #[arg(long)]
@@ -424,9 +437,13 @@ enum Commands {
                       Searches file contents using a regex pattern, returning matches \
                       with surrounding context lines. Only searches files that are in \
                       the Vera index, so .gitignore and .veraignore rules apply.\n\n\
+                      Source files are scanned first by default. Use `--scope docs` or \
+                      `--scope runtime` when you are targeting prose or extracted runtime \
+                      trees. Add `--include-generated` to scan minified/generated files.\n\n\
                       Examples:\n  \
                       vera grep \"fn\\s+main\"              # Find main functions\n  \
                       vera grep \"TODO|FIXME\" -i           # Case-insensitive\n  \
+                      vera grep \"keybind\" --scope docs    # Search docs first\n  \
                       vera grep \"impl.*Display\" -n 5      # 5 results\n  \
                       vera grep \"use std::\" --context 0   # No context lines")]
     Grep {
@@ -444,6 +461,14 @@ enum Commands {
         /// Number of context lines before and after each match (default: 2).
         #[arg(long, default_value = "2")]
         context: usize,
+
+        /// Restrict results to a coarse corpus scope.
+        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
+        scope: Option<String>,
+
+        /// Include generated or minified files such as dist bundles.
+        #[arg(long)]
+        include_generated: bool,
     },
 
     /// Find symbols with no callers (potential dead code).
@@ -637,6 +662,8 @@ fn main() {
             path,
             limit,
             r#type,
+            scope,
+            include_generated,
             deep,
             backend,
         } => {
@@ -645,6 +672,8 @@ fn main() {
                 language: lang,
                 path_glob: path,
                 symbol_type: r#type,
+                scope: scope.and_then(|value| value.parse().ok()),
+                include_generated: Some(include_generated),
             };
             commands::search::run(
                 &query,
@@ -687,9 +716,24 @@ fn main() {
             limit,
             ignore_case,
             context,
+            scope,
+            include_generated,
         } => {
             tracing::info!(pattern = %pattern, "grep");
-            commands::grep::run(&pattern, limit, ignore_case, context, cli.json, cli.raw)
+            let filters = vera_core::types::SearchFilters {
+                scope: scope.and_then(|value| value.parse().ok()),
+                include_generated: Some(include_generated),
+                ..Default::default()
+            };
+            commands::grep::run(
+                &pattern,
+                limit,
+                ignore_case,
+                context,
+                &filters,
+                cli.json,
+                cli.raw,
+            )
         }
         Commands::DeadCode => {
             tracing::info!("dead code analysis");
@@ -933,9 +977,55 @@ mod tests {
     }
 
     #[test]
+    fn cli_parses_search_scope_flags() {
+        let cli = Cli::parse_from([
+            "vera",
+            "search",
+            "mod loader",
+            "--scope",
+            "runtime",
+            "--include-generated",
+        ]);
+        match cli.command {
+            Commands::Search {
+                scope,
+                include_generated,
+                ..
+            } => {
+                assert_eq!(scope, Some("runtime".to_string()));
+                assert!(include_generated);
+            }
+            _ => panic!("expected Search command"),
+        }
+    }
+
+    #[test]
     fn cli_parses_update_command() {
         let cli = Cli::parse_from(["vera", "update", "/tmp/repo"]);
         assert!(matches!(cli.command, Commands::Update { path, .. } if path == "/tmp/repo"));
+    }
+
+    #[test]
+    fn cli_parses_grep_scope_flags() {
+        let cli = Cli::parse_from([
+            "vera",
+            "grep",
+            "keybind",
+            "--scope",
+            "docs",
+            "--include-generated",
+        ]);
+        match cli.command {
+            Commands::Grep {
+                scope,
+                include_generated,
+                ..
+            } => {
+                assert_eq!(scope, Some("docs".to_string()));
+                assert!(include_generated);
+            }
+            _ => panic!("expected Grep command"),
+        }
     }
 
     #[test]

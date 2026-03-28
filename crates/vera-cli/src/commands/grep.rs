@@ -10,6 +10,7 @@ pub fn run(
     limit: Option<usize>,
     case_insensitive: bool,
     context_lines: usize,
+    filters: &vera_core::types::SearchFilters,
     json_output: bool,
     raw: bool,
 ) -> anyhow::Result<()> {
@@ -31,6 +32,7 @@ pub fn run(
         result_limit,
         case_insensitive,
         context_lines,
+        filters,
     )?;
 
     output_results(&results, json_output, raw);

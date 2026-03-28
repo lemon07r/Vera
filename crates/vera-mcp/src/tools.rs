@@ -83,6 +83,15 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                         "type": "string",
                         "description": "Filter by symbol type (function, struct, class, etc.)"
                     },
+                    "scope": {
+                        "type": "string",
+                        "enum": ["source", "docs", "runtime", "all"],
+                        "description": "Coarse corpus scope. Defaults to source-first behavior."
+                    },
+                    "include_generated": {
+                        "type": "boolean",
+                        "description": "Include generated or minified files such as dist bundles."
+                    },
                     "limit": {
                         "type": "integer",
                         "description": "Maximum number of results (default: 10)"
@@ -234,6 +243,15 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "context": {
                         "type": "integer",
                         "description": "Context lines before and after each match (default: 2)"
+                    },
+                    "scope": {
+                        "type": "string",
+                        "enum": ["source", "docs", "runtime", "all"],
+                        "description": "Coarse corpus scope. Defaults to source-first behavior."
+                    },
+                    "include_generated": {
+                        "type": "boolean",
+                        "description": "Include generated or minified files such as dist bundles."
                     }
                 },
                 "required": ["pattern"]
@@ -267,6 +285,15 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         Some(q) => q,
         None => return ToolCallResult::error("Missing required parameter: query"),
     };
+    let scope = match args.get("scope").and_then(|v| v.as_str()) {
+        Some(value) => match value.parse() {
+            Ok(scope) => Some(scope),
+            Err(()) => {
+                return ToolCallResult::error(format!("Invalid scope: {value}"));
+            }
+        },
+        None => None,
+    };
 
     let filters = vera_core::types::SearchFilters {
         language: args.get("lang").and_then(|v| v.as_str()).map(String::from),
@@ -275,6 +302,12 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
             .get("symbol_type")
             .and_then(|v| v.as_str())
             .map(String::from),
+        scope,
+        include_generated: Some(
+            args.get("include_generated")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false),
+        ),
     };
 
     let limit = args
@@ -537,6 +570,15 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
         Some(p) => p,
         None => return ToolCallResult::error("Missing required parameter: pattern"),
     };
+    let scope = match args.get("scope").and_then(|v| v.as_str()) {
+        Some(value) => match value.parse() {
+            Ok(scope) => Some(scope),
+            Err(()) => {
+                return ToolCallResult::error(format!("Invalid scope: {value}"));
+            }
+        },
+        None => None,
+    };
 
     let limit = args
         .get("limit")
@@ -565,7 +607,24 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
         );
     }
 
-    match vera_core::retrieval::search_regex(&index_dir, pattern, limit, ignore_case, context) {
+    let filters = vera_core::types::SearchFilters {
+        scope,
+        include_generated: Some(
+            args.get("include_generated")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false),
+        ),
+        ..Default::default()
+    };
+
+    match vera_core::retrieval::search_regex(
+        &index_dir,
+        pattern,
+        limit,
+        ignore_case,
+        context,
+        &filters,
+    ) {
         Ok(results) => match compact_results_json(&results) {
             Ok(json) => ToolCallResult::success(json),
             Err(e) => ToolCallResult::error(format!("Failed to serialize results: {e}")),

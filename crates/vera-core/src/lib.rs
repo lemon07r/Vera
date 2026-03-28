@@ -13,6 +13,7 @@
 //! - [`embedding`] — Embedding generation via external API providers.
 
 pub mod chunk_text;
+pub mod corpus;
 pub mod discovery;
 pub mod embedding;
 

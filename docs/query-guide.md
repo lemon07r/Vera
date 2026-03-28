@@ -32,12 +32,16 @@ If your first search returns too much, add filters one at a time:
 - `--lang rust`: restrict to a specific language
 - `--path "src/**/*.ts"`: restrict to a file path pattern
 - `--type function`: restrict to functions, classes, methods, or structs
+- `--scope docs`: restrict to docs and markdown
+- `--scope runtime`: restrict to extracted runtime trees and bundled app code
+- `--include-generated`: include dist/minified/generated artifacts
 - `--limit 5`: return fewer results
 
 These stack, so you can combine them:
 
 ```bash
 vera search "error handling" --lang rust --type function --limit 5
+vera search "mod loader" --scope runtime --include-generated
 ```
 
 ## Exact Symbol Names
@@ -50,6 +54,12 @@ vera search "AuthMiddleware"
 ```
 
 Vera's hybrid pipeline handles both natural language intent and exact symbol lookups.
+
+## Default Search Bias
+
+Vera favors source files by default. Docs, archives, runtime extracts, and generated files are still available, but they are no longer treated as equally good defaults for everyday coding tasks.
+
+Use `--scope docs` when you are reading guides or ADRs. Use `--scope runtime` when you're debugging extracted app bundles or decompiled runtime code. Add `--include-generated` when you intentionally want minified or generated files in the result set.
 
 ## When to Use `rg` Instead
 

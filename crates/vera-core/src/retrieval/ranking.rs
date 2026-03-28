@@ -8,25 +8,14 @@
 use std::collections::HashSet;
 
 use crate::chunk_text::file_name;
+use crate::corpus::{ContentClass, classify_content, classify_path, content_class_label};
 use crate::retrieval::query_classifier::{QueryType, classify_query};
-use crate::types::{Language, SearchResult, SymbolType};
+use crate::types::{Language, SearchFilters, SearchResult, SymbolType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum RankingStage {
     Initial,
     PostRerank,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum FileRole {
-    Source,
-    Test,
-    Docs,
-    Example,
-    Bench,
-    Config,
-    Generated,
-    Unknown,
 }
 
 #[derive(Debug, Clone)]
@@ -43,6 +32,8 @@ struct QueryFeatures {
     wants_docs_paths: bool,
     wants_example_paths: bool,
     wants_config_paths: bool,
+    wants_runtime_paths: bool,
+    wants_archive_paths: bool,
     wants_multi_file_diversity: bool,
     mentions_implementation: bool,
 }
@@ -115,6 +106,24 @@ impl QueryFeatures {
                     &lower,
                     &["configuration", "config", "workspace", "settings"],
                 ),
+            wants_runtime_paths: mentions_any(
+                &lower,
+                &[
+                    "runtime",
+                    "bundle",
+                    "bundles",
+                    "minified",
+                    "minify",
+                    "extract",
+                    "extracted",
+                    "asar",
+                    "dist",
+                ],
+            ),
+            wants_archive_paths: mentions_any(
+                &lower,
+                &["archive", "archived", "legacy", "snapshot", "deprecated"],
+            ),
             wants_multi_file_diversity: !is_path_weighted_query(query)
                 && (query_type == QueryType::NaturalLanguage
                     || (exact_identifier.is_some() && raw_tokens.len() <= 2)),
@@ -137,10 +146,20 @@ impl QueryFeatures {
     }
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn apply_query_ranking(
     query: &str,
     results: Vec<SearchResult>,
     stage: RankingStage,
+) -> Vec<SearchResult> {
+    apply_query_ranking_with_filters(query, results, stage, &SearchFilters::default())
+}
+
+pub(crate) fn apply_query_ranking_with_filters(
+    query: &str,
+    results: Vec<SearchResult>,
+    stage: RankingStage,
+    filters: &SearchFilters,
 ) -> Vec<SearchResult> {
     if results.len() <= 1 {
         return results;
@@ -153,7 +172,7 @@ pub(crate) fn apply_query_ranking(
         .enumerate()
         .map(|(idx, mut result)| {
             let base_rank = 1.0 - (idx as f64 / len);
-            let prior = score_prior(&features, &result, stage);
+            let prior = score_prior(&features, &result, stage, filters);
             let combined = base_rank + prior;
             result.score = combined;
             (combined, idx, result)
@@ -175,68 +194,12 @@ pub(crate) fn apply_query_ranking(
     stamp_rank_scores(reranked)
 }
 
-pub(crate) fn classify_file_role(file_path: &str, language: Language) -> FileRole {
-    if language == Language::Markdown {
-        return FileRole::Docs;
-    }
-    if language.prefers_file_chunking() {
-        return FileRole::Config;
-    }
-
-    let path = file_path.to_ascii_lowercase();
-    let tokens = tokenize_path(&path);
-
-    if contains_token(
-        &tokens,
-        &[
-            "generated",
-            "dist",
-            "coverage",
-            "vendor",
-            "binding",
-            "bindings",
-        ],
-    ) {
-        return FileRole::Generated;
-    }
-    if contains_token(
-        &tokens,
-        &[
-            "test", "tests", "testing", "spec", "specs", "fixture", "fixtures",
-        ],
-    ) {
-        return FileRole::Test;
-    }
-    if contains_token(&tokens, &["docs", "doc", "readme"]) {
-        return FileRole::Docs;
-    }
-    if contains_token(&tokens, &["example", "examples", "demo", "demos", "sample"]) {
-        return FileRole::Example;
-    }
-    if contains_token(&tokens, &["bench", "benches", "benchmark", "benchmarks"]) {
-        return FileRole::Bench;
-    }
-    if contains_token(
-        &tokens,
-        &["src", "lib", "app", "apps", "crates", "packages"],
-    ) {
-        return FileRole::Source;
-    }
-
-    FileRole::Unknown
+pub(crate) fn classify_file_role(file_path: &str, language: Language) -> ContentClass {
+    classify_path(file_path, language)
 }
 
 pub(crate) fn file_role_label(file_path: &str, language: Language) -> &'static str {
-    match classify_file_role(file_path, language) {
-        FileRole::Source => "source",
-        FileRole::Test => "test",
-        FileRole::Docs => "docs",
-        FileRole::Example => "example",
-        FileRole::Bench => "benchmark",
-        FileRole::Config => "config",
-        FileRole::Generated => "generated",
-        FileRole::Unknown => "unknown",
-    }
+    content_class_label(classify_file_role(file_path, language))
 }
 
 pub(crate) fn is_path_weighted_query(query: &str) -> bool {
@@ -254,19 +217,24 @@ pub(crate) fn is_path_weighted_query(query: &str) -> bool {
         || lower.contains("cmakelists.txt")
 }
 
-fn score_prior(features: &QueryFeatures, result: &SearchResult, stage: RankingStage) -> f64 {
+fn score_prior(
+    features: &QueryFeatures,
+    result: &SearchResult,
+    stage: RankingStage,
+    filters: &SearchFilters,
+) -> f64 {
     let stage_weight = match stage {
         RankingStage::Initial => 1.0,
         RankingStage::PostRerank => 0.55,
     };
     let depth = path_depth(&result.file_path) as f64;
-    let role = classify_file_role(&result.file_path, result.language);
+    let role = classify_content(&result.file_path, result.language, &result.content);
     let mut bonus = 0.0;
     let file_path = result.file_path.to_ascii_lowercase();
     let result_filename = file_name(&result.file_path).to_ascii_lowercase();
     let allow_filename_semantic_bonus = matches!(
         role,
-        FileRole::Source | FileRole::Config | FileRole::Unknown
+        ContentClass::Source | ContentClass::Config | ContentClass::Unknown
     );
     let path_fragment_match = features
         .path_fragment
@@ -297,7 +265,7 @@ fn score_prior(features: &QueryFeatures, result: &SearchResult, stage: RankingSt
         }
     }
 
-    if features.wants_config_paths && matches!(role, FileRole::Config) {
+    if features.wants_config_paths && matches!(role, ContentClass::Config) {
         bonus += stage_weight
             * if depth == 0.0 {
                 0.35
@@ -388,20 +356,59 @@ fn score_prior(features: &QueryFeatures, result: &SearchResult, stage: RankingSt
             };
     }
 
-    if !features.wants_test_paths && matches!(role, FileRole::Test) {
+    if !features.wants_test_paths && matches!(role, ContentClass::Test) {
         bonus -= stage_weight * 0.8;
     }
-    if !features.wants_docs_paths && matches!(role, FileRole::Docs) {
-        bonus -= stage_weight * 0.5;
+    if matches!(role, ContentClass::Archive) {
+        bonus += if features.wants_archive_paths {
+            stage_weight * 0.18
+        } else {
+            -stage_weight * 0.85
+        };
     }
-    if !features.wants_example_paths && matches!(role, FileRole::Example | FileRole::Bench) {
+    if matches!(role, ContentClass::Runtime) {
+        bonus += if features.wants_runtime_paths {
+            stage_weight * 0.95
+        } else {
+            -stage_weight * 0.72
+        };
+    } else if features.wants_runtime_paths {
+        bonus -= stage_weight * 0.24;
+    }
+    if !features.wants_docs_paths && matches!(role, ContentClass::Docs) {
+        bonus -= stage_weight * 0.55;
+    }
+    if !features.wants_example_paths && matches!(role, ContentClass::Example | ContentClass::Bench)
+    {
         bonus -= stage_weight * 0.38;
     }
-    if matches!(role, FileRole::Generated) {
-        bonus -= stage_weight * 0.36;
+    if matches!(role, ContentClass::Generated) {
+        bonus -= stage_weight
+            * if features.wants_runtime_paths {
+                0.18
+            } else {
+                0.95
+            };
+        if filters.include_generated == Some(false) {
+            bonus -= stage_weight * 0.8;
+        }
     }
-    if matches!(role, FileRole::Source) {
-        bonus += stage_weight * if depth <= 2.0 { 0.08 } else { 0.03 };
+    if matches!(role, ContentClass::Source | ContentClass::Config) {
+        bonus += stage_weight
+            * if features.query_type == QueryType::Identifier || features.path_fragment.is_some() {
+                if depth <= 2.0 { 0.24 } else { 0.12 }
+            } else if depth <= 2.0 {
+                0.12
+            } else {
+                0.05
+            };
+    }
+    if let Some(scope) = filters.scope {
+        if crate::corpus::matches_scope(role, scope, filters.include_generated.unwrap_or(true)) {
+            bonus += stage_weight * 0.18;
+        } else {
+            bonus -= stage_weight * 1.1;
+        }
     }
 
     if features.mentions_implementation && looks_like_impl_block(result) {
@@ -905,6 +912,54 @@ mod tests {
         );
 
         assert_eq!(ranked[0].file_path, "src/flask/sessions.py");
+    }
+
+    #[test]
+    fn archived_docs_are_demoted_for_exact_queries() {
+        let results = vec![
+            make_result(
+                "archive/docs/hotkeys.md",
+                None,
+                None,
+                "keybind guide and notes",
+            ),
+            make_result(
+                "src/mod_content/hotkeys.ts",
+                Some("registerHotkeys"),
+                Some(SymbolType::Function),
+                "export function registerHotkeys() {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking("hotkeys keybind", results, RankingStage::Initial);
+
+        assert_eq!(ranked[0].file_path, "src/mod_content/hotkeys.ts");
+    }
+
+    #[test]
+    fn runtime_queries_can_prefer_runtime_extracts() {
+        let results = vec![
+            make_result(
+                "src/mod_loader.ts",
+                Some("loadMod"),
+                Some(SymbolType::Function),
+                "export function loadMod() {}",
+            ),
+            make_result(
+                "/tmp/installed-game-runtime/Game.pretty.js",
+                Some("loadMod"),
+                Some(SymbolType::Function),
+                "function loadMod() {}",
+            ),
+        ];
+
+        let ranked =
+            apply_query_ranking("runtime mod loader extract", results, RankingStage::Initial);
+
+        assert_eq!(
+            ranked[0].file_path,
+            "/tmp/installed-game-runtime/Game.pretty.js"
+        );
     }
 
     #[test]
