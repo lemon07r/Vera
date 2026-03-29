@@ -164,20 +164,27 @@ impl LocalEmbeddingModelConfig {
     /// untouched.
     pub fn adjust_for_gpu(&mut self, ep: crate::config::OnnxExecutionProvider) {
         if ep == crate::config::OnnxExecutionProvider::Cpu {
+            tracing::debug!("adjust_for_gpu: CPU backend, keeping {}", self.onnx_file);
             return;
         }
         // Only swap if the user hasn't overridden the ONNX file via env vars
         // and we're using the default quantized model.
         let user_overrode_onnx = env_override(LOCAL_EMBEDDING_ONNX_FILE_ENV).is_some();
         if user_overrode_onnx {
+            tracing::debug!("adjust_for_gpu: user overrode ONNX file via env, skipping swap");
             return;
         }
         if self.onnx_file == EMBEDDING_ONNX_FILE {
             tracing::info!(
-                "GPU backend: switching from quantized to fp16 model (INT8 ops lack GPU kernels)"
+                "GPU backend ({ep}): switching from quantized to fp16 model (INT8 ops lack GPU kernels)"
             );
             self.onnx_file = EMBEDDING_ONNX_GPU_FILE.to_string();
             self.onnx_data_file = Some(EMBEDDING_ONNX_GPU_DATA_FILE.to_string());
+        } else {
+            tracing::debug!(
+                "adjust_for_gpu: onnx_file={} is not default quantized, no swap needed",
+                self.onnx_file
+            );
         }
     }
 
@@ -507,11 +514,21 @@ fn ort_platform_info(
                 "libonnxruntime.so",
             ));
         }
-        let base = format!("onnxruntime-linux-x64{gpu_suffix}-{ORT_VERSION}");
+        // The CUDA 13 archive is named with `_cuda13` in the filename, but the
+        // internal directory inside the tgz always uses plain `-gpu` (no `_cuda13`).
+        let archive_gpu_suffix = if matches!(ep, OnnxExecutionProvider::Cuda)
+            && detect_cuda_major_version().unwrap_or(12) >= 13
+        {
+            "-gpu_cuda13"
+        } else {
+            gpu_suffix
+        };
+        let archive_name = format!("onnxruntime-linux-x64{archive_gpu_suffix}-{ORT_VERSION}");
+        let internal_base = format!("onnxruntime-linux-x64{gpu_suffix}-{ORT_VERSION}");
         Ok((
             "tgz",
-            base.clone(),
-            format!("{base}/lib/libonnxruntime.so.{ORT_VERSION}"),
+            archive_name,
+            format!("{internal_base}/lib/libonnxruntime.so.{ORT_VERSION}"),
             "libonnxruntime.so",
         ))
     }
@@ -565,6 +582,8 @@ fn ort_platform_info(
         ) {
             anyhow::bail!("ROCm and OpenVINO are only supported on Linux x86_64");
         }
+        // The CUDA 13 archive is named with `_cuda13` in the filename, but the
+        // internal directory inside the zip always uses plain `-gpu` (no `_cuda13`).
         let archive_gpu_suffix = if matches!(ep, OnnxExecutionProvider::Cuda)
             && detect_cuda_major_version().unwrap_or(12) >= 13
         {
@@ -572,9 +591,11 @@ fn ort_platform_info(
         } else {
             gpu_suffix
         };
-        let base = format!("onnxruntime-win-x64{archive_gpu_suffix}-{ORT_VERSION}");
-        let entry = format!("{base}/lib/onnxruntime.dll");
-        Ok(("zip", base, entry, "onnxruntime.dll"))
+        let archive_name = format!("onnxruntime-win-x64{archive_gpu_suffix}-{ORT_VERSION}");
+        // Internal paths inside the zip always use the plain gpu suffix (no _cuda13).
+        let internal_base = format!("onnxruntime-win-x64{gpu_suffix}-{ORT_VERSION}");
+        let entry = format!("{internal_base}/lib/onnxruntime.dll");
+        Ok(("zip", archive_name, entry, "onnxruntime.dll"))
     }
     #[cfg(not(any(
         all(target_os = "linux", target_arch = "x86_64"),
@@ -1603,18 +1624,20 @@ fn extract_zip(data: &[u8], entry_path: &str, dest: &std::path::Path) -> Result<
 }
 
 /// Extract all DLL files from a zip archive's lib/ directory (GPU builds need provider libs).
-fn extract_zip_all_libs(data: &[u8], archive_name: &str, dest_dir: &std::path::Path) -> Result<()> {
+fn extract_zip_all_libs(data: &[u8], _archive_name: &str, dest_dir: &std::path::Path) -> Result<()> {
     #[cfg(target_os = "windows")]
     {
         let temp_zip = dest_dir.join("_ort_download.zip");
         std::fs::write(&temp_zip, data)?;
-        // Extract all .dll files from the lib/ subdirectory inside the archive.
+        // Extract all .dll files from any lib/ subdirectory inside the archive.
+        // We match loosely because the CUDA 13 archive filename contains `_cuda13`
+        // but the internal directory does not.
         let script = format!(
             "Add-Type -AssemblyName System.IO.Compression.FileSystem; \
              $zip = [System.IO.Compression.ZipFile]::OpenRead('{zip}'); \
              $count = 0; \
              foreach ($entry in $zip.Entries) {{ \
-                 if ($entry.FullName -match '^{prefix}/lib/.*\\.dll$' -and $entry.Length -gt 0) {{ \
+                 if ($entry.FullName -match '/lib/[^/]+\\.dll$' -and $entry.Length -gt 0) {{ \
                      $name = $entry.Name; \
                      $dest = Join-Path '{dest}' $name; \
                      $stream = $entry.Open(); \
@@ -1627,7 +1650,6 @@ fn extract_zip_all_libs(data: &[u8], archive_name: &str, dest_dir: &std::path::P
              $zip.Dispose(); \
              if ($count -eq 0) {{ exit 1 }}",
             zip = temp_zip.display(),
-            prefix = archive_name.replace('-', "\\-"),
             dest = dest_dir.display(),
         );
         let output = std::process::Command::new("powershell")
@@ -1644,7 +1666,7 @@ fn extract_zip_all_libs(data: &[u8], archive_name: &str, dest_dir: &std::path::P
     }
     #[cfg(not(target_os = "windows"))]
     {
-        let _ = (data, archive_name, dest_dir);
+        let _ = (data, _archive_name, dest_dir);
         anyhow::bail!("ZIP extraction not expected on this platform")
     }
 }
