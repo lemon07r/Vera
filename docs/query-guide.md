@@ -72,7 +72,7 @@ Vera is a semantic search tool. For these tasks, use `rg` (ripgrep) or plain gre
 
 ## Output Format
 
-See the [README usage section](../README.md#usage) for output format options (`--json`, `--raw`, `--timing`) and a sample.
+See [features: output formats](features.md#multiple-output-formats) for all options (`--json`, `--raw`, `--timing`).
 
 ## Keeping Results Fresh
 
