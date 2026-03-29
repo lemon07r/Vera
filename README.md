@@ -4,6 +4,8 @@
 
 # Vera
 
+[![SafeSkill 71/100](https://img.shields.io/badge/SafeSkill-71%2F100_Passes%20with%20Notes-yellow)](https://safeskill.dev/scan/lemon07r-vera)
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lemon07r/Vera/blob/master/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 [![GitHub release](https://img.shields.io/github/v/release/lemon07r/Vera?include_prereleases&sort=semver)](https://github.com/lemon07r/Vera/releases)
