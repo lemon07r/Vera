@@ -71,14 +71,15 @@ bunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai inst
 This downloads the `vera` binary, writes a `vera` shim into a user bin directory, and installs the global agent skill files. If that bin directory is not already on `PATH`, Vera tells you what to add. After that, `vera` is a standalone command. You don't need `bunx`/`npx`/`uvx` again.
 
 ```bash
-vera agent install                   # interactive: choose scope + agents
-vera setup                          # interactive backend menu (auto-detects your GPU)
+vera setup                          # interactive wizard: backend + agent skills + optional indexing
 vera index .                        # index the current project (creates .vera/ in project root)
 vera search "query"                 # search (each project gets its own index)
 vera update .                       # after code changes
 ```
 
-`vera setup` with no flags shows a backend picker and auto-detects your GPU. You can also skip the menu: `vera setup --onnx-jina-cuda` (NVIDIA), `--onnx-jina-coreml` (Apple Silicon), `--api` (remote endpoints), etc. Add `--code-rank-embed` if you want the optional CodeRankEmbed local embedding preset. `vera setup` does not install skill files; use `vera agent install` for that (with no flags it opens an interactive prompt to choose scope and agents). Run `vera setup --help` for all options.
+`vera setup` with no flags runs an interactive wizard that walks through backend selection, agent skill installation, and optional project indexing. You can skip the wizard with flags: `vera setup --onnx-jina-cuda` (NVIDIA), `--onnx-jina-coreml` (Apple Silicon), `--api` (remote endpoints), etc. Add `--code-rank-embed` for the optional CodeRankEmbed local embedding preset.
+
+For focused changes after initial setup: `vera backend` manages the ONNX runtime and model backend, `vera agent install` manages skill files (detects existing installs, lets you add or remove agents in one step), and `vera agent sync` refreshes all stale skill installs to match the current binary version. Run `vera setup --help` for all options.
 
 Use `vera doctor` if anything goes wrong. It reports the saved and active backend, installed Vera version, and checks GitHub for newer releases. Add `--probe` for a deeper read-only ONNX session check that does not download or repair missing assets. Use `vera repair` to re-fetch missing local assets or re-save API config from the current environment. Use `vera upgrade` to inspect or apply the binary update plan.
 
@@ -114,7 +115,7 @@ Download from [GitHub Releases](https://github.com/lemon07r/Vera/releases) for L
 ```bash
 curl -sL https://github.com/lemon07r/Vera/releases/latest/download/vera-x86_64-unknown-linux-gnu.tar.gz | tar xz
 cp vera-x86_64-unknown-linux-gnu/vera ~/.local/bin/
-vera agent install --client all && vera setup
+vera setup
 ```
 
 </details>
@@ -128,7 +129,7 @@ Rust 1.85+ required.
 git clone https://github.com/lemon07r/Vera.git && cd Vera
 cargo build --release
 cp target/release/vera ~/.local/bin/
-vera agent install --client all && vera setup
+vera setup
 ```
 
 </details>
@@ -142,7 +143,7 @@ vera upgrade
 vera upgrade --apply
 ```
 
-`vera upgrade` is a dry run by default. It shows the detected install method and the exact command Vera would run. `--apply` only runs when Vera can determine a single install method.
+`vera upgrade` is a dry run by default. It shows the detected install method and the exact command Vera would run. `--apply` only runs when Vera can determine a single install method. After an upgrade, Vera automatically syncs any stale agent skill installs to match the new binary version.
 
 You can still update manually:
 
@@ -170,7 +171,7 @@ With the embedding model and reranker cached, the full pipeline (BM25 + vector s
 
 ### GPU Acceleration
 
-`vera setup` auto-detects your GPU. You can also specify a backend directly:
+`vera setup` and `vera backend` auto-detect your GPU. You can also specify a backend directly:
 
 | Flag | Hardware |
 |------|----------|
@@ -186,14 +187,14 @@ Vera uses free VRAM to choose a coarse batch ceiling, then shapes local GPU micr
 
 ### Custom Local Embeddings
 
-You can swap the local embedding model without changing the rest of the local pipeline.
+You can swap the local embedding model without changing the rest of the local pipeline. Use `vera backend` (or `vera setup`) with the relevant flags:
 
 ```bash
 # Optional curated preset
-vera setup --onnx-jina-cuda --code-rank-embed
+vera backend --onnx-jina-cuda --code-rank-embed
 
 # Custom Hugging Face model (repo id or full URL)
-vera setup --onnx-jina-cuda \
+vera backend --onnx-jina-cuda \
   --embedding-repo https://huggingface.co/Zenabius/CodeRankEmbed-onnx \
   --embedding-pooling cls \
   --embedding-no-onnx-data \

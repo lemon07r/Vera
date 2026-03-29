@@ -33,20 +33,25 @@ pub fn run(
     yes: bool,
     embedding_flags: LocalEmbeddingModelFlags,
 ) -> anyhow::Result<()> {
-    // Resolve: explicit backend flag wins, then --api, then interactive menu.
+    // If no flags at all and interactive, run the full wizard.
+    let is_bare_interactive =
+        !api && backend.is_none() && !json_output && !yes && !embedding_flags.any_set();
+    if is_bare_interactive && index_path.is_none() {
+        return run_wizard();
+    }
+
+    // Resolve: explicit backend flag wins, then --api, then auto-detect.
     let effective_backend = if api {
         InferenceBackend::Api
     } else if let Some(b) = backend {
         b
     } else if json_output || yes {
-        // Non-interactive: auto-detect GPU, fall back to CPU.
         let detected = detect_gpu();
         if !json_output {
             eprintln!("Auto-detected backend: {detected}. Use a --onnx-jina-* flag to override.");
         }
         detected
     } else {
-        // Interactive: show backend selection menu.
         prompt_backend()?
     };
     if !effective_backend.is_local() && embedding_flags.any_set() {
@@ -74,9 +79,60 @@ pub fn run(
         effective_backend,
         local_embedding_model,
         index_path,
-        json_output,
+        false,
         "Vera setup complete.",
     )
+}
+
+/// Full interactive setup wizard: backend, agent skills, optional indexing.
+fn run_wizard() -> anyhow::Result<()> {
+    cliclack::intro("vera setup")?;
+
+    // Step 1: Backend selection
+    cliclack::log::step("Step 1: Backend")?;
+    let effective_backend = prompt_backend_select()?;
+    let local_embedding_model = effective_backend
+        .is_local()
+        .then(LocalEmbeddingModelConfig::default);
+
+    configure_backend(
+        effective_backend,
+        local_embedding_model,
+        None,
+        false,
+        "Backend configured.",
+    )?;
+
+    // Step 2: Agent skill installation
+    cliclack::log::step("Step 2: Agent skills")?;
+    let install_skills: bool = cliclack::confirm("Install Vera skills for coding agents?")
+        .initial_value(true)
+        .interact()?;
+    if install_skills {
+        commands::agent::run(commands::agent::AgentCommand::Install, None, None, false)?;
+    }
+
+    // Step 3: Optional indexing
+    cliclack::log::step("Step 3: Index a project")?;
+    let index_now: bool = cliclack::confirm("Index a project now?")
+        .initial_value(false)
+        .interact()?;
+    if index_now {
+        let path: String = cliclack::input("Project path")
+            .default_input(".")
+            .interact()?;
+        commands::index::execute(
+            path.trim(),
+            effective_backend,
+            Vec::new(),
+            false,
+            false,
+            false,
+        )?;
+    }
+
+    cliclack::outro("Setup complete! Run `vera search \"query\"` to get started.")?;
+    Ok(())
 }
 
 pub(crate) fn configure_backend(
@@ -240,6 +296,13 @@ fn detect_gpu() -> InferenceBackend {
 
 /// Show an interactive backend selection menu. Auto-detect is the default.
 fn prompt_backend() -> anyhow::Result<InferenceBackend> {
+    cliclack::intro("vera backend")?;
+    let backend = prompt_backend_select()?;
+    Ok(backend)
+}
+
+/// Backend selection menu items (no intro/outro, for embedding in wizards).
+fn prompt_backend_select() -> anyhow::Result<InferenceBackend> {
     let detected = detect_gpu();
     let detected_hint = match detected {
         InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda) => "NVIDIA GPU detected",
@@ -249,8 +312,6 @@ fn prompt_backend() -> anyhow::Result<InferenceBackend> {
         InferenceBackend::OnnxJina(OnnxExecutionProvider::DirectMl) => "DirectX 12 GPU assumed",
         _ => "no GPU detected, will use CPU",
     };
-
-    cliclack::intro("vera setup")?;
 
     let backend: InferenceBackend = cliclack::select("Select a backend")
         .item(

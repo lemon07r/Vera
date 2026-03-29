@@ -101,18 +101,21 @@ enum Commands {
                       CLI-centric skill bundle into known skill directories so agents \
                       can call `vera index`, `vera search`, `vera update`, and \
                       `vera stats` directly.\n\n\
-                      `vera agent install` is idempotent: rerun it to refresh an \
-                      existing skill install.\n\n\
+                      `vera agent install` detects existing installs and lets you \
+                      add or remove agents in one step. Deselecting an installed \
+                      agent removes it.\n\n\
+                      `vera agent sync` refreshes all stale skill installs to match \
+                      the current binary version, no prompts needed.\n\n\
                       Examples:\n  \
                       vera agent install                       # Interactive: choose scope and agents\n  \
                       vera agent install --client claude       # Install for Claude Code (global)\n  \
                       vera agent install --client all --scope project  # All agents, project only\n  \
+                      vera agent sync                          # Update all stale skills\n  \
                       vera agent status                        # Show all install status\n  \
-                      vera agent remove                        # Interactive: pick installs to remove\n  \
                       vera agent remove --client codex         # Remove the global Codex install"
     )]
     Agent {
-        /// Agent command: install, status, or remove.
+        /// Agent command: install, status, remove, or sync.
         #[arg(value_enum)]
         command: commands::agent::AgentCommand,
         /// Which agent client to target. Without this flag, interactive mode
@@ -138,27 +141,24 @@ enum Commands {
     )]
     Uninstall,
 
-    /// Persist a preferred model backend and bootstrap first-run state.
+    /// Interactive first-time setup wizard.
     ///
-    /// By default this downloads the built-in local model assets and optionally
-    /// indexes a repository immediately.
-    #[command(
-        long_about = "Persist a preferred model backend and bootstrap first-run state.\n\n\
-                      Running `vera setup` with no flags shows an interactive backend menu \
-                      with auto-detected GPU as the default. Pass a --onnx-jina-* flag or \
-                      --api to skip the menu. Add `--code-rank-embed` to use the optional \
-                      CodeRankEmbed local embedding model, or `--embedding-repo/--embedding-dir` \
-                      for a custom ONNX embedding model.\n\n\
-                      Vera always keeps the index local in `.vera/`. The choice here only \
-                      changes where embeddings and reranking are computed.\n\n\
+    /// Walks through backend selection, agent skill installation, and
+    /// optional project indexing in one guided flow.
+    #[command(long_about = "Interactive first-time setup wizard.\n\n\
+                      Walks through three steps:\n  \
+                      1. Backend selection (ONNX runtime + GPU, or API mode)\n  \
+                      2. Agent skill installation (choose scope and agents)\n  \
+                      3. Optional project indexing\n\n\
+                      For backend-only changes, use `vera backend`. For skill-only \
+                      changes, use `vera agent install`.\n\n\
+                      Pass flags to skip the interactive wizard:\n  \
+                      vera setup --onnx-jina-cuda      # NVIDIA GPU, skip wizard\n  \
+                      vera setup --api                 # API mode from env vars\n  \
+                      vera setup --yes                 # Auto-detect GPU, no prompts\n\n\
                       Examples:\n  \
-                      vera setup                       # Interactive backend selection\n  \
-                      vera setup --onnx-jina-cuda      # NVIDIA GPU (skip menu)\n  \
-                      vera setup --code-rank-embed     # Switch local embeddings to CodeRankEmbed\n  \
-                      vera setup --embedding-repo <repo-or-url> --embedding-pooling cls\n  \
-                      vera setup --api                 # Persist API credentials from env\n  \
-                      vera setup --yes                 # Auto-detect GPU, no prompts"
-    )]
+                      vera setup                       # Full interactive wizard\n  \
+                      vera setup --onnx-jina-cuda --index .   # GPU + index, no wizard")]
     Setup {
         #[command(flatten)]
         backend: helpers::LocalBackendFlags,
@@ -170,6 +170,37 @@ enum Commands {
         /// Optionally index a repository after saving config.
         #[arg(long)]
         index: Option<String>,
+        /// Skip the confirmation prompt.
+        #[arg(long)]
+        yes: bool,
+    },
+
+    /// Select and manage the ONNX runtime and model backend.
+    ///
+    /// Use this to switch between GPU providers, change embedding models,
+    /// or reconfigure API mode without running the full setup wizard.
+    #[command(
+        long_about = "Select and manage the ONNX runtime and model backend.\n\n\
+                      This is the focused backend configuration command. It handles \
+                      runtime selection, model downloads, and API credential persistence \
+                      without touching agent skills or project indexes.\n\n\
+                      With no flags, shows an interactive backend menu with auto-detected \
+                      GPU as the default.\n\n\
+                      Examples:\n  \
+                      vera backend                     # Interactive backend selection\n  \
+                      vera backend --onnx-jina-cuda    # NVIDIA GPU (skip menu)\n  \
+                      vera backend --code-rank-embed   # Switch to CodeRankEmbed model\n  \
+                      vera backend --api               # Persist API credentials from env\n  \
+                      vera backend --yes               # Auto-detect GPU, no prompts"
+    )]
+    Backend {
+        #[command(flatten)]
+        backend: helpers::LocalBackendFlags,
+        #[command(flatten)]
+        embedding: helpers::LocalEmbeddingModelFlags,
+        /// Configure Vera for API-backed mode using current env vars.
+        #[arg(long, group = "backend")]
+        api: bool,
         /// Skip the confirmation prompt.
         #[arg(long)]
         yes: bool,
@@ -585,7 +616,11 @@ fn main() {
 
     let show_nudges = !matches!(
         cli.command,
-        Commands::Mcp | Commands::Agent { .. } | Commands::Uninstall | Commands::Upgrade { .. }
+        Commands::Mcp
+            | Commands::Agent { .. }
+            | Commands::Uninstall
+            | Commands::Upgrade { .. }
+            | Commands::Backend { .. }
     ) && !cli.json;
 
     let result = match cli.command {
@@ -614,6 +649,22 @@ fn main() {
                 backend.explicit_backend(),
                 api,
                 index,
+                cli.json,
+                yes,
+                embedding,
+            )
+        }
+        Commands::Backend {
+            backend,
+            embedding,
+            api,
+            yes,
+        } => {
+            tracing::info!("backend command");
+            commands::setup::run(
+                backend.explicit_backend(),
+                api,
+                None,
                 cli.json,
                 yes,
                 embedding,

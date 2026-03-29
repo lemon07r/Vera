@@ -105,9 +105,25 @@ fn check_skill_staleness() {
         Err(_) => return,
     };
     let stale_installs = stale_skill_installs(&skill_dirs);
+    if stale_installs.is_empty() {
+        return;
+    }
 
-    if let Some(hint) = format_skill_staleness_hint(&stale_installs, cwd.as_deref(), &home) {
-        eprintln!("{hint}");
+    // Auto-sync stale skills silently instead of nagging the user.
+    match crate::commands::agent::run(
+        crate::commands::agent::AgentCommand::Sync,
+        None,
+        None,
+        false,
+    ) {
+        Ok(()) => {}
+        Err(_) => {
+            // Fall back to a hint if auto-sync fails.
+            if let Some(hint) = format_skill_staleness_hint(&stale_installs, cwd.as_deref(), &home)
+            {
+                eprintln!("{hint}");
+            }
+        }
     }
 }
 
@@ -184,11 +200,7 @@ impl SkillInstallDescription {
     }
 
     fn refresh_command(&self) -> &'static str {
-        match self.scope {
-            SkillInstallScope::Global => "vera agent install --scope global",
-            SkillInstallScope::Project => "vera agent install --scope project",
-            SkillInstallScope::Unknown => "vera agent install",
-        }
+        "vera agent sync"
     }
 }
 
@@ -582,7 +594,7 @@ mod tests {
         assert!(hint.contains("~/.codex/skills/vera"));
         assert!(hint.contains("0.9.18"));
         assert!(hint.contains("(+1 more)"));
-        assert!(hint.contains("vera agent install --scope global"));
+        assert!(hint.contains("vera agent sync"));
     }
 
     #[test]

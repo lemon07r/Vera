@@ -16,6 +16,7 @@ pub enum AgentCommand {
     Install,
     Status,
     Remove,
+    Sync,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum, Serialize)]
@@ -193,6 +194,7 @@ pub fn run(
             json_output,
         ),
         AgentCommand::Remove => remove(client, scope, json_output),
+        AgentCommand::Sync => sync(json_output),
     }
 }
 
@@ -226,27 +228,66 @@ fn install_interactive() -> anyhow::Result<()> {
         .item(AgentScope::All, "Both", "global and project")
         .interact()?;
 
-    let all_clients = AgentClient::all_concrete();
-    let mut multi =
-        cliclack::multiselect("Select agents (space to toggle, all selected by default)");
-    for &client in all_clients {
-        multi = multi.item(client, client.display_name(), "");
-    }
-    let selected: Vec<AgentClient> = multi
-        .initial_values(all_clients.to_vec())
-        .required(true)
-        .interact()?;
-
-    let mut locations = Vec::new();
     let cwd = std::env::current_dir().context("failed to resolve current directory")?;
     let home = state::user_home_dir()?;
-    for client in &selected {
-        let scopes = match scope {
-            AgentScope::All => vec![AgentScope::Global, AgentScope::Project],
-            single => vec![single],
+    let current_version = env!("CARGO_PKG_VERSION");
+
+    let all_clients = AgentClient::all_concrete();
+    let scopes_to_check: Vec<AgentScope> = match scope {
+        AgentScope::All => vec![AgentScope::Global, AgentScope::Project],
+        single => vec![single],
+    };
+
+    // Detect which clients already have an up-to-date install.
+    let mut already_installed = Vec::new();
+    for &client in all_clients {
+        for &s in &scopes_to_check {
+            let path = skill_path_for(client, s, &cwd, &home)?;
+            if path.join(".version").exists() {
+                let version = fs::read_to_string(path.join(".version"))
+                    .unwrap_or_default()
+                    .trim()
+                    .to_string();
+                if version == current_version {
+                    already_installed.push(client);
+                }
+            }
+        }
+    }
+
+    let mut multi = cliclack::multiselect("Select agents to install (space to toggle)");
+    for &client in all_clients {
+        let hint = if already_installed.contains(&client) {
+            "installed, up to date"
+        } else {
+            ""
         };
-        for s in scopes {
-            locations.push(SkillLocation {
+        multi = multi.item(client, client.display_name(), hint);
+    }
+    let selected: Vec<AgentClient> = multi.required(true).interact()?;
+
+    // Determine which currently-installed clients were deselected (to remove).
+    let installed_clients: Vec<AgentClient> = all_clients
+        .iter()
+        .copied()
+        .filter(|c| {
+            scopes_to_check.iter().any(|&s| {
+                skill_path_for(*c, s, &cwd, &home)
+                    .ok()
+                    .is_some_and(|p| p.join("SKILL.md").exists())
+            })
+        })
+        .collect();
+    let to_remove: Vec<AgentClient> = installed_clients
+        .iter()
+        .filter(|c| !selected.contains(c))
+        .copied()
+        .collect();
+
+    let mut install_locations = Vec::new();
+    for client in &selected {
+        for &s in &scopes_to_check {
+            install_locations.push(SkillLocation {
                 client: *client,
                 scope: s,
                 path: skill_path_for(*client, s, &cwd, &home)?,
@@ -254,7 +295,24 @@ fn install_interactive() -> anyhow::Result<()> {
         }
     }
 
-    do_install(&locations, false)?;
+    let mut remove_locations = Vec::new();
+    for client in &to_remove {
+        for &s in &scopes_to_check {
+            let path = skill_path_for(*client, s, &cwd, &home)?;
+            if path.join("SKILL.md").exists() {
+                remove_locations.push(SkillLocation {
+                    client: *client,
+                    scope: s,
+                    path,
+                });
+            }
+        }
+    }
+
+    if !remove_locations.is_empty() {
+        do_remove(&remove_locations, false)?;
+    }
+    do_install(&install_locations, false)?;
     offer_agents_md_snippet()?;
     cliclack::outro("Done!")?;
     Ok(())
@@ -652,6 +710,57 @@ fn skill_path_for(
     };
 
     Ok(base.join(VERA_SKILL_NAME))
+}
+
+fn sync(json_output: bool) -> anyhow::Result<()> {
+    let home = state::user_home_dir()?;
+    let cwd = std::env::current_dir().ok();
+    let skill_dirs = all_skill_paths(cwd.as_deref(), &home)?;
+    let current_version = env!("CARGO_PKG_VERSION");
+
+    let mut updated = Vec::new();
+    for dir in &skill_dirs {
+        if !dir.join("SKILL.md").exists() {
+            continue;
+        }
+        let version = fs::read_to_string(dir.join(".version"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        if version == current_version {
+            continue;
+        }
+        install_skill_to(dir)?;
+        updated.push(dir.clone());
+    }
+
+    if json_output {
+        let reports: Vec<_> = updated
+            .iter()
+            .map(|p| {
+                serde_json::json!({
+                    "path": p.display().to_string(),
+                    "version": current_version,
+                })
+            })
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&reports)?);
+    } else if updated.is_empty() {
+        println!("All installed skills are up to date (v{current_version}).");
+    } else {
+        let green = console::Style::new().green();
+        let dim = console::Style::new().dim();
+        println!(
+            "Updated {} skill install(s) to v{current_version}:",
+            updated.len()
+        );
+        println!();
+        for path in &updated {
+            println!("  {} {}", green.apply_to("✓"), dim.apply_to(path.display()));
+        }
+    }
+
+    Ok(())
 }
 
 /// The snippet Vera offers to inject into agent config files.
