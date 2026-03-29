@@ -36,16 +36,16 @@ vera index .
 vera search "authentication logic"
 ```
 
-## Why Vera is Better
+## What Sets Vera Apart
 
 | | |
 |---|---|
-| **Cross-encoder reranking** | Most tools retrieve candidates and stop. Vera adds a reranking stage that scores query-candidate pairs jointly: 0.60 MRR@10 vs. 0.28 with vector retrieval alone. |
-| **Single binary, zero dependencies** | One static binary with 58 tree-sitter grammars compiled in, 63 languages total. No Python, no language servers, no per-language toolchains. |
-| **Proven accuracy** | 0.84 nDCG@10 and 0.78 Recall@5 on a 21-task benchmark across real codebases. See [benchmarks](#benchmarks). |
-| **Token-efficient output** | Returns relevant chunks, not entire files. Averages 67% fewer tokens than loading full files; most queries see 75-95% reduction. |
+| **Cross-encoder reranking** | Most tools stop at retrieval. Vera scores query-candidate pairs jointly, lifting MRR@10 from 0.28 to 0.60. |
+| **Single binary, 63 languages** | One static binary with 58 tree-sitter grammars compiled in. No Python, no language servers, no per-language toolchains. |
+| **Built-in code intelligence** | Call graph analysis, reference finding, dead code detection, and project overview, all from the same index. |
+| **Token-efficient for agents** | Returns symbol-bounded chunks, not entire files. 75-95% fewer tokens on typical queries. |
 
-After trying many other tools and maintaining Pampax (a fork of someone's code search tool), I kept running into deep-rooted bugs and missing features like provider-agnostic reranking. Every design choice in Vera comes from months of research, real benchmarking, and evaluation.
+Vera started after months of maintaining Pampax (a fork of someone's code search tool) and running into deep-rooted bugs and missing features like provider-agnostic reranking. Every design choice comes from real benchmarking and evaluation. See the full [feature list](docs/features.md) for everything Vera can do.
 
 ## Installation
 
