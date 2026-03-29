@@ -9,6 +9,8 @@
 [![GitHub release](https://img.shields.io/github/v/release/lemon07r/Vera?include_prereleases&sort=semver)](https://github.com/lemon07r/Vera/releases)
 [![Languages](https://img.shields.io/badge/languages-63%2B-green.svg)](docs/supported-languages.md)
 
+[Features](docs/features.md)
+·
 [Query Guide](docs/query-guide.md)
 ·
 [Benchmarks](docs/benchmarks.md)
