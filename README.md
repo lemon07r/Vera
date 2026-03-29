@@ -45,7 +45,7 @@ vera search "authentication logic"
 | **Built-in code intelligence** | Call graph analysis, reference finding, dead code detection, and project overview, all from the same index. |
 | **Token-efficient for agents** | Returns symbol-bounded chunks, not entire files. 75-95% fewer tokens on typical queries. |
 
-Vera started after weeks of working on Pampax (a project I forked because it and other similar tools were missing what I wanted), but I kept running into deep-rooted bugs and less-than-ideal design decisions, and realized starting fresh would be better. Every design choice comes from careful research, learning from other projects, benchmarking and evaluation. Take a look at the full [feature list](docs/features.md) to see everything Vera can do.
+Vera started after weeks of working on Pampax, a project I forked because it and other similar tools were missing what I wanted. I kept running into deep-rooted bugs and less-than-ideal design decisions, and realized starting fresh would be better. Every design choice comes from careful research, learning from other projects, benchmarking and evaluation. Take a look at the full [feature list](docs/features.md) to see everything Vera can do.
 
 ## Installation
 
