@@ -32,6 +32,9 @@ pub struct ProjectOverview {
     pub entry_points: Vec<String>,
     /// Files with the most chunks (complexity hotspots).
     pub hotspots: Vec<HotspotFile>,
+    /// Detected project conventions (frameworks, patterns, config files).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub conventions: Vec<String>,
 }
 
 /// Language info for the overview.
@@ -210,6 +213,8 @@ pub fn collect_overview(repo_path: &Path) -> Result<ProjectOverview> {
         .map(|(file_path, chunks)| HotspotFile { file_path, chunks })
         .collect();
 
+    let conventions = detect_conventions(&store)?;
+
     Ok(ProjectOverview {
         file_count,
         chunk_count,
@@ -220,7 +225,76 @@ pub fn collect_overview(repo_path: &Path) -> Result<ProjectOverview> {
         symbol_types,
         entry_points,
         hotspots,
+        conventions,
     })
+}
+
+/// Detect project conventions by scanning indexed file paths for known patterns.
+fn detect_conventions(store: &MetadataStore) -> Result<Vec<String>> {
+    let files = store.indexed_files()?;
+    let mut conventions = Vec::new();
+
+    let indicators: &[(&[&str], &str)] = &[
+        (&["Cargo.toml"], "Rust/Cargo project"),
+        (&["package.json"], "Node.js/npm project"),
+        (
+            &["pyproject.toml", "setup.py", "setup.cfg"],
+            "Python project",
+        ),
+        (&["go.mod"], "Go module"),
+        (
+            &["pom.xml", "build.gradle", "build.gradle.kts"],
+            "Java/JVM project",
+        ),
+        (&["Gemfile"], "Ruby/Bundler project"),
+        (
+            &["Dockerfile", "docker-compose.yml", "docker-compose.yaml"],
+            "Docker containerization",
+        ),
+        (&[".github/workflows"], "GitHub Actions CI"),
+        (&[".gitlab-ci.yml"], "GitLab CI"),
+        (&["Makefile"], "Make build system"),
+        (&["tsconfig.json"], "TypeScript project"),
+        (
+            &[
+                ".eslintrc",
+                ".eslintrc.json",
+                ".eslintrc.js",
+                "eslint.config",
+            ],
+            "ESLint linting",
+        ),
+        (&[".prettierrc", "prettier.config"], "Prettier formatting"),
+        (&["jest.config", "vitest.config"], "JS test framework"),
+        (&["next.config"], "Next.js framework"),
+        (&["nuxt.config"], "Nuxt.js framework"),
+        (&["vite.config"], "Vite build tool"),
+        (&["webpack.config"], "Webpack bundler"),
+        (&["tailwind.config"], "Tailwind CSS"),
+        (&[".env", ".env.example"], "Environment variable config"),
+        (&["terraform"], "Terraform infrastructure"),
+        (&["k8s", "kubernetes", "helm"], "Kubernetes deployment"),
+        (&["proto", ".proto"], "Protocol Buffers"),
+        (&["openapi", "swagger"], "OpenAPI/Swagger spec"),
+        (&["migrations"], "Database migrations"),
+        (&["prisma"], "Prisma ORM"),
+        (&[".storybook"], "Storybook UI"),
+    ];
+
+    for (patterns, label) in indicators {
+        let found = patterns.iter().any(|pat| {
+            files.iter().any(|f| {
+                let lower = f.to_ascii_lowercase();
+                // Match as filename or path component.
+                lower.contains(pat)
+            })
+        });
+        if found {
+            conventions.push((*label).to_string());
+        }
+    }
+
+    Ok(conventions)
 }
 
 // ── Call graph queries ───────────────────────────────────────────────

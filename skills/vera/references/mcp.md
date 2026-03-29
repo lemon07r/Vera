@@ -30,11 +30,11 @@ vera mcp
 
 The server exposes:
 
-- `search_code`
+- `search_code` (supports `queries` array for multi-query search, `intent` for reranking)
 - `index_project`
 - `update_project`
 - `get_stats`
-- `get_overview`
+- `get_overview` (includes detected project conventions)
 - `watch_project`
 - `find_references`
 - `find_dead_code`

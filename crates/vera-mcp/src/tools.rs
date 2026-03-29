@@ -23,6 +23,11 @@ use crate::watcher::WatchHandle;
 /// Global watcher handle. Kept alive for the lifetime of the MCP server process.
 static WATCHER: Mutex<Option<WatchHandle>> = Mutex::new(None);
 
+/// Maximum character length for a single chunk's content in MCP responses.
+/// Chunks exceeding this limit are truncated with a marker to prevent
+/// blowing up LLM context windows.
+const MAX_CONTENT_CHARS: usize = 8_000;
+
 /// Compact result representation for MCP tool responses.
 /// Drops `score` and `language` (inferrable from extension), omits null fields.
 #[derive(Serialize)]
@@ -30,11 +35,28 @@ struct CompactResult<'a> {
     file_path: &'a str,
     line_start: u32,
     line_end: u32,
-    content: &'a str,
+    content: std::borrow::Cow<'a, str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     symbol_name: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     symbol_type: Option<&'a vera_core::types::SymbolType>,
+}
+
+/// Truncate content to `MAX_CONTENT_CHARS`, appending a marker if truncated.
+fn truncate_content(content: &str) -> std::borrow::Cow<'_, str> {
+    if content.len() <= MAX_CONTENT_CHARS {
+        return std::borrow::Cow::Borrowed(content);
+    }
+    // Find a safe char boundary near the limit.
+    let end = content
+        .char_indices()
+        .take_while(|(i, _)| *i < MAX_CONTENT_CHARS)
+        .last()
+        .map(|(i, c)| i + c.len_utf8())
+        .unwrap_or(0);
+    let mut truncated = content[..end].to_string();
+    truncated.push_str("\n[...truncated]");
+    std::borrow::Cow::Owned(truncated)
 }
 
 /// Serialize search results as compact single-line JSON.
@@ -47,7 +69,7 @@ fn compact_results_json(
             file_path: &r.file_path,
             line_start: r.line_start,
             line_end: r.line_end,
-            content: &r.content,
+            content: truncate_content(&r.content),
             symbol_name: r.symbol_name.as_deref(),
             symbol_type: r.symbol_type.as_ref(),
         })
@@ -61,8 +83,18 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
         ToolDefinition {
             name: "search_code".to_string(),
             description: "Search the indexed codebase using hybrid BM25+vector \
-                          retrieval. Returns ranked code snippets with file paths, \
-                          line numbers, and relevance scores."
+                          retrieval with cross-encoder reranking. Returns ranked \
+                          code snippets with file paths, line numbers, and content.\n\
+                          \n\
+                          WHEN TO USE: conceptual or behavioral queries (\"how is auth handled\", \
+                          \"error retry logic\", \"database connection pooling\"). Understands \
+                          synonyms and related concepts.\n\
+                          WHEN NOT TO USE: exact string matching, regex patterns, or \
+                          import statements. Use regex_search for those.\n\
+                          \n\
+                          TIPS: Use 2-3 varied queries to capture different aspects of what \
+                          you are looking for. Set intent to describe your higher-level goal \
+                          for better reranking."
                 .to_string(),
             input_schema: serde_json::json!({
                 "type": "object",
@@ -70,6 +102,15 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "query": {
                         "type": "string",
                         "description": "Search query (keyword or natural language)"
+                    },
+                    "queries": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Multiple search queries to run in parallel and merge. Use 2-3 varied queries to capture different aspects (e.g., ['OAuth token refresh', 'JWT expiry handling', 'auth middleware']). Results are deduplicated and reranked."
+                    },
+                    "intent": {
+                        "type": "string",
+                        "description": "Higher-level goal for reranking (e.g., 'find where auth tokens are validated and refreshed'). Improves precision when the query is ambiguous."
                     },
                     "lang": {
                         "type": "string",
@@ -97,7 +138,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                         "description": "Maximum number of results (default: 10)"
                     }
                 },
-                "required": ["query"]
+                "required": []
             }),
         },
         ToolDefinition {
@@ -150,7 +191,8 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
         ToolDefinition {
             name: "get_overview".to_string(),
             description: "Get architecture overview of the indexed project: languages, \
-                          directories, entry points, symbol types, and complexity hotspots. \
+                          directories, entry points, symbol types, complexity hotspots, \
+                          and detected project conventions (frameworks, patterns, config files). \
                           Useful for onboarding and understanding project structure."
                 .to_string(),
             input_schema: serde_json::json!({
@@ -222,8 +264,12 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
         ToolDefinition {
             name: "regex_search".to_string(),
             description: "Search indexed files using a regex pattern. Returns matches \
-                          with surrounding context lines. Useful for exact pattern matching \
-                          (imports, TODOs, specific syntax) where semantic search is too broad."
+                          with surrounding context lines.\n\
+                          \n\
+                          WHEN TO USE: exact string matching, regex patterns, import statements, \
+                          TODOs, specific syntax, or known identifiers.\n\
+                          WHEN NOT TO USE: conceptual or behavioral queries. Use search_code \
+                          for those."
                 .to_string(),
             input_schema: serde_json::json!({
                 "type": "object",
@@ -281,10 +327,26 @@ pub fn handle_tool_call(name: &str, arguments: &Value) -> ToolCallResult {
 
 /// Handle the `search_code` tool.
 fn handle_search_code(args: &Value) -> ToolCallResult {
-    let query = match args.get("query").and_then(|v| v.as_str()) {
-        Some(q) => q,
-        None => return ToolCallResult::error("Missing required parameter: query"),
-    };
+    // Collect queries: support both single `query` and multi `queries`.
+    let mut queries: Vec<String> = Vec::new();
+    if let Some(q) = args.get("query").and_then(|v| v.as_str()) {
+        queries.push(q.to_string());
+    }
+    if let Some(arr) = args.get("queries").and_then(|v| v.as_array()) {
+        for item in arr {
+            if let Some(q) = item.as_str() {
+                queries.push(q.to_string());
+            }
+        }
+    }
+    if queries.is_empty() {
+        return ToolCallResult::error(
+            "Missing required parameter: provide 'query' (string) or 'queries' (array)",
+        );
+    }
+
+    let intent = args.get("intent").and_then(|v| v.as_str());
+
     let scope = match args.get("scope").and_then(|v| v.as_str()) {
         Some(value) => match value.parse() {
             Ok(scope) => Some(scope),
@@ -320,7 +382,6 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
     config.adjust_for_backend(backend);
     let result_limit = limit.unwrap_or(config.retrieval.default_limit);
 
-    // Look for index in current working directory.
     let cwd = match std::env::current_dir() {
         Ok(d) => d,
         Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
@@ -333,20 +394,39 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         );
     }
 
-    // Use the shared search service from vera-core.
-    let (results, _timings) = match vera_core::retrieval::search_service::execute_search(
-        &index_dir,
-        query,
-        &config,
-        &filters,
-        result_limit,
-        backend,
-    ) {
-        Ok(r) => r,
-        Err(e) => return ToolCallResult::error(format!("Search failed: {e}")),
+    // Run each query, collect all results.
+    let mut all_results: Vec<vera_core::types::SearchResult> = Vec::new();
+    let per_query_limit = if queries.len() > 1 {
+        result_limit.max(10)
+    } else {
+        result_limit
     };
 
-    match compact_results_json(&results) {
+    for query in &queries {
+        // If intent is provided, prepend it to the query for better reranking.
+        let effective_query = match intent {
+            Some(i) => format!("intent: {i} | {query}"),
+            None => query.clone(),
+        };
+        match vera_core::retrieval::search_service::execute_search(
+            &index_dir,
+            &effective_query,
+            &config,
+            &filters,
+            per_query_limit,
+            backend,
+        ) {
+            Ok((results, _timings)) => all_results.extend(results),
+            Err(e) => return ToolCallResult::error(format!("Search failed: {e}")),
+        }
+    }
+
+    // Deduplicate by (file_path, line_start, line_end), keeping first occurrence.
+    let mut seen = std::collections::HashSet::new();
+    all_results.retain(|r| seen.insert(format!("{}:{}:{}", r.file_path, r.line_start, r.line_end)));
+    all_results.truncate(result_limit);
+
+    match compact_results_json(&all_results) {
         Ok(json) => ToolCallResult::success(json),
         Err(e) => ToolCallResult::error(format!("Failed to serialize results: {e}")),
     }
@@ -679,6 +759,37 @@ mod tests {
                 .text
                 .contains("Missing required parameter")
         );
+    }
+
+    #[test]
+    fn search_code_accepts_queries_array() {
+        // No index, but should get past parameter validation.
+        let result = handle_tool_call(
+            "search_code",
+            &serde_json::json!({"queries": ["foo", "bar"]}),
+        );
+        // Should fail with "No index found", not "Missing required parameter".
+        assert!(result.is_error);
+        assert!(
+            result.content[0].text.contains("No index found"),
+            "got: {}",
+            result.content[0].text
+        );
+    }
+
+    #[test]
+    fn truncate_content_short_passthrough() {
+        let short = "hello world";
+        let result = truncate_content(short);
+        assert_eq!(result.as_ref(), short);
+    }
+
+    #[test]
+    fn truncate_content_long_truncates() {
+        let long = "a".repeat(MAX_CONTENT_CHARS + 100);
+        let result = truncate_content(&long);
+        assert!(result.len() < long.len());
+        assert!(result.ends_with("[...truncated]"));
     }
 
     #[test]
