@@ -99,33 +99,15 @@ fn check_skill_staleness() {
         None => return,
     };
 
-    // Check global skill dirs for all known clients.
-    let skill_dirs: Vec<PathBuf> = [".claude", ".codex", ".copilot", ".cursor", ".kiro"]
-        .iter()
-        .map(|client| home.join(client).join("skills").join("vera"))
-        .collect();
+    let cwd = std::env::current_dir().ok();
+    let skill_dirs = match crate::commands::agent::all_skill_paths(cwd.as_deref(), &home) {
+        Ok(dirs) => dirs,
+        Err(_) => return,
+    };
+    let stale_installs = stale_skill_installs(&skill_dirs);
 
-    let mut any_stale = false;
-    for dir in &skill_dirs {
-        if let Some(installed) = read_skill_version(dir) {
-            if installed != CURRENT_VERSION {
-                any_stale = true;
-                break;
-            }
-        }
-    }
-
-    if any_stale {
-        eprintln!(
-            "hint: installed skill files are from v{} (binary is v{}). \
-             Run `vera agent install` to update.",
-            skill_dirs
-                .iter()
-                .filter_map(|d| read_skill_version(d))
-                .next()
-                .unwrap_or_default(),
-            CURRENT_VERSION,
-        );
+    if let Some(hint) = format_skill_staleness_hint(&stale_installs, cwd.as_deref(), &home) {
+        eprintln!("{hint}");
     }
 }
 
@@ -134,6 +116,103 @@ fn read_skill_version(skill_dir: &Path) -> Option<String> {
     fs::read_to_string(version_file)
         .ok()
         .map(|s| s.trim().to_string())
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StaleSkillInstall {
+    path: PathBuf,
+    version: String,
+}
+
+fn stale_skill_installs(skill_dirs: &[PathBuf]) -> Vec<StaleSkillInstall> {
+    skill_dirs
+        .iter()
+        .filter_map(|dir| {
+            let version = read_skill_version(dir)?;
+            (version != CURRENT_VERSION).then(|| StaleSkillInstall {
+                path: dir.clone(),
+                version,
+            })
+        })
+        .collect()
+}
+
+fn format_skill_staleness_hint(
+    stale_installs: &[StaleSkillInstall],
+    cwd: Option<&Path>,
+    home: &Path,
+) -> Option<String> {
+    let first = stale_installs.first()?;
+    let description = describe_skill_install(&first.path, cwd, home);
+    let remaining = stale_installs.len().saturating_sub(1);
+    let suffix = if remaining > 0 {
+        format!(" (+{remaining} more)")
+    } else {
+        String::new()
+    };
+
+    Some(format!(
+        "hint: stale {}: `{}` is v{}, binary is v{}{}. Refresh with `{}`.",
+        description.label(),
+        description.path,
+        first.version,
+        CURRENT_VERSION,
+        suffix,
+        description.refresh_command(),
+    ))
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SkillInstallScope {
+    Global,
+    Project,
+    Unknown,
+}
+
+struct SkillInstallDescription {
+    scope: SkillInstallScope,
+    path: String,
+}
+
+impl SkillInstallDescription {
+    fn label(&self) -> &'static str {
+        match self.scope {
+            SkillInstallScope::Global => "global Vera skill",
+            SkillInstallScope::Project => "project Vera skill",
+            SkillInstallScope::Unknown => "Vera skill",
+        }
+    }
+
+    fn refresh_command(&self) -> &'static str {
+        match self.scope {
+            SkillInstallScope::Global => "vera agent install --scope global",
+            SkillInstallScope::Project => "vera agent install --scope project",
+            SkillInstallScope::Unknown => "vera agent install",
+        }
+    }
+}
+
+fn describe_skill_install(path: &Path, cwd: Option<&Path>, home: &Path) -> SkillInstallDescription {
+    if let Some(cwd) = cwd {
+        if let Ok(relative) = path.strip_prefix(cwd) {
+            return SkillInstallDescription {
+                scope: SkillInstallScope::Project,
+                path: format!("./{}", relative.display()),
+            };
+        }
+    }
+
+    if let Ok(relative) = path.strip_prefix(home) {
+        return SkillInstallDescription {
+            scope: SkillInstallScope::Global,
+            path: format!("~/{}", relative.display()),
+        };
+    }
+
+    SkillInstallDescription {
+        scope: SkillInstallScope::Unknown,
+        path: path.display().to_string(),
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -479,6 +558,31 @@ mod tests {
     #[test]
     fn read_skill_version_missing_dir() {
         assert_eq!(read_skill_version(Path::new("/nonexistent/path")), None);
+    }
+
+    #[test]
+    fn format_skill_staleness_hint_includes_path_and_count() {
+        let hint = format_skill_staleness_hint(
+            &[
+                StaleSkillInstall {
+                    path: PathBuf::from("/tmp/home/.codex/skills/vera"),
+                    version: "0.9.18".to_string(),
+                },
+                StaleSkillInstall {
+                    path: PathBuf::from("/tmp/project/.agents/skills/vera"),
+                    version: "0.9.16".to_string(),
+                },
+            ],
+            Some(Path::new("/tmp/project")),
+            Path::new("/tmp/home"),
+        )
+        .unwrap();
+
+        assert!(hint.contains("global Vera skill"));
+        assert!(hint.contains("~/.codex/skills/vera"));
+        assert!(hint.contains("0.9.18"));
+        assert!(hint.contains("(+1 more)"));
+        assert!(hint.contains("vera agent install --scope global"));
     }
 
     #[test]

@@ -20,7 +20,6 @@ zerocopy = { version = "0.8", features = ["derive"] }
 lancedb = "0.27"
 arrow-array = "57"
 arrow-schema = "57"
-arrow = "57"
 
 # Tantivy (BM25 full-text search)
 tantivy = "0.22"

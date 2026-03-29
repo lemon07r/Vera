@@ -1,5 +1,6 @@
 //! `vera agent ...` — install and manage the Vera skill for coding agents.
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -506,6 +507,26 @@ fn resolve_locations(client: AgentClient, scope: AgentScope) -> anyhow::Result<V
     resolve_locations_with_roots(client, scope, &cwd, &home)
 }
 
+pub(crate) fn all_skill_paths(cwd: Option<&Path>, home: &Path) -> anyhow::Result<Vec<PathBuf>> {
+    let mut paths = BTreeSet::new();
+    let cwd_for_globals = cwd.unwrap_or(home);
+
+    for &client in AgentClient::all_concrete() {
+        paths.insert(skill_path_for(
+            client,
+            AgentScope::Global,
+            cwd_for_globals,
+            home,
+        )?);
+
+        if let Some(cwd) = cwd {
+            paths.insert(skill_path_for(client, AgentScope::Project, cwd, home)?);
+        }
+    }
+
+    Ok(paths.into_iter().collect())
+}
+
 fn resolve_locations_with_roots(
     client: AgentClient,
     scope: AgentScope,
@@ -762,5 +783,22 @@ mod tests {
             skill_path_for(client, AgentScope::Project, cwd, home)
                 .unwrap_or_else(|_| panic!("no project path for {:?}", client));
         }
+    }
+
+    #[test]
+    fn all_skill_paths_dedup_shared_directories() {
+        let cwd = Path::new("/tmp/project");
+        let home = Path::new("/tmp/home");
+        let paths = all_skill_paths(Some(cwd), home).unwrap();
+
+        assert!(paths.contains(&PathBuf::from("/tmp/home/.codex/skills/vera")));
+        assert!(paths.contains(&PathBuf::from("/tmp/project/.agents/skills/vera")));
+        assert_eq!(
+            paths
+                .iter()
+                .filter(|path| { **path == PathBuf::from("/tmp/project/.agents/skills/vera") })
+                .count(),
+            1
+        );
     }
 }
