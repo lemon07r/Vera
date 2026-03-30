@@ -108,9 +108,19 @@ pub fn discover_files(root: &Path, config: &IndexingConfig) -> Result<DiscoveryR
     let mut overrides = ignore::overrides::OverrideBuilder::new(&root);
     if !config.no_default_excludes {
         for pattern in &config.default_excludes {
-            let glob = format!("!{pattern}/");
+            // Exclude both files and directories matching the pattern
+            let file_glob = format!("!{pattern}");
             overrides
-                .add(&glob)
+                .add(&file_glob)
+                .with_context(|| format!("invalid exclusion pattern: {pattern}"))?;
+
+            let dir_glob = if pattern.ends_with('/') {
+                format!("!{pattern}")
+            } else {
+                format!("!{pattern}/")
+            };
+            overrides
+                .add(&dir_glob)
                 .with_context(|| format!("invalid exclusion pattern: {pattern}"))?;
         }
         // Always exclude .veraignore itself from indexing.

@@ -89,6 +89,17 @@ pub struct RerankerConfig {
     pub timeout: Duration,
     /// Maximum retries on transient errors.
     pub max_retries: u32,
+    /// Maximum number of documents to send per `/rerank` request.
+    ///
+    /// Some backends (notably llama.cpp reranking models) have a small
+    /// context window and reject large document arrays in a single call.
+    pub max_docs_per_request: usize,
+    /// Maximum characters per formatted reranker document.
+    ///
+    /// Long code snippets are split into overlapping windows (and truncated
+    /// as a fallback) before reranking to avoid model context overflows on
+    /// small rerank models.
+    pub max_document_chars: usize,
 }
 
 impl RerankerConfig {
@@ -100,6 +111,8 @@ impl RerankerConfig {
             api_key,
             timeout: Duration::from_secs(30),
             max_retries: 2,
+            max_docs_per_request: 8,
+            max_document_chars: 1200,
         }
     }
 
@@ -109,6 +122,8 @@ impl RerankerConfig {
     /// - `RERANKER_MODEL_BASE_URL`
     /// - `RERANKER_MODEL_ID`
     /// - `RERANKER_MODEL_API_KEY`
+    /// - `RERANKER_MAX_DOCS_PER_REQUEST` (optional)
+    /// - `RERANKER_MAX_DOCUMENT_CHARS` (optional)
     pub fn from_env() -> Result<Self> {
         let base_url =
             std::env::var("RERANKER_MODEL_BASE_URL").context("RERANKER_MODEL_BASE_URL not set")?;
@@ -116,7 +131,19 @@ impl RerankerConfig {
         let api_key =
             std::env::var("RERANKER_MODEL_API_KEY").context("RERANKER_MODEL_API_KEY not set")?;
 
-        Ok(Self::new(base_url, model_id, api_key))
+        let mut cfg = Self::new(base_url, model_id, api_key);
+        if let Ok(value) = std::env::var("RERANKER_MAX_DOCS_PER_REQUEST") {
+            if let Ok(parsed) = value.parse::<usize>() {
+                cfg.max_docs_per_request = parsed.max(1);
+            }
+        }
+        if let Ok(value) = std::env::var("RERANKER_MAX_DOCUMENT_CHARS") {
+            if let Ok(parsed) = value.parse::<usize>() {
+                cfg.max_document_chars = parsed.max(64);
+            }
+        }
+
+        Ok(cfg)
     }
 
     /// Set the request timeout.
@@ -128,6 +155,18 @@ impl RerankerConfig {
     /// Set the maximum retry count.
     pub fn with_max_retries(mut self, max_retries: u32) -> Self {
         self.max_retries = max_retries;
+        self
+    }
+
+    /// Set maximum documents per API request.
+    pub fn with_max_docs_per_request(mut self, max_docs_per_request: usize) -> Self {
+        self.max_docs_per_request = max_docs_per_request.max(1);
+        self
+    }
+
+    /// Set maximum characters per formatted reranker document.
+    pub fn with_max_document_chars(mut self, max_document_chars: usize) -> Self {
+        self.max_document_chars = max_document_chars.max(64);
         self
     }
 }
@@ -290,6 +329,89 @@ impl ApiReranker {
 
         Ok(scores)
     }
+
+    /// Rerank documents in adaptive batches, handling context limits.
+    ///
+    /// Splits documents into batches of max_docs_per_request. If a batch fails
+    /// with a context limit error, recursively splits it in half and retries.
+    /// For single-document failures, progressively shrinks the document until
+    /// it fits or gives up.
+    async fn rerank_adaptive_batches(
+        &self,
+        query: &str,
+        documents: &[String],
+        base_index: usize,
+    ) -> Result<Vec<RerankScore>, RerankerError> {
+        if documents.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let max_docs = self.config.max_docs_per_request.max(1);
+        let mut pending: Vec<(usize, usize)> = Vec::new();
+        let mut start = 0usize;
+        while start < documents.len() {
+            let end = (start + max_docs).min(documents.len());
+            pending.push((start, end));
+            start = end;
+        }
+
+        let mut out = Vec::with_capacity(documents.len());
+        while let Some((start, end)) = pending.pop() {
+            let slice = &documents[start..end];
+            match self.call_api(query, slice, slice.len()).await {
+                Ok(mut scores) => {
+                    for score in &mut scores {
+                        score.index += base_index + start;
+                    }
+                    out.extend(scores);
+                }
+                Err(err) if is_context_limit_error(&err) && slice.len() > 1 => {
+                    // Split this failing batch and retry each half.
+                    let mid = start + slice.len() / 2;
+                    pending.push((mid, end));
+                    pending.push((start, mid));
+                }
+                Err(err) if is_context_limit_error(&err) && slice.len() == 1 => {
+                    // Even one document overflowed. Retry with progressively smaller text.
+                    let original = &documents[start];
+                    let mut budget = (self.config.max_document_chars / 2).max(64);
+                    let mut recovered = None;
+
+                    while budget >= 64 {
+                        let shrunk = truncate_reranker_document(original, budget);
+                        let singleton = vec![shrunk];
+                        match self.call_api(query, &singleton, 1).await {
+                            Ok(mut scores) => {
+                                for score in &mut scores {
+                                    score.index += base_index + start;
+                                }
+                                recovered = Some(scores);
+                                warn!(
+                                    budget,
+                                    document_index = base_index + start,
+                                    "reranker context overflow recovered by shrinking single document"
+                                );
+                                break;
+                            }
+                            Err(e) if is_context_limit_error(&e) => {
+                                budget /= 2;
+                            }
+                            Err(e) => return Err(e),
+                        }
+                    }
+
+                    if let Some(scores) = recovered {
+                        out.extend(scores);
+                    } else {
+                        return Err(err);
+                    }
+                }
+                Err(err) => return Err(err),
+            }
+        }
+
+        Ok(out)
+    }
 }
 
 impl Reranker for ApiReranker {
@@ -301,7 +423,35 @@ impl Reranker for ApiReranker {
         if documents.is_empty() {
             return Ok(Vec::new());
         }
-        self.call_api(query, documents, documents.len()).await
+
+        let overlap_chars = (self.config.max_document_chars / 6).clamp(32, 256);
+        let mut expanded_documents = Vec::new();
+        let mut expanded_to_original = Vec::new();
+
+        for (doc_index, doc) in documents.iter().enumerate() {
+            let windows = split_reranker_document(doc, self.config.max_document_chars, overlap_chars);
+            for window in windows {
+                expanded_to_original.push(doc_index);
+                expanded_documents.push(window);
+            }
+        }
+
+        debug!(
+            original_docs = documents.len(),
+            expanded_docs = expanded_documents.len(),
+            max_docs_per_request = self.config.max_docs_per_request,
+            max_document_chars = self.config.max_document_chars,
+            "prepared reranker windows"
+        );
+
+        let expanded_scores = self
+            .rerank_adaptive_batches(query, &expanded_documents, 0)
+            .await?;
+        Ok(aggregate_split_scores(
+            expanded_scores,
+            &expanded_to_original,
+            documents.len(),
+        ))
     }
 }
 
@@ -433,6 +583,104 @@ fn sanitize_error_message(msg: &str) -> String {
     }
 }
 
+// ── Document splitting helpers ───────────────────────────────────────
+
+/// Check if an error indicates a context limit overflow.
+fn is_context_limit_error(error: &RerankerError) -> bool {
+    let msg = match error {
+        RerankerError::AuthError { message }
+        | RerankerError::ConnectionError { message }
+        | RerankerError::ApiError { message, .. }
+        | RerankerError::RateLimitError { message }
+        | RerankerError::ResponseError { message } => message,
+    };
+    msg.contains("context") || msg.contains("n_ctx") || msg.contains("too long")
+}
+
+/// Split a document into overlapping character windows.
+///
+/// Returns at least one window (the original document, possibly truncated).
+fn split_reranker_document(doc: &str, max_chars: usize, overlap_chars: usize) -> Vec<String> {
+    let char_count = doc.chars().count();
+    if char_count <= max_chars {
+        return vec![doc.to_string()];
+    }
+
+    let mut windows = Vec::new();
+    let step = max_chars.saturating_sub(overlap_chars).max(1);
+    let mut start = 0;
+
+    while start < char_count {
+        let end = (start + max_chars).min(char_count);
+        let window: String = doc.chars().skip(start).take(end - start).collect();
+        windows.push(window);
+
+        if end >= char_count {
+            break;
+        }
+        start += step;
+    }
+
+    if windows.is_empty() {
+        vec![truncate_reranker_document(doc, max_chars)]
+    } else {
+        windows
+    }
+}
+
+/// Truncate a document to a maximum character count.
+fn truncate_reranker_document(doc: &str, max_chars: usize) -> String {
+    let char_count = doc.chars().count();
+    if char_count <= max_chars {
+        return doc.to_string();
+    }
+    doc.chars().take(max_chars).collect()
+}
+
+/// Aggregate scores from split document windows back to original documents.
+///
+/// For each original document, takes the maximum score from all its windows.
+fn aggregate_split_scores(
+    expanded_scores: Vec<RerankScore>,
+    expanded_to_original: &[usize],
+    original_count: usize,
+) -> Vec<RerankScore> {
+    let mut best_scores: Vec<Option<f64>> = vec![None; original_count];
+
+    for score in expanded_scores {
+        if score.index < expanded_to_original.len() {
+            let original_index = expanded_to_original[score.index];
+            if original_index < original_count {
+                let current = best_scores[original_index];
+                best_scores[original_index] = Some(
+                    current
+                        .map(|c| c.max(score.relevance_score))
+                        .unwrap_or(score.relevance_score),
+                );
+            }
+        }
+    }
+
+    let mut out: Vec<RerankScore> = best_scores
+        .into_iter()
+        .enumerate()
+        .filter_map(|(idx, score)| {
+            score.map(|s| RerankScore {
+                index: idx,
+                relevance_score: s,
+            })
+        })
+        .collect();
+
+    out.sort_by(|a, b| {
+        b.relevance_score
+            .partial_cmp(&a.relevance_score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    out
+}
+
 // ── API request/response types ───────────────────────────────────────
 
 #[derive(Serialize)]
@@ -454,6 +702,7 @@ struct RerankResponse {
 #[derive(Deserialize)]
 struct RerankResult {
     index: usize,
+    #[serde(alias = "score")]
     relevance_score: f64,
 }
 

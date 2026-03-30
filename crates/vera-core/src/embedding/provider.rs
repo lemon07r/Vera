@@ -75,6 +75,8 @@ pub struct EmbeddingProviderConfig {
     pub timeout: Duration,
     /// Maximum retries on transient errors.
     pub max_retries: u32,
+    /// Optional query prefix for asymmetric embedding models (e.g. CodeRankEmbed).
+    pub query_prefix: Option<String>,
 }
 
 impl std::fmt::Debug for EmbeddingProviderConfig {
@@ -85,6 +87,7 @@ impl std::fmt::Debug for EmbeddingProviderConfig {
             .field("api_key", &"[REDACTED]")
             .field("timeout", &self.timeout)
             .field("max_retries", &self.max_retries)
+            .field("query_prefix", &self.query_prefix)
             .finish()
     }
 }
@@ -98,6 +101,7 @@ impl EmbeddingProviderConfig {
             api_key,
             timeout: Duration::from_secs(30),
             max_retries: 3,
+            query_prefix: None,
         }
     }
 
@@ -107,6 +111,7 @@ impl EmbeddingProviderConfig {
     /// - `EMBEDDING_MODEL_BASE_URL`
     /// - `EMBEDDING_MODEL_ID`
     /// - `EMBEDDING_MODEL_API_KEY`
+    /// - `EMBEDDING_MODEL_QUERY_PREFIX` (optional)
     pub fn from_env() -> Result<Self> {
         let base_url = std::env::var("EMBEDDING_MODEL_BASE_URL")
             .context("EMBEDDING_MODEL_BASE_URL not set")?;
@@ -114,7 +119,19 @@ impl EmbeddingProviderConfig {
         let api_key =
             std::env::var("EMBEDDING_MODEL_API_KEY").context("EMBEDDING_MODEL_API_KEY not set")?;
 
-        Ok(Self::new(base_url, model_id, api_key))
+        let query_prefix = std::env::var("EMBEDDING_MODEL_QUERY_PREFIX")
+            .ok()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
+
+        Ok(Self {
+            base_url,
+            model_id,
+            api_key,
+            timeout: Duration::from_secs(30),
+            max_retries: 3,
+            query_prefix,
+        })
     }
 
     /// Set the request timeout.
@@ -126,6 +143,12 @@ impl EmbeddingProviderConfig {
     /// Set the maximum retry count.
     pub fn with_max_retries(mut self, max_retries: u32) -> Self {
         self.max_retries = max_retries;
+        self
+    }
+
+    /// Set the query prefix for asymmetric embedding models.
+    pub fn with_query_prefix(mut self, prefix: impl Into<String>) -> Self {
+        self.query_prefix = Some(prefix.into());
         self
     }
 }
@@ -312,6 +335,24 @@ impl EmbeddingProvider for OpenAiProvider {
         // Qwen3-Embedding-8B produces 4096-dim vectors.
         // We don't hardcode this — it's discoverable from the first response.
         None
+    }
+
+    fn prepare_query_text(&self, query: &str) -> String {
+        let Some(prefix) = self
+            .config
+            .query_prefix
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+        else {
+            return query.to_string();
+        };
+
+        if prefix.chars().last().is_some_and(char::is_whitespace) {
+            format!("{prefix}{query}")
+        } else {
+            format!("{prefix} {query}")
+        }
     }
 }
 
