@@ -22,6 +22,7 @@ use tree_sitter::Parser;
 
 use crate::config::IndexingConfig;
 use crate::types::{Chunk, Language};
+use chunker::{DEFAULT_MAX_EMBEDDING_TEXT_BYTES, split_oversized_chunks};
 
 /// Parse a source file and produce chunks.
 ///
@@ -44,17 +45,26 @@ pub fn parse_and_chunk(
     config: &IndexingConfig,
 ) -> Result<Vec<Chunk>> {
     if language == Language::Markdown {
-        return Ok(chunker::markdown_section_chunks(source, file_path));
+        return Ok(split_oversized_chunks(
+            chunker::markdown_section_chunks(source, file_path),
+            DEFAULT_MAX_EMBEDDING_TEXT_BYTES,
+        ));
     }
     if language.prefers_file_chunking() {
-        return Ok(chunker::whole_file_chunk(source, file_path, language));
+        return Ok(split_oversized_chunks(
+            chunker::whole_file_chunk(source, file_path, language),
+            DEFAULT_MAX_EMBEDDING_TEXT_BYTES,
+        ));
     }
 
     match languages::tree_sitter_grammar(language) {
         Some(grammar) => parse_with_treesitter(source, file_path, language, grammar, config),
         None => {
             // Tier 0 fallback
-            Ok(chunker::tier0_line_chunks(source, file_path, language))
+            Ok(split_oversized_chunks(
+                chunker::tier0_line_chunks(source, file_path, language),
+                DEFAULT_MAX_EMBEDDING_TEXT_BYTES,
+            ))
         }
     }
 }
@@ -82,9 +92,15 @@ fn parse_with_treesitter(
     // If no symbols were extracted (e.g., empty file or unparseable),
     // fall back to Tier 0 to ensure content is still indexed.
     if chunks.is_empty() && !source.trim().is_empty() {
-        Ok(chunker::tier0_line_chunks(source, file_path, language))
+        Ok(split_oversized_chunks(
+            chunker::tier0_line_chunks(source, file_path, language),
+            DEFAULT_MAX_EMBEDDING_TEXT_BYTES,
+        ))
     } else {
-        Ok(chunks)
+        Ok(split_oversized_chunks(
+            chunks,
+            DEFAULT_MAX_EMBEDDING_TEXT_BYTES,
+        ))
     }
 }
 

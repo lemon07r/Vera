@@ -133,14 +133,16 @@ impl RerankerConfig {
 
         let mut cfg = Self::new(base_url, model_id, api_key);
         if let Ok(value) = std::env::var("RERANKER_MAX_DOCS_PER_REQUEST") {
-            if let Ok(parsed) = value.parse::<usize>() {
-                cfg.max_docs_per_request = parsed.max(1);
-            }
+            let parsed = value.parse::<usize>().with_context(|| {
+                format!("RERANKER_MAX_DOCS_PER_REQUEST must be a positive integer, got: {value}")
+            })?;
+            cfg.max_docs_per_request = parsed.max(1);
         }
         if let Ok(value) = std::env::var("RERANKER_MAX_DOCUMENT_CHARS") {
-            if let Ok(parsed) = value.parse::<usize>() {
-                cfg.max_document_chars = parsed.max(64);
-            }
+            let parsed = value.parse::<usize>().with_context(|| {
+                format!("RERANKER_MAX_DOCUMENT_CHARS must be a positive integer, got: {value}")
+            })?;
+            cfg.max_document_chars = parsed.max(64);
         }
 
         Ok(cfg)
@@ -429,7 +431,8 @@ impl Reranker for ApiReranker {
         let mut expanded_to_original = Vec::new();
 
         for (doc_index, doc) in documents.iter().enumerate() {
-            let windows = split_reranker_document(doc, self.config.max_document_chars, overlap_chars);
+            let windows =
+                split_reranker_document(doc, self.config.max_document_chars, overlap_chars);
             for window in windows {
                 expanded_to_original.push(doc_index);
                 expanded_documents.push(window);
@@ -587,6 +590,26 @@ fn sanitize_error_message(msg: &str) -> String {
 
 /// Check if an error indicates a context limit overflow.
 fn is_context_limit_error(error: &RerankerError) -> bool {
+    const CONTEXT_ERROR_PATTERNS: &[&str] = &[
+        "context length",
+        "max context",
+        "maximum context",
+        "context window",
+        "context_limit_exceeded",
+        "context length exceeded",
+        "max context length",
+        "exceeds the context",
+        "token limit",
+        "max tokens",
+        "maximum tokens",
+        "too many tokens",
+        "token count exceeded",
+        "prompt is too long",
+        "input is too long",
+        "request is too long",
+        "body too large",
+        "n_ctx",
+    ];
     let msg = match error {
         RerankerError::AuthError { message }
         | RerankerError::ConnectionError { message }
@@ -594,14 +617,22 @@ fn is_context_limit_error(error: &RerankerError) -> bool {
         | RerankerError::RateLimitError { message }
         | RerankerError::ResponseError { message } => message,
     };
-    msg.contains("context") || msg.contains("n_ctx") || msg.contains("too long")
+    let msg_lower = msg.to_ascii_lowercase();
+    CONTEXT_ERROR_PATTERNS
+        .iter()
+        .any(|pattern| msg_lower.contains(pattern))
 }
 
 /// Split a document into overlapping character windows.
 ///
 /// Returns at least one window (the original document, possibly truncated).
 fn split_reranker_document(doc: &str, max_chars: usize, overlap_chars: usize) -> Vec<String> {
-    let char_count = doc.chars().count();
+    let boundaries: Vec<usize> = doc
+        .char_indices()
+        .map(|(idx, _)| idx)
+        .chain(std::iter::once(doc.len()))
+        .collect();
+    let char_count = boundaries.len().saturating_sub(1);
     if char_count <= max_chars {
         return vec![doc.to_string()];
     }
@@ -612,8 +643,9 @@ fn split_reranker_document(doc: &str, max_chars: usize, overlap_chars: usize) ->
 
     while start < char_count {
         let end = (start + max_chars).min(char_count);
-        let window: String = doc.chars().skip(start).take(end - start).collect();
-        windows.push(window);
+        let start_byte = boundaries[start];
+        let end_byte = boundaries[end];
+        windows.push(doc[start_byte..end_byte].to_string());
 
         if end >= char_count {
             break;
@@ -846,6 +878,36 @@ mod tests {
         )
         .with_max_retries(5);
         assert_eq!(config.max_retries, 5);
+    }
+
+    #[test]
+    fn from_env_requires_valid_numeric_overrides() {
+        // SAFETY: test-only environment mutation with explicit cleanup.
+        unsafe {
+            std::env::set_var("RERANKER_MODEL_BASE_URL", "https://api.example.com/v1");
+            std::env::set_var("RERANKER_MODEL_ID", "model-1");
+            std::env::set_var("RERANKER_MODEL_API_KEY", "key-123");
+            std::env::set_var("RERANKER_MAX_DOCS_PER_REQUEST", "invalid");
+        }
+        let err = RerankerConfig::from_env().unwrap_err().to_string();
+        assert!(err.contains("RERANKER_MAX_DOCS_PER_REQUEST"));
+
+        // SAFETY: test-only environment mutation with explicit cleanup.
+        unsafe {
+            std::env::set_var("RERANKER_MAX_DOCS_PER_REQUEST", "4");
+            std::env::set_var("RERANKER_MAX_DOCUMENT_CHARS", "invalid");
+        }
+        let err = RerankerConfig::from_env().unwrap_err().to_string();
+        assert!(err.contains("RERANKER_MAX_DOCUMENT_CHARS"));
+
+        // SAFETY: cleanup test environment overrides.
+        unsafe {
+            std::env::remove_var("RERANKER_MODEL_BASE_URL");
+            std::env::remove_var("RERANKER_MODEL_ID");
+            std::env::remove_var("RERANKER_MODEL_API_KEY");
+            std::env::remove_var("RERANKER_MAX_DOCS_PER_REQUEST");
+            std::env::remove_var("RERANKER_MAX_DOCUMENT_CHARS");
+        }
     }
 
     // ── MockReranker tests ───────────────────────────────────────────
@@ -1108,6 +1170,78 @@ mod tests {
     fn sanitize_empty_message() {
         let sanitized = sanitize_error_message("");
         assert_eq!(sanitized, "no details available");
+    }
+
+    #[test]
+    fn context_limit_error_detection_is_case_insensitive_and_specific() {
+        let hit = RerankerError::ApiError {
+            status: 400,
+            message: "Context Length Exceeded for request".to_string(),
+        };
+        assert!(is_context_limit_error(&hit));
+
+        let miss = RerankerError::ConnectionError {
+            message: "connection timeout".to_string(),
+        };
+        assert!(!is_context_limit_error(&miss));
+    }
+
+    #[test]
+    fn split_reranker_document_produces_overlapping_windows() {
+        let windows = split_reranker_document("abcdefghijklmn", 5, 2);
+        assert_eq!(windows, vec!["abcde", "defgh", "ghijk", "jklmn"]);
+    }
+
+    #[test]
+    fn split_reranker_document_handles_multibyte_chars() {
+        let text = "😀😀😀😀😀";
+        let windows = split_reranker_document(text, 2, 1);
+        assert_eq!(windows.len(), 4);
+        assert_eq!(windows[0], "😀😀");
+        assert_eq!(windows[1], "😀😀");
+        assert_eq!(windows[2], "😀😀");
+        assert_eq!(windows[3], "😀😀");
+    }
+
+    #[test]
+    fn split_reranker_document_handles_zero_overlap() {
+        let windows = split_reranker_document("abcdefghi", 3, 0);
+        assert_eq!(windows, vec!["abc", "def", "ghi"]);
+    }
+
+    #[test]
+    fn split_reranker_document_handles_overlap_ge_window() {
+        let windows = split_reranker_document("abcdef", 3, 3);
+        assert_eq!(windows, vec!["abc", "bcd", "cde", "def"]);
+    }
+
+    #[test]
+    fn aggregate_split_scores_takes_max_per_original_doc() {
+        let expanded_scores = vec![
+            RerankScore {
+                index: 0,
+                relevance_score: 0.2,
+            },
+            RerankScore {
+                index: 1,
+                relevance_score: 0.9,
+            },
+            RerankScore {
+                index: 2,
+                relevance_score: 0.5,
+            },
+            RerankScore {
+                index: 3,
+                relevance_score: 0.7,
+            },
+        ];
+        let expanded_to_original = vec![0, 0, 1, 1];
+        let aggregated = aggregate_split_scores(expanded_scores, &expanded_to_original, 2);
+        assert_eq!(aggregated.len(), 2);
+        assert_eq!(aggregated[0].index, 0);
+        assert_eq!(aggregated[0].relevance_score, 0.9);
+        assert_eq!(aggregated[1].index, 1);
+        assert_eq!(aggregated[1].relevance_score, 0.7);
     }
 
     // ── ApiReranker endpoint URL tests ───────────────────────────────

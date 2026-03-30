@@ -17,6 +17,8 @@ const TIER0_WINDOW_SIZE: u32 = 50;
 const TIER0_OVERLAP: u32 = 10;
 /// Minimum lines for a symbol to be kept as a chunk (skip trivial ones).
 const MIN_SYMBOL_LINES: u32 = 1;
+/// Default maximum embedding text size in bytes before chunk fallback splitting.
+pub const DEFAULT_MAX_EMBEDDING_TEXT_BYTES: usize = 16_384;
 
 /// Create chunks from extracted symbols (Tier 1A: symbol-aware chunking).
 ///
@@ -336,12 +338,12 @@ pub fn tier0_line_chunks(source: &str, file_path: &str, language: Language) -> V
     chunks
 }
 
-/// Split chunks whose embedding text would exceed `max_chars`.
+/// Split chunks whose embedding text would exceed `max_bytes`.
 ///
 /// This is a strict guard: every output chunk is adjusted to fit the limit
 /// (except pathological cases where even metadata alone would exceed it).
 /// Splitting uses overlapping line windows to preserve continuity.
-pub fn split_oversized_chunks(chunks: Vec<Chunk>, max_chars: usize) -> Vec<Chunk> {
+pub fn split_oversized_chunks(chunks: Vec<Chunk>, max_bytes: usize) -> Vec<Chunk> {
     let mut result = Vec::with_capacity(chunks.len());
     let input_count = chunks.len();
     let mut split_count = 0u32;
@@ -351,19 +353,19 @@ pub fn split_oversized_chunks(chunks: Vec<Chunk>, max_chars: usize) -> Vec<Chunk
     for chunk in chunks {
         let text_len = crate::chunk_text::build_embedding_text(&chunk).len();
         max_seen = max_seen.max(text_len);
-        if text_len <= max_chars {
+        if text_len <= max_bytes {
             result.push(chunk);
             continue;
         }
 
-        let split = split_chunk_to_max_chars(&chunk, max_chars);
+        let split = split_chunk_to_max_chars(&chunk, max_bytes);
         if split.len() > 1 {
             split_count += 1;
         }
 
         for mut sub in split {
             let mut sub_len = crate::chunk_text::build_embedding_text(&sub).len();
-            if sub_len <= max_chars {
+            if sub_len <= max_bytes {
                 result.push(sub);
                 continue;
             }
@@ -387,13 +389,13 @@ pub fn split_oversized_chunks(chunks: Vec<Chunk>, max_chars: usize) -> Vec<Chunk
                     };
 
                     let mut line_len = crate::chunk_text::build_embedding_text(&line_chunk).len();
-                    if line_len > max_chars {
+                    if line_len > max_bytes {
                         truncated_single_line += 1;
                         let header_len = line_len.saturating_sub(line_chunk.content.len());
-                        let keep = max_chars.saturating_sub(header_len).max(1);
+                        let keep = max_bytes.saturating_sub(header_len).max(1);
                         line_chunk.content = truncate_utf8_to_bytes(&line_chunk.content, keep);
                         line_len = crate::chunk_text::build_embedding_text(&line_chunk).len();
-                        if line_len > max_chars {
+                        if line_len > max_bytes {
                             line_chunk.content.clear();
                         }
                     }
@@ -407,10 +409,10 @@ pub fn split_oversized_chunks(chunks: Vec<Chunk>, max_chars: usize) -> Vec<Chunk
             if sub.content.lines().count() <= 1 {
                 truncated_single_line += 1;
                 let header_len = sub_len.saturating_sub(sub.content.len());
-                let keep = max_chars.saturating_sub(header_len).max(1);
+                let keep = max_bytes.saturating_sub(header_len).max(1);
                 sub.content = truncate_utf8_to_bytes(&sub.content, keep);
                 sub_len = crate::chunk_text::build_embedding_text(&sub).len();
-                if sub_len > max_chars {
+                if sub_len > max_bytes {
                     sub.content.clear();
                 }
             }
@@ -422,8 +424,8 @@ pub fn split_oversized_chunks(chunks: Vec<Chunk>, max_chars: usize) -> Vec<Chunk
     tracing::debug!(
         split_count,
         truncated_single_line,
-        max_chars,
-        max_embedding_text_chars = max_seen,
+        max_bytes,
+        max_embedding_text_bytes = max_seen,
         input_chunks = input_count,
         result_chunks = result.len(),
         "chunk size check complete"
@@ -785,5 +787,64 @@ mod tests {
         assert_eq!(chunks[0].symbol_name.as_deref(), Some("Cargo.toml"));
         assert_eq!(chunks[0].line_start, 1);
         assert_eq!(chunks[0].line_end, 2);
+    }
+
+    fn make_chunk(content: &str) -> Chunk {
+        Chunk {
+            id: "test::chunk".to_string(),
+            file_path: "src/test.rs".to_string(),
+            line_start: 1,
+            line_end: content.lines().count().max(1) as u32,
+            content: content.to_string(),
+            language: Language::Rust,
+            symbol_type: Some(SymbolType::Function),
+            symbol_name: Some("test_symbol".to_string()),
+        }
+    }
+
+    #[test]
+    fn split_oversized_chunks_multi_line_within_limit() {
+        let content = (0..60)
+            .map(|i| format!("line {i} with repeated content for split testing"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let max_bytes = 280;
+        let chunks = split_oversized_chunks(vec![make_chunk(&content)], max_bytes);
+        assert!(chunks.len() > 1);
+        for chunk in chunks {
+            let len = crate::chunk_text::build_embedding_text(&chunk).len();
+            assert!(
+                len <= max_bytes,
+                "embedding text length {len} exceeded {max_bytes}"
+            );
+        }
+    }
+
+    #[test]
+    fn split_oversized_chunks_single_line_fallback_within_limit() {
+        let max_bytes = 180;
+        let chunk = make_chunk(&"x".repeat(8_000));
+        let chunks = split_oversized_chunks(vec![chunk], max_bytes);
+        assert!(!chunks.is_empty());
+        for chunk in chunks {
+            let len = crate::chunk_text::build_embedding_text(&chunk).len();
+            assert!(
+                len <= max_bytes,
+                "single-line fallback length {len} exceeded {max_bytes}"
+            );
+        }
+    }
+
+    #[test]
+    fn split_oversized_chunks_utf8_boundary_within_limit() {
+        let max_bytes = 140;
+        let chunk = make_chunk(&"😀".repeat(1500));
+        let chunks = split_oversized_chunks(vec![chunk], max_bytes);
+        assert!(!chunks.is_empty());
+        for chunk in chunks {
+            let text = crate::chunk_text::build_embedding_text(&chunk);
+            assert!(text.len() <= max_bytes);
+            assert!(text.is_char_boundary(text.len()));
+        }
     }
 }

@@ -717,4 +717,33 @@ mod tests {
             ".veraignore should not be indexed"
         );
     }
+
+    #[test]
+    fn default_excludes_can_exclude_exact_filename() {
+        let dir = TempDir::new().unwrap();
+        fs::write(dir.path().join("main.rs"), "fn main() {}").unwrap();
+        fs::write(dir.path().join("UPGRADE.md"), "notes").unwrap();
+        fs::create_dir_all(dir.path().join("UPGRADE.md-dir")).unwrap();
+        fs::write(
+            dir.path().join("UPGRADE.md-dir").join("keep.rs"),
+            "fn keep() {}",
+        )
+        .unwrap();
+
+        let mut config = default_config();
+        config.default_excludes = vec!["UPGRADE.md".to_string()];
+
+        let result = discover_files(dir.path(), &config).unwrap();
+        let names: Vec<&str> = result
+            .files
+            .iter()
+            .map(|f| f.relative_path.as_str())
+            .collect();
+        assert!(names.contains(&"main.rs"));
+        assert!(!names.contains(&"UPGRADE.md"));
+        assert!(
+            names.iter().any(|p| p.starts_with("UPGRADE.md-dir/")),
+            "only exact filename should be excluded, not similarly named directory"
+        );
+    }
 }

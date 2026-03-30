@@ -124,14 +124,9 @@ impl EmbeddingProviderConfig {
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty());
 
-        Ok(Self {
-            base_url,
-            model_id,
-            api_key,
-            timeout: Duration::from_secs(30),
-            max_retries: 3,
-            query_prefix,
-        })
+        let mut config = Self::new(base_url, model_id, api_key);
+        config.query_prefix = query_prefix;
+        Ok(config)
     }
 
     /// Set the request timeout.
@@ -342,17 +337,12 @@ impl EmbeddingProvider for OpenAiProvider {
             .config
             .query_prefix
             .as_deref()
-            .map(str::trim)
-            .filter(|value| !value.is_empty())
+            .and_then(|value| (!value.trim().is_empty()).then_some(value))
         else {
             return query.to_string();
         };
 
-        if prefix.chars().last().is_some_and(char::is_whitespace) {
-            format!("{prefix}{query}")
-        } else {
-            format!("{prefix} {query}")
-        }
+        format!("{prefix} {query}")
     }
 }
 
@@ -894,5 +884,20 @@ pub(crate) mod test_helpers {
         fn expected_dim(&self) -> Option<usize> {
             Some(self.dim)
         }
+    }
+
+    #[test]
+    fn prepare_query_text_keeps_prefix_and_adds_single_separator() {
+        let cfg = EmbeddingProviderConfig::new(
+            "https://example.test/v1".to_string(),
+            "embed-model".to_string(),
+            "secret".to_string(),
+        )
+        .with_query_prefix("search_query:");
+        let provider = OpenAiProvider::new(cfg).unwrap();
+        assert_eq!(
+            provider.prepare_query_text("find auth"),
+            "search_query: find auth"
+        );
     }
 }
