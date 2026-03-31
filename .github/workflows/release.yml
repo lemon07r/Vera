@@ -98,6 +98,9 @@ jobs:
           sudo ln -s /usr/bin/g++ /usr/local/bin/x86_64-linux-musl-g++
           echo "CC_x86_64_unknown_linux_musl=musl-gcc" >> "$GITHUB_ENV"
           echo "CXX_x86_64_unknown_linux_musl=g++" >> "$GITHUB_ENV"
+          # sqlite-vec uses BSD u_int8_t/u_int16_t/u_int64_t types unavailable in musl.
+          # Define them via CFLAGS so the C compiler can resolve them.
+          echo "CFLAGS_x86_64_unknown_linux_musl=-Du_int8_t=uint8_t -Du_int16_t=uint16_t -Du_int64_t=uint64_t" >> "$GITHUB_ENV"
 
       - name: Set MSVC CRT flags
         if: runner.os == 'Windows'
