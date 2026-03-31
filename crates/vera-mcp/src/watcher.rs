@@ -2,7 +2,7 @@
 //!
 //! Watches a project directory for file changes and triggers incremental
 //! index updates after a debounce period. This keeps the index fresh
-//! without requiring manual `update_project` calls.
+//! without requiring manual update calls.
 
 use std::path::Path;
 use std::sync::Arc;
@@ -41,7 +41,7 @@ pub fn start_watching(repo_path: &Path) -> Result<WatchHandle, String> {
 
     let idx_dir = vera_core::indexing::index_dir(&repo_path);
     if !idx_dir.exists() {
-        return Err("No index found. Run index_project first.".to_string());
+        return Err("No index found. Run search_code first to auto-index.".to_string());
     }
 
     let updating = Arc::new(AtomicBool::new(false));

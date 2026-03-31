@@ -163,14 +163,9 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 
 | Tool | What it does |
 |------|-------------|
-| `search_code` | Hybrid search with multi-query, intent, and all filters |
-| `index_project` | Full index build |
-| `update_project` | Incremental update |
+| `search_code` | Hybrid search with multi-query, intent, and all filters. Auto-indexes and starts watcher on first use. |
 | `get_stats` | File count, chunk count, index size, language breakdown |
 | `get_overview` | Architecture overview with conventions detection |
-| `watch_project` | Auto-update index on file changes |
-| `find_references` | Callers or callees of a symbol |
-| `find_dead_code` | Functions with no callers |
 | `regex_search` | Regex search with context lines |
 
 Tool descriptions include explicit WHEN TO USE / WHEN NOT TO USE guidance so AI agents route queries to the right tool automatically.

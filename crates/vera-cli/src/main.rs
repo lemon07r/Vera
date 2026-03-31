@@ -66,8 +66,8 @@ enum Commands {
     /// Start the MCP (Model Context Protocol) server.
     ///
     /// Runs a JSON-RPC 2.0 server over stdio for tool integration.
-    /// The server exposes tools: search_code, index_project, update_project, get_stats,
-    /// get_overview, watch_project, find_references, find_dead_code, and regex_search.
+    /// The server exposes tools: search_code, get_stats, get_overview, and regex_search.
+    /// search_code auto-indexes and starts a file watcher on first use.
     ///
     /// Examples:
     ///   vera mcp
@@ -77,14 +77,9 @@ enum Commands {
                       The server reads JSON-RPC messages from stdin and writes responses \
                       to stdout. Logs go to stderr.\n\n\
                       Exposed tools:\n  \
-                      search_code      — Hybrid search with filters\n  \
-                      index_project    — Index a project directory\n  \
-                      update_project   — Incremental index update\n  \
+                      search_code      — Hybrid search (auto-indexes and watches on first use)\n  \
                       get_stats        — Index statistics\n  \
                       get_overview     — Project summary for onboarding\n  \
-                      watch_project    — Watch files and auto-update the index\n  \
-                      find_references  — Find callers or callees of a symbol\n  \
-                      find_dead_code   — Find functions with no callers\n  \
                       regex_search     — Regex search over indexed files\n\n\
                       Examples:\n  \
                       vera mcp                       # Start MCP server on stdio")]

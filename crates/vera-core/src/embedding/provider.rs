@@ -75,6 +75,9 @@ pub struct EmbeddingProviderConfig {
     pub timeout: Duration,
     /// Maximum retries on transient errors.
     pub max_retries: u32,
+    /// Optional prefix prepended to query text for asymmetric embedding models.
+    /// Read from `EMBEDDING_QUERY_PREFIX` env var.
+    pub query_prefix: Option<String>,
 }
 
 impl std::fmt::Debug for EmbeddingProviderConfig {
@@ -98,6 +101,7 @@ impl EmbeddingProviderConfig {
             api_key,
             timeout: Duration::from_secs(30),
             max_retries: 3,
+            query_prefix: None,
         }
     }
 
@@ -113,8 +117,13 @@ impl EmbeddingProviderConfig {
         let model_id = std::env::var("EMBEDDING_MODEL_ID").context("EMBEDDING_MODEL_ID not set")?;
         let api_key =
             std::env::var("EMBEDDING_MODEL_API_KEY").context("EMBEDDING_MODEL_API_KEY not set")?;
+        let query_prefix = std::env::var("EMBEDDING_QUERY_PREFIX")
+            .ok()
+            .filter(|s| !s.is_empty());
 
-        Ok(Self::new(base_url, model_id, api_key))
+        let mut config = Self::new(base_url, model_id, api_key);
+        config.query_prefix = query_prefix;
+        Ok(config)
     }
 
     /// Set the request timeout.
@@ -309,9 +318,14 @@ impl EmbeddingProvider for OpenAiProvider {
     }
 
     fn expected_dim(&self) -> Option<usize> {
-        // Qwen3-Embedding-8B produces 4096-dim vectors.
-        // We don't hardcode this — it's discoverable from the first response.
         None
+    }
+
+    fn prepare_query_text(&self, query: &str) -> String {
+        match &self.config.query_prefix {
+            Some(prefix) => format!("{prefix}{query}"),
+            None => query.to_string(),
+        }
     }
 }
 

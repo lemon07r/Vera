@@ -142,18 +142,27 @@ impl RerankerConfig {
 pub struct ApiReranker {
     client: reqwest::Client,
     config: RerankerConfig,
+    max_rerank_batch: usize,
 }
 
 impl ApiReranker {
     /// Create a new API-based reranker from configuration.
     pub fn new(config: RerankerConfig) -> Result<Self> {
         crate::init_tls();
+        let max_rerank_batch = std::env::var("VERA_MAX_RERANK_BATCH")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(20);
         let client = reqwest::Client::builder()
             .timeout(config.timeout)
             .build()
             .context("failed to create HTTP client for reranker")?;
 
-        Ok(Self { client, config })
+        Ok(Self {
+            client,
+            config,
+            max_rerank_batch,
+        })
     }
 
     /// Build the rerank endpoint URL.
@@ -301,7 +310,31 @@ impl Reranker for ApiReranker {
         if documents.is_empty() {
             return Ok(Vec::new());
         }
-        self.call_api(query, documents, documents.len()).await
+
+        let batch_size = self.max_rerank_batch;
+        if batch_size == 0 || documents.len() <= batch_size {
+            return self.call_api(query, documents, documents.len()).await;
+        }
+
+        // Partition into batches, rerank each, merge with corrected indices.
+        let mut all_scores = Vec::with_capacity(documents.len());
+        for (batch_idx, batch) in documents.chunks(batch_size).enumerate() {
+            let offset = batch_idx * batch_size;
+            let scores = self.call_api(query, batch, batch.len()).await?;
+            for s in scores {
+                all_scores.push(RerankScore {
+                    index: s.index + offset,
+                    relevance_score: s.relevance_score,
+                });
+            }
+        }
+
+        all_scores.sort_by(|a, b| {
+            b.relevance_score
+                .partial_cmp(&a.relevance_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        Ok(all_scores)
     }
 }
 
@@ -454,6 +487,7 @@ struct RerankResponse {
 #[derive(Deserialize)]
 struct RerankResult {
     index: usize,
+    #[serde(alias = "score")]
     relevance_score: f64,
 }
 

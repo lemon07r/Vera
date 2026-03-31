@@ -340,6 +340,75 @@ fn file_name(path: &str) -> &str {
     path.rsplit(['/', '\\']).next().unwrap_or(path)
 }
 
+/// Split chunks that exceed `max_bytes` into smaller sub-chunks at line boundaries.
+///
+/// Uses a byte-length pre-filter: chunks already under the limit are passed
+/// through untouched (the common case for ~70-80% of chunks). Oversized chunks
+/// are split at natural boundaries using `find_split_boundary`.
+pub fn split_oversized_chunks(chunks: Vec<Chunk>, max_bytes: usize) -> Vec<Chunk> {
+    if max_bytes == 0 {
+        return chunks;
+    }
+
+    let mut result = Vec::with_capacity(chunks.len());
+    for chunk in chunks {
+        if chunk.content.len() <= max_bytes {
+            result.push(chunk);
+            continue;
+        }
+
+        let lines: Vec<&str> = chunk.content.lines().collect();
+        let total = lines.len() as u32;
+        let mut current: u32 = 0;
+        let mut part = 1u32;
+
+        while current < total {
+            // Binary search for the largest end line that fits within max_bytes.
+            let mut lo = current;
+            let mut hi = (total - 1).min(current + 500); // cap search range
+            while lo < hi {
+                let mid = lo + (hi - lo).div_ceil(2);
+                let candidate: usize = lines[current as usize..=mid as usize]
+                    .iter()
+                    .map(|l| l.len() + 1)
+                    .sum();
+                if candidate <= max_bytes {
+                    lo = mid;
+                } else {
+                    hi = mid - 1;
+                }
+            }
+
+            // Ensure at least one line per sub-chunk.
+            let end = lo.max(current);
+            let sub_content = lines[current as usize..=end as usize].join("\n");
+            let sub_name = chunk
+                .symbol_name
+                .as_ref()
+                .map(|n| format!("{n} (part {part})"));
+
+            result.push(Chunk {
+                id: format!("{}:{part}", chunk.id),
+                file_path: chunk.file_path.clone(),
+                line_start: chunk.line_start + current,
+                line_end: chunk.line_start + end,
+                content: sub_content,
+                language: chunk.language,
+                symbol_type: chunk.symbol_type,
+                symbol_name: if part == 1 && end + 1 >= total {
+                    chunk.symbol_name.clone()
+                } else {
+                    sub_name
+                },
+            });
+
+            part += 1;
+            current = end + 1;
+        }
+    }
+    result
+}
+
 /// Join lines from `start_row` to `end_row` (inclusive, 0-based) into a string.
 fn join_lines(lines: &[&str], start_row: u32, end_row: u32) -> String {
     let start = start_row as usize;

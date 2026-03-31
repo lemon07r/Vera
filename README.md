@@ -65,7 +65,7 @@ The installer downloads the `vera` binary, writes a shim to a user bin directory
 ```bash
 vera mcp   # or: bunx @vera-ai/cli mcp / uvx vera-ai mcp
 ```
-Exposes `search_code`, `index_project`, `update_project`, `get_stats`, `get_overview`, `watch_project`, `find_references`, `find_dead_code`, and `regex_search` tools.
+Exposes `search_code`, `get_stats`, `get_overview`, and `regex_search` tools. `search_code` auto-indexes and starts a file watcher on first use if no index exists.
 
 **Docker** (MCP server):
 ```bash

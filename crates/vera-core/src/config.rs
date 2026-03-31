@@ -33,6 +33,10 @@ pub struct IndexingConfig {
     /// Disable smart default exclusions.
     #[serde(default)]
     pub no_default_excludes: bool,
+    /// Maximum chunk size in bytes for embedding. Chunks exceeding this are
+    /// split at line boundaries. 0 disables byte-based splitting.
+    /// Default: 24576 (24KB, ~6K-7K tokens, safe for any embedding model).
+    pub max_chunk_bytes: usize,
 }
 
 impl Default for IndexingConfig {
@@ -53,6 +57,10 @@ impl Default for IndexingConfig {
             extra_excludes: Vec::new(),
             no_ignore: false,
             no_default_excludes: false,
+            max_chunk_bytes: std::env::var("VERA_MAX_CHUNK_BYTES")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(24_576),
         }
     }
 }
@@ -68,15 +76,23 @@ pub struct RetrievalConfig {
     pub rerank_candidates: usize,
     /// Whether to enable reranking (requires API credentials).
     pub reranking_enabled: bool,
+    /// Maximum documents per reranker API call. Larger candidate sets are
+    /// partitioned into batches and scores merged. 0 means no batching.
+    pub max_rerank_batch: usize,
 }
 
 impl Default for RetrievalConfig {
     fn default() -> Self {
+        let max_rerank_batch = std::env::var("VERA_MAX_RERANK_BATCH")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(20);
         Self {
             default_limit: 10,
             rrf_k: 60.0,
             rerank_candidates: 50,
             reranking_enabled: true,
+            max_rerank_batch,
         }
     }
 }
