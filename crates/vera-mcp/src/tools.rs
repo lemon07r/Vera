@@ -17,10 +17,8 @@ use crate::watcher::WatchHandle;
 /// Global watcher handle. Kept alive for the lifetime of the MCP server process.
 static WATCHER: Mutex<Option<WatchHandle>> = Mutex::new(None);
 
-/// Maximum character length for a single chunk's content in MCP responses.
-/// Chunks exceeding this limit are truncated with a marker to prevent
-/// blowing up LLM context windows.
-const MAX_CONTENT_CHARS: usize = 8_000;
+/// Default total output budget for MCP responses (chars).
+const MCP_OUTPUT_BUDGET: usize = 20_000;
 
 /// Compact result representation for MCP tool responses.
 /// Drops `score` and `language` (inferrable from extension), omits null fields.
@@ -36,38 +34,50 @@ struct CompactResult<'a> {
     symbol_type: Option<&'a vera_core::types::SymbolType>,
 }
 
-/// Truncate content to `MAX_CONTENT_CHARS`, appending a marker if truncated.
-fn truncate_content(content: &str) -> std::borrow::Cow<'_, str> {
-    if content.len() <= MAX_CONTENT_CHARS {
+/// Truncate `content` to fit within `allowed` bytes, breaking at a line boundary.
+fn truncate_to_budget(content: &str, allowed: usize) -> std::borrow::Cow<'_, str> {
+    if content.len() <= allowed {
         return std::borrow::Cow::Borrowed(content);
     }
-    // Find a safe char boundary near the limit.
     let end = content
         .char_indices()
-        .take_while(|(i, _)| *i < MAX_CONTENT_CHARS)
+        .take_while(|(i, _)| *i < allowed)
         .last()
         .map(|(i, c)| i + c.len_utf8())
         .unwrap_or(0);
-    let mut truncated = content[..end].to_string();
+    let break_at = content[..end].rfind('\n').unwrap_or(end);
+    let mut truncated = content[..break_at].to_string();
     truncated.push_str("\n[...truncated]");
     std::borrow::Cow::Owned(truncated)
 }
 
-/// Serialize search results as compact single-line JSON.
+/// Serialize search results as compact JSON, applying a total character budget.
 fn compact_results_json(
     results: &[vera_core::types::SearchResult],
+    budget: usize,
 ) -> Result<String, serde_json::Error> {
-    let compact: Vec<CompactResult> = results
-        .iter()
-        .map(|r| CompactResult {
+    let mut remaining = budget;
+    let mut compact: Vec<CompactResult> = Vec::with_capacity(results.len());
+    for r in results {
+        if budget > 0 && remaining == 0 {
+            break;
+        }
+        let content = if budget > 0 {
+            let c = truncate_to_budget(&r.content, remaining);
+            remaining = remaining.saturating_sub(c.len());
+            c
+        } else {
+            std::borrow::Cow::Borrowed(r.content.as_str())
+        };
+        compact.push(CompactResult {
             file_path: &r.file_path,
             line_start: r.line_start,
             line_end: r.line_end,
-            content: truncate_content(&r.content),
+            content,
             symbol_name: r.symbol_name.as_deref(),
             symbol_type: r.symbol_type.as_ref(),
-        })
-        .collect();
+        });
+    }
     serde_json::to_string(&compact)
 }
 
@@ -129,7 +139,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     },
                     "limit": {
                         "type": "integer",
-                        "description": "Maximum number of results (default: 10)"
+                        "description": "Maximum number of results (default: 5)"
                     }
                 },
                 "required": []
@@ -351,7 +361,7 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
     all_results.retain(|r| seen.insert(format!("{}:{}:{}", r.file_path, r.line_start, r.line_end)));
     all_results.truncate(result_limit);
 
-    match compact_results_json(&all_results) {
+    match compact_results_json(&all_results, MCP_OUTPUT_BUDGET) {
         Ok(json) => ToolCallResult::success(json),
         Err(e) => ToolCallResult::error(format!("Failed to serialize results: {e}")),
     }
@@ -490,7 +500,7 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
         context,
         &filters,
     ) {
-        Ok(results) => match compact_results_json(&results) {
+        Ok(results) => match compact_results_json(&results, MCP_OUTPUT_BUDGET) {
             Ok(json) => ToolCallResult::success(json),
             Err(e) => ToolCallResult::error(format!("Failed to serialize results: {e}")),
         },
@@ -553,16 +563,16 @@ mod tests {
     }
 
     #[test]
-    fn truncate_content_short_passthrough() {
+    fn truncate_to_budget_short_passthrough() {
         let short = "hello world";
-        let result = truncate_content(short);
+        let result = truncate_to_budget(short, 1000);
         assert_eq!(result.as_ref(), short);
     }
 
     #[test]
-    fn truncate_content_long_truncates() {
-        let long = "a".repeat(MAX_CONTENT_CHARS + 100);
-        let result = truncate_content(&long);
+    fn truncate_to_budget_long_truncates() {
+        let long = "a".repeat(500);
+        let result = truncate_to_budget(&long, 100);
         assert!(result.len() < long.len());
         assert!(result.ends_with("[...truncated]"));
     }

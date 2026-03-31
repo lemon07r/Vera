@@ -2,7 +2,7 @@
 
 use anyhow::bail;
 
-use crate::helpers::output_results;
+use crate::helpers::{load_runtime_config, output_results};
 
 /// Run the `vera grep <pattern>` command.
 pub fn run(
@@ -35,6 +35,7 @@ pub fn run(
         filters,
     )?;
 
-    output_results(&results, json_output, raw);
+    let config = load_runtime_config()?;
+    output_results(&results, json_output, raw, config.retrieval.max_output_chars);
     Ok(())
 }

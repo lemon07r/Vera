@@ -355,7 +355,7 @@ enum Commands {
         #[arg(long)]
         path: Option<String>,
 
-        /// Maximum number of results to return (default: 10).
+        /// Maximum number of results to return (default: 5).
         #[arg(long, short = 'n')]
         limit: Option<usize>,
 
@@ -572,10 +572,11 @@ enum Commands {
                       Configuration keys use dot notation:\n  \
                       indexing.max_chunk_lines       Max lines per chunk (default: 200)\n  \
                       indexing.max_file_size_bytes   Max file size to index (default: 1000000)\n  \
-                      retrieval.default_limit        Default result count (default: 10)\n  \
+                      retrieval.default_limit        Default result count (default: 5)\n  \
                       retrieval.rrf_k                RRF fusion constant (default: 60)\n  \
                       retrieval.rerank_candidates    Reranker candidate count (default: 50)\n  \
                       retrieval.reranking_enabled    Enable reranking (default: true)\n  \
+                      retrieval.max_output_chars     Total output char budget (default: 12000)\n  \
                       embedding.batch_size           Embedding batch size (default: 128)\n  \
                       embedding.max_concurrent_requests  Concurrent API requests (default: 8)\n  \
                       embedding.timeout_secs         API timeout (default: 60)\n  \
@@ -1166,7 +1167,7 @@ mod tests {
     fn config_values_match_defaults() {
         let config = vera_core::config::VeraConfig::default();
         let val = commands::config::get_config_value(&config, "retrieval.default_limit").unwrap();
-        assert_eq!(val, serde_json::json!(10));
+        assert_eq!(val, serde_json::json!(5));
 
         let val = commands::config::get_config_value(&config, "indexing.max_chunk_lines").unwrap();
         assert_eq!(val, serde_json::json!(200));

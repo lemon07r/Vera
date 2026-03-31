@@ -103,6 +103,10 @@ fn print_human_config(config: &vera_core::config::VeraConfig) {
         "    default_limit             {}",
         config.retrieval.default_limit
     );
+    println!(
+        "    max_output_chars          {}",
+        config.retrieval.max_output_chars
+    );
     println!("    rrf_k                     {}", config.retrieval.rrf_k);
     println!(
         "    rerank_candidates         {}",
@@ -159,6 +163,9 @@ pub fn get_config_value(
         "retrieval.reranking_enabled" => {
             Some(serde_json::Value::Bool(config.retrieval.reranking_enabled))
         }
+        "retrieval.max_output_chars" => Some(serde_json::Value::Number(
+            config.retrieval.max_output_chars.into(),
+        )),
         "embedding.batch_size" => Some(serde_json::Value::Number(
             config.embedding.batch_size.into(),
         )),
@@ -206,6 +213,9 @@ fn set_config_value(
         }
         "retrieval.reranking_enabled" => {
             config.retrieval.reranking_enabled = parse_value(key, value)?;
+        }
+        "retrieval.max_output_chars" => {
+            config.retrieval.max_output_chars = parse_value(key, value)?;
         }
         "embedding.batch_size" => {
             config.embedding.batch_size = parse_value(key, value)?;

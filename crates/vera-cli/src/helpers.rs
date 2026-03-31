@@ -170,32 +170,34 @@ impl<'a> CompactResult<'a> {
     }
 }
 
-/// Maximum character length for a single chunk's content in CLI output.
-/// Chunks exceeding this limit are truncated with a marker.
-const MAX_CONTENT_CHARS: usize = 4_000;
-
-/// Truncate content to `MAX_CONTENT_CHARS`, appending a marker if truncated.
-fn truncate_content(content: &str) -> std::borrow::Cow<'_, str> {
-    if content.len() <= MAX_CONTENT_CHARS {
+/// Truncate `content` to fit within `allowed` bytes, breaking at a line boundary.
+fn truncate_to_budget(content: &str, allowed: usize) -> std::borrow::Cow<'_, str> {
+    if content.len() <= allowed {
         return std::borrow::Cow::Borrowed(content);
     }
     let end = content
         .char_indices()
-        .take_while(|(i, _)| *i < MAX_CONTENT_CHARS)
+        .take_while(|(i, _)| *i < allowed)
         .last()
         .map(|(i, c)| i + c.len_utf8())
         .unwrap_or(0);
-    // Try to break at a line boundary for cleaner output.
     let break_at = content[..end].rfind('\n').unwrap_or(end);
     let mut truncated = content[..break_at].to_string();
     truncated.push_str("\n[...truncated]");
     std::borrow::Cow::Owned(truncated)
 }
 
-/// Output search results.
+/// Output search results with a total character budget.
 ///
 /// Priority: `--json` compact JSON > `--raw` verbose > default markdown codeblocks.
-pub fn output_results(results: &[vera_core::types::SearchResult], json_output: bool, raw: bool) {
+/// When `budget` is non-zero, output is progressively truncated so the combined
+/// content stays within the budget. Lower-ranked results are truncated first.
+pub fn output_results(
+    results: &[vera_core::types::SearchResult],
+    json_output: bool,
+    raw: bool,
+    budget: usize,
+) {
     if json_output {
         let compact: Vec<CompactResult> = results
             .iter()
@@ -238,7 +240,11 @@ pub fn output_results(results: &[vera_core::types::SearchResult], json_output: b
         }
     } else {
         // Default: markdown codeblocks (most token-efficient for LLM agents).
+        let mut remaining = budget;
         for (i, r) in results.iter().enumerate() {
+            if budget > 0 && remaining == 0 {
+                break;
+            }
             if i > 0 {
                 println!();
             }
@@ -247,7 +253,13 @@ pub fn output_results(results: &[vera_core::types::SearchResult], json_output: b
                 info.push_str(&format!(" {stype}:{name}"));
             }
             println!("```{info}");
-            let content = truncate_content(&r.content);
+            let content = if budget > 0 {
+                let c = truncate_to_budget(&r.content, remaining);
+                remaining = remaining.saturating_sub(c.len());
+                c
+            } else {
+                std::borrow::Cow::Borrowed(r.content.as_str())
+            };
             print!("{}", content);
             if !content.ends_with('\n') {
                 println!();

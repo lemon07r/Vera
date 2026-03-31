@@ -53,7 +53,7 @@ pub fn run(
         )?
     };
 
-    output_results(&results, json_output, raw);
+    output_results(&results, json_output, raw, config.retrieval.max_output_chars);
 
     if timing {
         use std::io::Write;

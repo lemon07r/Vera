@@ -79,6 +79,11 @@ pub struct RetrievalConfig {
     /// Maximum documents per reranker API call. Larger candidate sets are
     /// partitioned into batches and scores merged. 0 means no batching.
     pub max_rerank_batch: usize,
+    /// Total character budget for search output. Results are progressively
+    /// truncated so the combined output stays within this limit.
+    /// 0 means unlimited.
+    #[serde(default)]
+    pub max_output_chars: usize,
 }
 
 impl Default for RetrievalConfig {
@@ -88,11 +93,12 @@ impl Default for RetrievalConfig {
             .and_then(|v| v.parse().ok())
             .unwrap_or(20);
         Self {
-            default_limit: 10,
+            default_limit: 5,
             rrf_k: 60.0,
             rerank_candidates: 50,
             reranking_enabled: true,
             max_rerank_batch,
+            max_output_chars: 12_000,
         }
     }
 }
