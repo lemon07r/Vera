@@ -72,6 +72,8 @@ bunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai inst
 
 ### Pick Your Backend
 
+Vera itself is always local: the index lives in `.vera/` per project, config and models in `$XDG_DATA_HOME/vera` (or `~/.vera` for existing installs). The backend choice only affects where embeddings and reranking run.
+
 | You have | Run this | What happens |
 |----------|----------|-------------|
 | Not sure | `vera setup` | Interactive wizard auto-detects your hardware |
@@ -82,7 +84,7 @@ bunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai inst
 | Intel GPU (Linux) | `vera setup --onnx-jina-openvino` | Downloads local models, uses OpenVINO |
 | DirectX 12 GPU (Windows) | `vera setup --onnx-jina-directml` | Downloads local models, uses DirectML |
 
-After setup, indexing and search work the same regardless of backend.
+API mode works with any OpenAI-compatible endpoint and needs no local compute. Local mode downloads two curated ONNX models and auto-detects your GPU; a GPU is recommended since CPU-only indexing is slow. After the first index, `vera update .` only re-embeds changed files, so incremental updates are fast on any backend. Full details: [docs/models.md](docs/models.md).
 
 For step-by-step instructions, API provider options, Docker, building from source, and troubleshooting, see the full [Installation Guide](docs/installation.md).
 
@@ -166,14 +168,6 @@ Use `--json` for compact JSON, `--raw` for verbose human-readable output, or `--
 ### Excluding Files
 
 Vera respects `.gitignore` by default. Create a `.veraignore` file (gitignore syntax) for more control, or use `--exclude` flags. Details: [docs/features.md](docs/features.md#flexible-exclusions).
-
-## Model Backend
-
-Vera itself is always local: the index lives in `.vera/` per project, config and models in `$XDG_DATA_HOME/vera` (or `~/.vera` for existing installs). The backend choice only affects where embeddings and reranking run.
-
-API mode works with any OpenAI-compatible endpoint and needs no local compute. Local mode downloads two curated ONNX models and auto-detects your GPU; a GPU is recommended for local mode since CPU-only indexing is slow. After the first index, `vera update .` only re-embeds changed files, so incremental updates are fast on any backend.
-
-Full details: [docs/models.md](docs/models.md).
 
 ## Benchmarks
 
