@@ -374,7 +374,8 @@ enum Commands {
         #[arg(long)]
         include_generated: bool,
 
-        /// Multi-hop iterative search: follow up on symbols found in initial results.
+        /// Deep search: RAG-fusion query expansion + merged ranking when a completion
+        /// endpoint is configured, otherwise iterative symbol-following search.
         #[arg(long)]
         deep: bool,
 

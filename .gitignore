@@ -27,3 +27,4 @@ crates/tree-sitter-astro/
 .tmp/
 skills-lock.json
 .output.txt
+CHERRY_PICKED_FEATURES.md

@@ -27,9 +27,11 @@ A single search call can accept multiple queries at once. Run 2-3 varied queries
 
 An optional `intent` parameter lets you describe your higher-level goal separately from the search query. The reranker uses this to score candidates against what you actually need, not just what you typed. Useful when the query is ambiguous or too short to convey full context.
 
-### Multi-Hop Deep Search
+### Deep Search
 
-`vera search "query" --deep` runs an initial search, extracts symbol names from the top results, then automatically searches for those symbols to find related code. This follows the call chain outward from your initial results without manual follow-up queries.
+`vera search "query" --deep` expands your query into multiple search variants using an LLM completion endpoint, runs parallel hybrid searches for each variant, and fuses results with N-way Reciprocal Rank Fusion. This captures different phrasings and angles of the same intent in a single call.
+
+Requires a completion endpoint: set `VERA_COMPLETION_BASE_URL` and `VERA_COMPLETION_MODEL_ID` (any OpenAI-compatible chat endpoint works, including local llama.cpp). When no completion endpoint is configured, `--deep` falls back to iterative symbol-following: it extracts symbol names from top results and searches for those symbols automatically.
 
 ### Compact Mode
 
@@ -76,7 +78,7 @@ Chunks that exceed the embedding model's input limit are automatically split in 
 
 ### File Watching
 
-`vera watch .` monitors the project for file changes and triggers incremental index updates automatically (debounced at 2s). Keeps the index fresh during long coding sessions without manual intervention.
+`vera watch .` monitors the project for file changes and triggers incremental index updates automatically (debounced at 2s). Keeps the index fresh during long coding sessions without manual intervention. Progress logs print to stderr so you can see when updates start, complete, or skip.
 
 ### Flexible Exclusions
 
@@ -115,7 +117,7 @@ Indexing shows a live progress bar with file discovery, parsing, and embedding g
 Indexing, storage, and search always stay on your machine. The backend choice only affects where embeddings and reranking run:
 
 - **Local mode**: `vera setup` downloads curated ONNX models. The full pipeline (BM25 + vector + rerank) runs without external calls.
-- **API mode**: Point at any OpenAI-compatible endpoint (remote APIs or local servers like llama.cpp). Only model calls leave your machine. Query prefixes for asymmetric embedding models (Qwen3, CodeRankEmbed, E5, BGE) are auto-detected from the model ID. Override with `EMBEDDING_QUERY_PREFIX` for unsupported models.
+- **API mode**: Point at any OpenAI-compatible endpoint (remote APIs or local servers like llama.cpp). Only model calls leave your machine. Query prefixes for asymmetric embedding models (Qwen3, CodeRankEmbed, E5, BGE) are auto-detected from the model ID. Override with `EMBEDDING_QUERY_PREFIX` for unsupported models. See [llama-cpp-setup.md](llama-cpp-setup.md) for a step-by-step guide.
 
 ### Curated Local Models
 

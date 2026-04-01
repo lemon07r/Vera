@@ -22,7 +22,7 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
    vera search "database connection" --lang rust --path "src/**"
    vera search "keybind handling" --scope docs
    vera search "mod loader" --scope runtime --include-generated
-   vera search "config loading" --deep    # multi-hop: follows symbols from initial results
+   vera search "config loading" --deep    # RAG-fusion query expansion (falls back to iterative symbol-following)
    vera search "auth" --compact            # signatures only: broad exploration in fewer tokens
    ```
 8. Regex search (exact patterns, imports, TODOs). `vera grep` only searches indexed files, so `.veraignore` and exclusion rules apply:
@@ -73,7 +73,7 @@ Vera favors source files by default. Use `--scope docs` for prose and ADRs, `--s
 ## Search Modes
 
 - **Default**: full results with code bodies. Best for targeted retrieval ("how does BM25 scoring work?").
-- **`--deep`**: multi-hop search. Runs an initial search, extracts symbol names from top results, then searches for those symbols automatically. Use when initial results need broader context.
+- **`--deep`**: deep search. When a completion endpoint is configured (`VERA_COMPLETION_BASE_URL`), expands the query into multiple variants via an LLM and fuses results with RRF. Otherwise falls back to iterative symbol-following search. Use when initial results need broader context.
 - **`--compact`**: signatures only (name, parameters, return type). Fits more results into fewer tokens. Best for broad exploration ("what functions handle auth?"). Works with `vera grep` too.
 
 ## Query Strategy

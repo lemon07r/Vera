@@ -35,6 +35,17 @@ impl WatchHandle {
 /// index update in a background thread. Returns a handle that keeps the
 /// watcher alive; drop it to stop watching.
 pub fn start_watching(repo_path: &Path) -> Result<WatchHandle, String> {
+    start_watching_internal(repo_path, false)
+}
+
+/// Start watching with progress logs printed to stderr.
+///
+/// Intended for `vera watch` CLI mode where users expect visible activity.
+pub fn start_watching_with_progress(repo_path: &Path) -> Result<WatchHandle, String> {
+    start_watching_internal(repo_path, true)
+}
+
+fn start_watching_internal(repo_path: &Path, progress_logs: bool) -> Result<WatchHandle, String> {
     let repo_path = repo_path
         .canonicalize()
         .map_err(|e| format!("Failed to resolve path: {e}"))?;
@@ -74,14 +85,21 @@ pub fn start_watching(repo_path: &Path) -> Result<WatchHandle, String> {
                 .is_err()
             {
                 debug!("Skipping auto-update: previous update still running");
+                if progress_logs {
+                    eprintln!("[watch] update already running, changes will be picked up next cycle");
+                }
                 return;
+            }
+
+            if progress_logs {
+                eprintln!("[watch] file changes detected, starting incremental update");
             }
 
             let repo = repo_clone.clone();
             let flag = updating_clone.clone();
 
             std::thread::spawn(move || {
-                run_incremental_update(&repo, &flag);
+                run_incremental_update(&repo, &flag, progress_logs);
             });
         },
     )
@@ -101,7 +119,7 @@ pub fn start_watching(repo_path: &Path) -> Result<WatchHandle, String> {
 }
 
 /// Run an incremental update, resetting the flag when done.
-fn run_incremental_update(repo_path: &Path, updating: &AtomicBool) {
+fn run_incremental_update(repo_path: &Path, updating: &AtomicBool, progress_logs: bool) {
     debug!(path = %repo_path.display(), "Auto-update triggered by file changes");
 
     let result = run_update_blocking(repo_path);
@@ -116,16 +134,48 @@ fn run_incremental_update(repo_path: &Path, updating: &AtomicBool) {
                     deleted = summary.files_deleted,
                     "Auto-update complete"
                 );
+                if progress_logs {
+                    eprintln!(
+                        "[watch] update complete: {} modified, {} added, {} deleted",
+                        summary.files_modified, summary.files_added, summary.files_deleted
+                    );
+                }
             } else {
                 debug!("Auto-update: no changes detected");
+                if progress_logs {
+                    eprintln!("[watch] no indexable changes detected");
+                }
             }
         }
         Err(e) => {
             warn!(error = %e, "Auto-update failed");
+            if progress_logs {
+                eprintln!("[watch] update failed: {e}");
+            }
         }
     }
 
     updating.store(false, Ordering::SeqCst);
+}
+
+/// Load the saved runtime config from Vera's home config.json, falling back to defaults.
+fn load_saved_runtime_config() -> vera_core::config::VeraConfig {
+    let config_path = match vera_core::local_models::vera_home_dir() {
+        Ok(dir) => dir.join("config.json"),
+        Err(_) => return vera_core::config::VeraConfig::default(),
+    };
+    let data = match std::fs::read_to_string(&config_path) {
+        Ok(d) => d,
+        Err(_) => return vera_core::config::VeraConfig::default(),
+    };
+    let json: serde_json::Value = match serde_json::from_str(&data) {
+        Ok(v) => v,
+        Err(_) => return vera_core::config::VeraConfig::default(),
+    };
+    match json.get("core_config") {
+        Some(v) => serde_json::from_value(v.clone()).unwrap_or_default(),
+        None => vera_core::config::VeraConfig::default(),
+    }
 }
 
 /// Blocking wrapper around the async update_repository.
@@ -133,7 +183,7 @@ fn run_update_blocking(
     repo_path: &Path,
 ) -> Result<vera_core::indexing::UpdateSummary, anyhow::Error> {
     let backend = vera_core::config::resolve_backend(None);
-    let mut config = vera_core::config::VeraConfig::default();
+    let mut config = load_saved_runtime_config();
     config.adjust_for_backend(backend);
 
     let rt = tokio::runtime::Runtime::new()?;
@@ -148,4 +198,44 @@ fn run_update_blocking(
         &config,
         &model_name,
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn load_config_missing_file_returns_default() {
+        let tmp = tempfile::tempdir().unwrap();
+        unsafe { std::env::set_var("VERA_HOME", tmp.path()) };
+        let config = load_saved_runtime_config();
+        assert_eq!(config.indexing.max_chunk_lines, vera_core::config::VeraConfig::default().indexing.max_chunk_lines);
+        unsafe { std::env::remove_var("VERA_HOME") };
+    }
+
+    #[test]
+    fn load_config_reads_core_config() {
+        let tmp = tempfile::tempdir().unwrap();
+        unsafe { std::env::set_var("VERA_HOME", tmp.path()) };
+        // Serialize a full config, then modify the values we want to test.
+        let mut cfg = vera_core::config::VeraConfig::default();
+        cfg.indexing.max_chunk_lines = 99;
+        cfg.indexing.max_chunk_bytes = 1800;
+        let json = serde_json::json!({ "core_config": cfg });
+        std::fs::write(tmp.path().join("config.json"), json.to_string()).unwrap();
+        let config = load_saved_runtime_config();
+        assert_eq!(config.indexing.max_chunk_lines, 99);
+        assert_eq!(config.indexing.max_chunk_bytes, 1800);
+        unsafe { std::env::remove_var("VERA_HOME") };
+    }
+
+    #[test]
+    fn load_config_no_core_config_key_returns_default() {
+        let tmp = tempfile::tempdir().unwrap();
+        unsafe { std::env::set_var("VERA_HOME", tmp.path()) };
+        std::fs::write(tmp.path().join("config.json"), r#"{"backend":"api"}"#).unwrap();
+        let config = load_saved_runtime_config();
+        assert_eq!(config.indexing.max_chunk_lines, vera_core::config::VeraConfig::default().indexing.max_chunk_lines);
+        unsafe { std::env::remove_var("VERA_HOME") };
+    }
 }

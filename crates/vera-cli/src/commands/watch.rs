@@ -8,8 +8,8 @@ pub fn run(path: &str, json: bool) -> Result<()> {
         .canonicalize()
         .map_err(|e| anyhow::anyhow!("Failed to resolve path: {e}"))?;
 
-    let _handle =
-        vera_mcp::watcher::start_watching(&repo_path).map_err(|e| anyhow::anyhow!("{e}"))?;
+    let _handle = vera_mcp::watcher::start_watching_with_progress(&repo_path)
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
 
     if json {
         println!(

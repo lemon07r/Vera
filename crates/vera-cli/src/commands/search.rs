@@ -34,14 +34,13 @@ pub fn run(
     }
 
     let (results, timings) = if deep {
-        vera_core::retrieval::iterative_search::execute_iterative_search(
+        vera_core::retrieval::rag_fusion::execute_deep_search(
             &index_dir,
             query,
             &config,
             filters,
             result_limit,
             backend,
-            1,
         )?
     } else {
         vera_core::retrieval::search_service::execute_search(

@@ -226,38 +226,32 @@ pub fn fuse_rrf(
     rrf_k: f64,
     limit: usize,
 ) -> Vec<SearchResult> {
-    // Build a map of chunk_key → (rrf_score, SearchResult).
-    // We key by (file_path, line_start, line_end) since chunk IDs aren't
-    // in SearchResult but these fields uniquely identify a chunk.
+    fuse_rrf_multi(&[bm25_results, vector_results], rrf_k, limit)
+}
+
+/// Fuse multiple ranked result lists with reciprocal rank fusion (RRF).
+pub fn fuse_rrf_multi(
+    result_sets: &[&[SearchResult]],
+    rrf_k: f64,
+    limit: usize,
+) -> Vec<SearchResult> {
     let mut fused: HashMap<String, (f64, SearchResult)> = HashMap::new();
 
-    // Process BM25 results (1-based ranking).
-    for (rank_0, result) in bm25_results.iter().enumerate() {
-        let key = result_key(result);
-        let rrf_score = 1.0 / (rrf_k + (rank_0 + 1) as f64);
+    for result_set in result_sets {
+        for (rank_0, result) in result_set.iter().enumerate() {
+            let key = result_key(result);
+            let rrf_score = 1.0 / (rrf_k + (rank_0 + 1) as f64);
 
-        fused
-            .entry(key)
-            .and_modify(|(score, _)| *score += rrf_score)
-            .or_insert_with(|| (rrf_score, result.clone()));
+            fused
+                .entry(key)
+                .and_modify(|(score, _)| *score += rrf_score)
+                .or_insert_with(|| (rrf_score, result.clone()));
+        }
     }
 
-    // Process vector results (1-based ranking).
-    for (rank_0, result) in vector_results.iter().enumerate() {
-        let key = result_key(result);
-        let rrf_score = 1.0 / (rrf_k + (rank_0 + 1) as f64);
-
-        fused
-            .entry(key)
-            .and_modify(|(score, _)| *score += rrf_score)
-            .or_insert_with(|| (rrf_score, result.clone()));
-    }
-
-    // Sort by RRF score descending.
     let mut ranked: Vec<(f64, SearchResult)> = fused.into_values().collect();
     ranked.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
-    // Take top results, replacing original scores with RRF scores.
     ranked
         .into_iter()
         .take(limit)

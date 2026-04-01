@@ -30,10 +30,12 @@ Data flow: file → grammar lookup → tree-sitter parse → node classification
 
 1. Query enters `search_service.rs`
 2. BM25 (`bm25.rs`) and vector search (`vector.rs`) run in parallel
-3. Results fused via RRF (`hybrid.rs`, k=60)
+3. Results fused via RRF (`hybrid.rs`, k=60). `fuse_rrf_multi` generalizes fusion to N ranked lists.
 4. Query-aware ranking and candidate shaping apply deterministic priors (`ranking.rs`, `search_service.rs`)
 5. Top candidates reranked by cross-encoder (`reranker.rs` or `local_reranker.rs`)
 6. Final `Vec<SearchResult>` returned
+
+Deep search (`--deep`): `rag_fusion.rs` expands the query into multiple variants via an LLM completion endpoint (`completion_client.rs`), runs parallel hybrid searches, and fuses results with N-way RRF. Falls back to iterative symbol-following when no completion endpoint is configured.
 
 ### `storage/`: Persistent storage
 
@@ -54,10 +56,11 @@ All stored in `.vera/` at the project root.
 - `config.rs`: `RetrievalConfig`, `IndexConfig` defaults
 - `local_models.rs`: Manages local embedding presets, custom ONNX embedding configs, and ORT/model assets under the Vera data directory (XDG-compliant)
 - `discovery/`: File discovery with gitignore support, binary/size filtering
+- `chunk_text.rs`: Line-boundary text splitting for byte-budget enforcement
 
 ## vera-cli
 
-`main.rs` parses args via clap. `commands/` contains the CLI subcommand implementations and helpers: `agent`, `config`, `doctor`, `grep`, `index`, `mcp`, `overview`, `references` (also used by `dead-code`), `repair`, `search`, `setup`, `stats`, `uninstall`, `update`, and `upgrade`.
+`main.rs` parses args via clap. `commands/` contains the CLI subcommand implementations and helpers: `agent`, `config`, `doctor`, `grep`, `index`, `mcp`, `overview`, `references` (also used by `dead-code`), `repair`, `search`, `setup`, `stats`, `uninstall`, `update`, `upgrade`, and `watch`.
 
 ## vera-mcp
 
