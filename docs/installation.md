@@ -86,9 +86,12 @@ Models run on your machine using ONNX Runtime. Vera downloads two small models (
 
 | You have | Command | What happens |
 |----------|---------|-------------|
+| Not sure | `vera setup` | Interactive wizard auto-detects your hardware |
 | Apple Silicon (M1/M2/M3/M4) | `vera setup --onnx-jina-coreml` | Uses CoreML GPU acceleration |
 | NVIDIA GPU | `vera setup --onnx-jina-cuda` | Uses CUDA. Fastest local option |
-| No GPU / unsure | `vera setup` | Interactive wizard picks for you |
+| AMD GPU (Linux) | `vera setup --onnx-jina-rocm` | Uses ROCm |
+| Intel GPU (Linux) | `vera setup --onnx-jina-openvino` | Uses OpenVINO |
+| DirectX 12 GPU (Windows) | `vera setup --onnx-jina-directml` | Uses DirectML |
 
 > **Note:** Local mode on CPU (without a GPU) works but is slow for initial indexing. If you don't have a GPU, API mode is the better choice. After the first index, `vera update .` only re-embeds changed files, so incremental updates are fast even on CPU.
 

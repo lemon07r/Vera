@@ -38,11 +38,13 @@ bunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai inst
 
 **2. Set up models** (pick one)
 ```bash
-vera setup --api                 # API mode: works everywhere, no GPU needed, use any local inference engine (llama.cpp, etc) or provider
-# API mode is simplest, and easiest to get working. Below options download ONNX runtime + models for local inference
+vera setup                       # Interactive wizard (auto-detects your hardware)
+vera setup --api                 # API mode: works everywhere, no GPU needed (recommended)
 vera setup --onnx-jina-coreml    # Apple Silicon (M1/M2/M3/M4)
 vera setup --onnx-jina-cuda      # NVIDIA GPU
-vera setup                       # Interactive wizard
+vera setup --onnx-jina-rocm      # AMD GPU (ROCm, Linux)
+vera setup --onnx-jina-openvino  # Intel GPU (OpenVINO, Linux)
+vera setup --onnx-jina-directml  # DirectX 12 GPU (Windows)
 ```
 
 **3. Index and search**
@@ -72,10 +74,13 @@ bunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai inst
 
 | You have | Run this | What happens |
 |----------|----------|-------------|
+| Not sure | `vera setup` | Interactive wizard auto-detects your hardware |
 | Any hardware | `vera setup --api` | Models run remotely via any OpenAI-compatible API. No GPU needed. **Recommended.** |
 | Apple Silicon (M1/M2/M3/M4) | `vera setup --onnx-jina-coreml` | Downloads local models, uses CoreML GPU acceleration |
 | NVIDIA GPU | `vera setup --onnx-jina-cuda` | Downloads local models, uses CUDA. Fastest local option |
-| Not sure | `vera setup` | Interactive wizard picks for you |
+| AMD GPU (Linux) | `vera setup --onnx-jina-rocm` | Downloads local models, uses ROCm |
+| Intel GPU (Linux) | `vera setup --onnx-jina-openvino` | Downloads local models, uses OpenVINO |
+| DirectX 12 GPU (Windows) | `vera setup --onnx-jina-directml` | Downloads local models, uses DirectML |
 
 After setup, indexing and search work the same regardless of backend.
 
