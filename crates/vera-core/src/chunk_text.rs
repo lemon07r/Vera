@@ -107,8 +107,9 @@ fn truncate_at_line_boundary(text: &str, max_bytes: usize) -> String {
         return text.to_string();
     }
     // Find the last newline at or before the byte budget.
-    let cut = &text[..max_bytes];
-    let end = cut.rfind('\n').unwrap_or(max_bytes);
+    let floor = floor_char_boundary(text, max_bytes);
+    let cut = &text[..floor];
+    let end = cut.rfind('\n').unwrap_or(floor);
     text[..end].to_string()
 }
 
@@ -439,6 +440,16 @@ fn abbreviate_middle(value: &str, max_chars: usize) -> String {
         .iter()
         .collect();
     format!("{head}...{tail}")
+}
+
+fn floor_char_boundary(s: &str, mut i: usize) -> usize {
+    if i >= s.len() {
+        return s.len();
+    }
+    while !s.is_char_boundary(i) {
+        i -= 1;
+    }
+    i
 }
 
 fn extract_flow_hints(chunk: &Chunk) -> Vec<&'static str> {
