@@ -27,9 +27,22 @@ pub fn extract_references(
     source: &[u8],
     lang: Language,
 ) -> Vec<RawReference> {
-    let mut refs = Vec::new();
     let symbols = super::extractor::extract_symbols(tree, source, lang);
-    collect_calls(tree.root_node(), source, lang, &symbols, &mut refs);
+    extract_references_with_symbols(tree, source, lang, &symbols)
+}
+
+/// Extract call-site references using pre-computed symbols.
+///
+/// Use this when symbols have already been extracted (e.g., during unified
+/// parsing) to avoid redundant AST walks.
+pub fn extract_references_with_symbols(
+    tree: &tree_sitter::Tree,
+    source: &[u8],
+    lang: Language,
+    symbols: &[super::extractor::RawSymbol],
+) -> Vec<RawReference> {
+    let mut refs = Vec::new();
+    collect_calls(tree.root_node(), source, lang, symbols, &mut refs);
     refs
 }
 
@@ -165,27 +178,42 @@ fn find_enclosing_symbol(
         .and_then(|s| s.name.clone())
 }
 
-/// Recursively collect call references from AST nodes.
+/// Collect call references using a single TreeCursor for the entire traversal.
 fn collect_calls(
-    node: tree_sitter::Node<'_>,
+    root: tree_sitter::Node<'_>,
     source: &[u8],
     lang: Language,
     symbols: &[super::extractor::RawSymbol],
     refs: &mut Vec<RawReference>,
 ) {
-    if is_call_node(lang, node.kind()) {
-        if let Some(callee) = extract_callee(&node, source) {
-            let caller = find_enclosing_symbol(symbols, node.start_byte());
-            refs.push(RawReference {
-                callee,
-                caller,
-                line: node.start_position().row as u32 + 1,
-            });
+    let mut cursor = root.walk();
+    loop {
+        let node = cursor.node();
+        if is_call_node(lang, node.kind()) {
+            if let Some(callee) = extract_callee(&node, source) {
+                let caller = find_enclosing_symbol(symbols, node.start_byte());
+                refs.push(RawReference {
+                    callee,
+                    caller,
+                    line: node.start_position().row as u32 + 1,
+                });
+            }
         }
-    }
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_calls(child, source, lang, symbols, refs);
+        // Depth-first: try child, then sibling, then backtrack.
+        if cursor.goto_first_child() {
+            continue;
+        }
+        if cursor.goto_next_sibling() {
+            continue;
+        }
+        loop {
+            if !cursor.goto_parent() {
+                return;
+            }
+            if cursor.goto_next_sibling() {
+                break;
+            }
+        }
     }
 }
 

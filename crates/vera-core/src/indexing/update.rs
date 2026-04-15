@@ -284,46 +284,49 @@ pub async fn update_repository<P: EmbeddingProvider>(
         for (rel_path, content, _hash) in &files_to_index {
             let language = detect_language_for_path(rel_path);
 
-            // Extract call-site references.
-            let refs = parsing::parse_and_extract_references(content, language);
+            // For RST, refs come from raw source; chunks from preprocessed.
+            // For all other languages, parse once for both.
+            let (chunks, refs) = if language == Language::Rst {
+                let refs = parsing::parse_and_extract_references(content, language);
+                let absolute_path = repo_root.join(rel_path);
+                let normalized_source =
+                    match parsing::sphinx::preprocess_rst(content, &absolute_path, &repo_root) {
+                        Ok(preprocessed) => Some(preprocessed),
+                        Err(err) => {
+                            warn!(
+                                file = %rel_path,
+                                error = %err,
+                                "failed to preprocess rst during update; falling back to raw source"
+                            );
+                            None
+                        }
+                    };
+                let src = normalized_source.as_deref().unwrap_or(content);
+                match parsing::parse_and_chunk(src, rel_path, language, &config.indexing) {
+                    Ok(chunks) => (chunks, refs),
+                    Err(err) => {
+                        warn!(file = %rel_path, error = %err, "parse error during update");
+                        continue;
+                    }
+                }
+            } else {
+                match parsing::parse_file(content, rel_path, language, &config.indexing) {
+                    Ok(result) => result,
+                    Err(err) => {
+                        warn!(file = %rel_path, error = %err, "parse error during update");
+                        continue;
+                    }
+                }
+            };
+
             if !refs.is_empty() {
                 metadata_store
                     .insert_references(rel_path, &refs)
                     .context("failed to store references")?;
             }
 
-            let normalized_source = if language == Language::Rst {
-                let absolute_path = repo_root.join(rel_path);
-                match parsing::sphinx::preprocess_rst(content, &absolute_path, &repo_root) {
-                    Ok(preprocessed) => Some(preprocessed),
-                    Err(err) => {
-                        warn!(
-                            file = %rel_path,
-                            error = %err,
-                            "failed to preprocess rst during update; falling back to raw source"
-                        );
-                        None
-                    }
-                }
-            } else {
-                None
-            };
-            let source_for_chunking = normalized_source.as_deref().unwrap_or(content);
-
-            match parsing::parse_and_chunk(
-                source_for_chunking,
-                rel_path,
-                language,
-                &config.indexing,
-            ) {
-                Ok(chunks) => {
-                    debug!(file = %rel_path, chunks = chunks.len(), "parsed file");
-                    all_chunks.extend(chunks);
-                }
-                Err(err) => {
-                    warn!(file = %rel_path, error = %err, "parse error during update");
-                }
-            }
+            debug!(file = %rel_path, chunks = chunks.len(), refs = refs.len(), "parsed file");
+            all_chunks.extend(chunks);
         }
 
         if !all_chunks.is_empty() {

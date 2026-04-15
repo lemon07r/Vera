@@ -317,10 +317,11 @@ fn parse_discovered_files_parallel(
                         Language::from_extension(ext)
                     });
 
-                let refs = parsing::parse_and_extract_references(&source, language);
-
-                let normalized_source = if language == Language::Rst {
-                    match parsing::sphinx::preprocess_rst(
+                // RST files need preprocessing before chunking, but refs
+                // come from the raw source, so they can't share a single parse.
+                let parse_result = if language == Language::Rst {
+                    let refs = parsing::parse_and_extract_references(&source, language);
+                    let normalized_source = match parsing::sphinx::preprocess_rst(
                         &source,
                         &file.absolute_path,
                         repo_root.as_path(),
@@ -334,39 +335,38 @@ fn parse_discovered_files_parallel(
                             );
                             None
                         }
-                    }
+                    };
+                    let src = normalized_source.as_deref().unwrap_or(&source);
+                    let hash = content_hash(src);
+                    parsing::parse_and_chunk(src, &file.relative_path, language, &config.indexing)
+                        .map(|chunks| (chunks, refs, hash))
                 } else {
-                    None
+                    let hash = content_hash(&source);
+                    parsing::parse_file(&source, &file.relative_path, language, &config.indexing)
+                        .map(|(chunks, refs)| (chunks, refs, hash))
                 };
-                let source_for_chunking = normalized_source.as_deref().unwrap_or(&source);
-                let hash = content_hash(source_for_chunking);
 
-                parsing::parse_and_chunk(
-                    source_for_chunking,
-                    &file.relative_path,
-                    language,
-                    &config.indexing,
-                )
-                .inspect(|chunks| {
-                    debug!(
-                        file = %file.relative_path,
-                        chunks = chunks.len(),
-                        refs = refs.len(),
-                        "parsed file"
-                    );
-                })
-                .map(|chunks| (chunks, file.relative_path.clone(), hash, refs))
-                .map_err(|err| {
-                    warn!(
-                        file = %file.relative_path,
-                        error = %err,
-                        "parse error"
-                    );
-                    FileError {
-                        file_path: file.relative_path.clone(),
-                        error: err.to_string(),
-                    }
-                })
+                parse_result
+                    .inspect(|(chunks, refs, _)| {
+                        debug!(
+                            file = %file.relative_path,
+                            chunks = chunks.len(),
+                            refs = refs.len(),
+                            "parsed file"
+                        );
+                    })
+                    .map(|(chunks, refs, hash)| (chunks, file.relative_path.clone(), hash, refs))
+                    .map_err(|err| {
+                        warn!(
+                            file = %file.relative_path,
+                            error = %err,
+                            "parse error"
+                        );
+                        FileError {
+                            file_path: file.relative_path.clone(),
+                            error: err.to_string(),
+                        }
+                    })
             })
             .collect();
 

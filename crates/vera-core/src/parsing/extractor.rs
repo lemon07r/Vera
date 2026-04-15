@@ -812,7 +812,8 @@ fn name_from_node(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<String>
 /// Returns symbols sorted by their position in the source.
 pub fn extract_symbols(tree: &tree_sitter::Tree, source: &[u8], lang: Language) -> Vec<RawSymbol> {
     let mut symbols = Vec::new();
-    collect_symbols(tree.root_node(), source, lang, &mut symbols, 0);
+    let mut cursor = tree.root_node().walk();
+    collect_symbols_cursor(&mut cursor, source, lang, &mut symbols, 0);
     symbols.sort_by_key(|s| s.start_byte);
     symbols
 }
@@ -842,6 +843,30 @@ pub fn extract_rst_section_titles(tree: &tree_sitter::Tree, source: &[u8]) -> Ve
     titles.sort_by_key(|(row, _)| *row);
     titles.dedup_by(|a, b| a.0 == b.0);
     titles
+}
+
+/// Iterates siblings using a single `TreeCursor`, avoiding per-level cursor
+/// allocation. Delegates to [`collect_symbols`] for per-node logic.
+fn collect_symbols_cursor(
+    cursor: &mut tree_sitter::TreeCursor,
+    source: &[u8],
+    lang: Language,
+    symbols: &mut Vec<RawSymbol>,
+    depth: usize,
+) {
+    if depth > 6 {
+        return;
+    }
+    if !cursor.goto_first_child() {
+        return;
+    }
+    loop {
+        collect_symbols(cursor.node(), source, lang, symbols, depth);
+        if !cursor.goto_next_sibling() {
+            break;
+        }
+    }
+    cursor.goto_parent();
 }
 
 /// Recursively collect symbols from AST nodes.
@@ -888,9 +913,8 @@ fn collect_symbols(
 
     // Handle R binary_operator (x <- function() { ... }) as named function
     if lang == Language::R && kind == "binary_operator" {
-        let mut cursor = node.walk();
-        for child in node.children(&mut cursor) {
-            if child.kind() == "function_definition" {
+        if let Some(rhs) = node.child_by_field_name("rhs") {
+            if rhs.kind() == "function_definition" {
                 let name = extract_name(&node, source);
                 symbols.push(RawSymbol {
                     name,
@@ -983,7 +1007,8 @@ fn collect_symbols(
                     });
                     if text == "defmodule" {
                         if let Some(do_block) = get_elixir_do_block(&node) {
-                            collect_symbols(do_block, source, lang, symbols, depth + 1);
+                            let mut cursor = do_block.walk();
+                            collect_symbols_cursor(&mut cursor, source, lang, symbols, depth + 1);
                         }
                     }
                     return;
@@ -1103,9 +1128,7 @@ fn collect_symbols(
                 end_row: node.end_position().row,
             });
             let mut cursor = node.walk();
-            for child in node.children(&mut cursor) {
-                collect_symbols(child, source, lang, symbols, depth + 1);
-            }
+            collect_symbols_cursor(&mut cursor, source, lang, symbols, depth + 1);
             return;
         }
 
@@ -1204,9 +1227,7 @@ fn collect_symbols(
 
     // Recurse into children for wrapper nodes
     let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_symbols(child, source, lang, symbols, depth + 1);
-    }
+    collect_symbols_cursor(&mut cursor, source, lang, symbols, depth + 1);
 }
 
 /// Extract a symbol from a Scheme `list` node if it starts with `define` or `define-syntax`.
