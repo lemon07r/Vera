@@ -495,10 +495,82 @@ fn parse_cuda_major_version(value: &str) -> Option<u32> {
         .strip_prefix('v')
         .or_else(|| last_segment.strip_prefix("cuda-"))
         .unwrap_or(last_segment);
-    version_segment
+    [version_segment, last_segment, normalized]
+        .into_iter()
+        .find_map(parse_cuda_major_version_tokens)
+}
+
+fn parse_cuda_major_version_tokens(value: &str) -> Option<u32> {
+    value
+        .split_whitespace()
+        .find_map(parse_cuda_major_version_token)
+}
+
+fn parse_cuda_major_version_token(value: &str) -> Option<u32> {
+    let token = value.trim_matches(|ch: char| ch == '"' || ch == ',' || ch == ':' || ch == '=');
+    let version_token = token
+        .strip_prefix('v')
+        .or_else(|| token.strip_prefix("cuda-"))
+        .unwrap_or(token);
+    version_token
         .split(['.', '_', '-'])
         .next()
         .and_then(|major| major.parse::<u32>().ok())
+}
+
+fn detect_cuda_major_from_cuda_path_value(value: &str) -> Option<u32> {
+    parse_cuda_major_version(value).or_else(|| {
+        let cuda_root = Path::new(value);
+        detect_cuda_major_from_cuda_version_file(&cuda_root.join("version.json"))
+            .or_else(|| detect_cuda_major_from_cuda_version_file(&cuda_root.join("version.txt")))
+    })
+}
+
+fn detect_cuda_major_from_cuda_version_file(path: &Path) -> Option<u32> {
+    let contents = std::fs::read_to_string(path).ok()?;
+    parse_cuda_major_from_cuda_version_metadata(&contents)
+}
+
+fn parse_cuda_major_from_cuda_version_metadata(value: &str) -> Option<u32> {
+    parse_cuda_major_from_cuda_version_json(value)
+        .or_else(|| value.lines().find_map(parse_cuda_major_version))
+}
+
+fn parse_cuda_major_from_cuda_version_json(value: &str) -> Option<u32> {
+    fn find_cuda_version(value: &serde_json::Value) -> Option<u32> {
+        match value {
+            serde_json::Value::Object(map) => map
+                .get("cuda")
+                .and_then(find_cuda_version)
+                .or_else(|| {
+                    map.get("version")
+                        .and_then(|version| version.as_str())
+                        .and_then(parse_cuda_major_version)
+                })
+                .or_else(|| map.values().find_map(find_cuda_version)),
+            serde_json::Value::Array(values) => values.iter().find_map(find_cuda_version),
+            _ => None,
+        }
+    }
+
+    serde_json::from_str::<serde_json::Value>(value)
+        .ok()
+        .and_then(|json| find_cuda_version(&json))
+}
+
+fn detect_cuda_major_from_cuda_path_env_vars<T, U>(
+    vars: impl IntoIterator<Item = (T, U)>,
+) -> Option<u32>
+where
+    T: AsRef<str>,
+    U: AsRef<str>,
+{
+    vars.into_iter().find_map(|(key, value)| {
+        key.as_ref().strip_prefix("CUDA_PATH_V").and_then(|suffix| {
+            parse_cuda_major_version(suffix)
+                .or_else(|| detect_cuda_major_from_cuda_path_value(value.as_ref()))
+        })
+    })
 }
 
 fn effective_cuda_major(detected_cuda_major: Option<u32>) -> u32 {
@@ -610,14 +682,8 @@ fn default_cuda_library_dirs() -> Vec<PathBuf> {
 fn detect_cuda_major_from_cuda_path() -> Option<u32> {
     std::env::var("CUDA_PATH")
         .ok()
-        .and_then(|value| parse_cuda_major_version(&value))
-        .or_else(|| {
-            std::env::vars().find_map(|(key, value)| {
-                key.strip_prefix("CUDA_PATH_V")
-                    .and_then(parse_cuda_major_version)
-                    .or_else(|| parse_cuda_major_version(&value))
-            })
-        })
+        .and_then(|value| detect_cuda_major_from_cuda_path_value(&value))
+        .or_else(|| detect_cuda_major_from_cuda_path_env_vars(std::env::vars()))
 }
 
 fn detect_cuda_major_from_nvcc() -> Option<u32> {
@@ -2477,6 +2543,56 @@ mod tests {
         assert_eq!(parse_cuda_major_version("/opt/cuda-13.2"), Some(13));
         assert_eq!(parse_cuda_major_version("12.9"), Some(12));
         assert_eq!(parse_cuda_major_version("12_6"), Some(12));
+        assert_eq!(parse_cuda_major_version("CUDA Version 13.2.1"), Some(13));
+    }
+
+    #[test]
+    fn parse_cuda_major_from_cuda_version_metadata_supports_json_and_text() {
+        assert_eq!(
+            parse_cuda_major_from_cuda_version_metadata(
+                r#"{"cuda":{"name":"CUDA SDK","version":"13.2.1"}}"#
+            ),
+            Some(13)
+        );
+        assert_eq!(
+            parse_cuda_major_from_cuda_version_metadata("CUDA Version 12.8.0"),
+            Some(12)
+        );
+    }
+
+    #[test]
+    fn detect_cuda_major_from_cuda_path_env_vars_ignores_unrelated_values() {
+        let vars = [
+            ("SHLVL", "1"),
+            ("TERM_PROGRAM_VERSION", "3.5.1"),
+            ("PATH", "/usr/bin"),
+        ];
+        assert_eq!(detect_cuda_major_from_cuda_path_env_vars(vars), None);
+    }
+
+    #[test]
+    fn detect_cuda_major_from_cuda_path_env_vars_prefers_versioned_cuda_vars() {
+        let vars = [
+            ("SHLVL", "1"),
+            ("CUDA_PATH_V13_2", "/opt/cuda"),
+            ("TERM_PROGRAM_VERSION", "3.5.1"),
+        ];
+        assert_eq!(detect_cuda_major_from_cuda_path_env_vars(vars), Some(13));
+    }
+
+    #[test]
+    fn detect_cuda_major_from_cuda_path_value_reads_cuda_version_file() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            temp_dir.path().join("version.json"),
+            r#"{"cuda":{"version":"13.2.1"}}"#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            detect_cuda_major_from_cuda_path_value(temp_dir.path().to_string_lossy().as_ref()),
+            Some(13)
+        );
     }
 
     #[test]
