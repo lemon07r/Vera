@@ -1057,7 +1057,18 @@ async fn copy_so_files_from_dir(
 /// 2. Direct wheel download from PyPI
 /// 3. Bail with manual instructions
 pub async fn ensure_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<PathBuf> {
-    ensure_ort_library_for_ep_with_cuda_major(ep, detected_cuda_major_for_ep(ep)).await
+    if let Ok(path) = std::env::var("ORT_DYLIB_PATH") {
+        if !path.is_empty() {
+            return ensure_ort_library_for_ep_with_cuda_major(ep, None).await;
+        }
+    }
+
+    let detected_cuda_major = match ep {
+        OnnxExecutionProvider::Cuda => detected_cuda_major_for_ep(ep),
+        _ => None,
+    };
+
+    ensure_ort_library_for_ep_with_cuda_major(ep, detected_cuda_major).await
 }
 
 async fn ensure_ort_library_for_ep_with_cuda_major(
@@ -1318,7 +1329,18 @@ async fn ensure_ort_via_pip_chain(
 }
 
 pub fn ort_library_path_for_ep(ep: OnnxExecutionProvider) -> Result<PathBuf> {
-    ort_library_path_for_ep_with_cuda_major(ep, detected_cuda_major_for_ep(ep))
+    if let Ok(path) = std::env::var("ORT_DYLIB_PATH") {
+        if !path.is_empty() {
+            return Ok(PathBuf::from(path));
+        }
+    }
+
+    let detected_cuda_major = match ep {
+        OnnxExecutionProvider::Cuda => detected_cuda_major_for_ep(ep),
+        _ => None,
+    };
+
+    ort_library_path_for_ep_with_cuda_major(ep, detected_cuda_major)
 }
 
 fn ort_library_path_for_ep_with_cuda_major(
