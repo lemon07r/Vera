@@ -41,6 +41,10 @@ const RERANKER_TOKENIZER_FILE: &str = "tokenizer.json";
 /// ONNX Runtime version to auto-download. Using 1.24.4 for CUDA 13 support.
 /// The `ort` crate (rc.11) uses `load-dynamic` so any ABI-compatible ORT works.
 const ORT_VERSION: &str = "1.24.4";
+const DEFAULT_CUDA_MAJOR: u32 = 12;
+const CUDA_13_ORT_MIN_MAJOR: u32 = 13;
+const CUDA_RUNTIME_LIBRARY_PREFIXES: [&str; 3] =
+    ["libcudart.so.", "libcublas.so.", "libcublasLt.so."];
 
 /// ONNX Runtime 1.24.x dropped macOS x86_64 binaries. 1.23.2 is the last
 /// release that ships `onnxruntime-osx-x86_64` archives.
@@ -497,6 +501,112 @@ fn parse_cuda_major_version(value: &str) -> Option<u32> {
         .and_then(|major| major.parse::<u32>().ok())
 }
 
+fn effective_cuda_major(detected_cuda_major: Option<u32>) -> u32 {
+    detected_cuda_major.unwrap_or(DEFAULT_CUDA_MAJOR)
+}
+
+fn uses_cuda13_ort(detected_cuda_major: Option<u32>) -> bool {
+    effective_cuda_major(detected_cuda_major) >= CUDA_13_ORT_MIN_MAJOR
+}
+
+fn cuda_ort_cache_dir_name(detected_cuda_major: Option<u32>) -> &'static str {
+    if uses_cuda13_ort(detected_cuda_major) {
+        "cuda13"
+    } else {
+        "cuda"
+    }
+}
+
+fn parse_cuda_major_from_runtime_library_entry(value: &str) -> Option<u32> {
+    CUDA_RUNTIME_LIBRARY_PREFIXES
+        .iter()
+        .filter_map(|prefix| {
+            value.find(prefix).and_then(|start| {
+                let digits: String = value[start + prefix.len()..]
+                    .chars()
+                    .take_while(|ch| ch.is_ascii_digit())
+                    .collect();
+                (!digits.is_empty())
+                    .then(|| digits.parse::<u32>().ok())
+                    .flatten()
+            })
+        })
+        .max()
+}
+
+#[cfg(test)]
+fn detect_cuda_major_from_library_entries<T>(entries: impl IntoIterator<Item = T>) -> Option<u32>
+where
+    T: AsRef<str>,
+{
+    entries
+        .into_iter()
+        .filter_map(|entry| parse_cuda_major_from_runtime_library_entry(entry.as_ref()))
+        .max()
+}
+
+#[cfg(target_os = "linux")]
+fn detect_cuda_major_from_library_dirs<T>(dirs: impl IntoIterator<Item = T>) -> Option<u32>
+where
+    T: AsRef<Path>,
+{
+    dirs.into_iter()
+        .filter_map(|dir| std::fs::read_dir(dir.as_ref()).ok())
+        .flat_map(|entries| entries.filter_map(std::result::Result::ok))
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .filter_map(|name| parse_cuda_major_from_runtime_library_entry(&name))
+        .max()
+}
+
+#[cfg(target_os = "linux")]
+fn detect_cuda_major_from_library_dir_groups(groups: &[Vec<PathBuf>]) -> Option<u32> {
+    groups
+        .iter()
+        .find_map(|dirs| detect_cuda_major_from_library_dirs(dirs.iter()))
+}
+
+#[cfg(target_os = "linux")]
+fn push_unique_library_dir(dirs: &mut Vec<PathBuf>, dir: PathBuf) {
+    if !dirs.iter().any(|existing| existing == &dir) {
+        dirs.push(dir);
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn cuda_library_dirs_from_cuda_path() -> Vec<PathBuf> {
+    let mut dirs = Vec::new();
+    if let Ok(cuda_path) = std::env::var("CUDA_PATH") {
+        let base = PathBuf::from(cuda_path);
+        push_unique_library_dir(&mut dirs, base.join("lib64"));
+        push_unique_library_dir(&mut dirs, base.join("targets/x86_64-linux/lib"));
+    }
+    dirs
+}
+
+#[cfg(target_os = "linux")]
+fn cuda_library_dirs_from_ld_library_path() -> Vec<PathBuf> {
+    let mut dirs = Vec::new();
+    if let Some(paths) = std::env::var_os("LD_LIBRARY_PATH") {
+        for path in std::env::split_paths(&paths) {
+            push_unique_library_dir(&mut dirs, path);
+        }
+    }
+    dirs
+}
+
+#[cfg(target_os = "linux")]
+fn default_cuda_library_dirs() -> Vec<PathBuf> {
+    vec![
+        PathBuf::from("/opt/cuda/lib64"),
+        PathBuf::from("/opt/cuda/targets/x86_64-linux/lib"),
+        PathBuf::from("/usr/local/cuda/lib64"),
+        PathBuf::from("/usr/local/cuda/targets/x86_64-linux/lib"),
+        PathBuf::from("/usr/lib64"),
+        PathBuf::from("/usr/lib"),
+        PathBuf::from("/usr/lib/x86_64-linux-gnu"),
+    ]
+}
+
 fn detect_cuda_major_from_cuda_path() -> Option<u32> {
     std::env::var("CUDA_PATH")
         .ok()
@@ -532,23 +642,125 @@ fn detect_cuda_major_from_nvidia_smi() -> Option<u32> {
         .and_then(parse_cuda_major_version)
 }
 
+#[cfg(target_os = "linux")]
+fn detect_cuda_major_from_runtime_libraries() -> Option<u32> {
+    let search_groups = [
+        cuda_library_dirs_from_cuda_path(),
+        cuda_library_dirs_from_ld_library_path(),
+    ];
+    detect_cuda_major_from_library_dir_groups(&search_groups)
+        .or_else(detect_cuda_major_from_ldconfig)
+        .or_else(|| detect_cuda_major_from_library_dirs(default_cuda_library_dirs()))
+}
+
+#[cfg(not(target_os = "linux"))]
+fn detect_cuda_major_from_runtime_libraries() -> Option<u32> {
+    None
+}
+
+#[cfg(target_os = "linux")]
+fn detect_cuda_major_from_ldconfig() -> Option<u32> {
+    if !command_exists("ldconfig", &["-p"]) {
+        return None;
+    }
+    let output = std::process::Command::new("ldconfig")
+        .arg("-p")
+        .output()
+        .ok()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    detect_cuda_major_from_ldconfig_entries(stdout.lines())
+}
+
+#[cfg(target_os = "linux")]
+fn detect_cuda_major_from_ldconfig_entries<T>(entries: impl IntoIterator<Item = T>) -> Option<u32>
+where
+    T: AsRef<str>,
+{
+    entries
+        .into_iter()
+        .filter_map(|entry| {
+            let entry = entry.as_ref();
+            ldconfig_entry_matches_host_arch(entry)
+                .then(|| parse_cuda_major_from_runtime_library_entry(entry))
+                .flatten()
+        })
+        .max()
+}
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+fn ldconfig_entry_matches_host_arch(value: &str) -> bool {
+    let value = value.to_ascii_lowercase();
+    if [
+        "x86-64",
+        "x86_64",
+        "/lib64/",
+        "/usr/lib64/",
+        "/x86_64-linux-gnu/",
+        "/targets/x86_64-linux/",
+    ]
+    .iter()
+    .any(|marker| value.contains(marker))
+    {
+        return true;
+    }
+
+    ![
+        "aarch64",
+        "arm64",
+        "armhf",
+        "armv7",
+        "armv8",
+        "i386",
+        "i486",
+        "i586",
+        "i686",
+        "ppc64",
+        "s390x",
+        "riscv",
+        "/lib32/",
+        "/usr/lib32/",
+        "/aarch64-linux-gnu/",
+        "/arm-linux-gnueabihf/",
+        "/i386-linux-gnu/",
+        "/i686-linux-gnu/",
+        "/ppc64le-linux-gnu/",
+        "/s390x-linux-gnu/",
+        "/riscv64-linux-gnu/",
+    ]
+    .iter()
+    .any(|marker| value.contains(marker))
+}
+
+#[cfg(all(target_os = "linux", not(target_arch = "x86_64")))]
+fn ldconfig_entry_matches_host_arch(_: &str) -> bool {
+    true
+}
+
 /// Detect the CUDA toolkit major version. Prefer the installed toolkit over
 /// the driver's maximum supported version so Vera picks the matching ORT build.
 fn detect_cuda_major_version() -> Option<u32> {
     detect_cuda_major_from_cuda_path()
         .or_else(detect_cuda_major_from_nvcc)
+        .or_else(detect_cuda_major_from_runtime_libraries)
         .or_else(detect_cuda_major_from_nvidia_smi)
 }
 
+fn detected_cuda_major_for_ep(ep: OnnxExecutionProvider) -> Option<u32> {
+    matches!(ep, OnnxExecutionProvider::Cuda)
+        .then(detect_cuda_major_version)
+        .flatten()
+}
+
 /// Platform-specific ORT archive info: (archive_ext, archive_name, primary_lib_path_inside_archive, local_lib_name, version).
-fn ort_platform_info(
+fn ort_platform_info_with_cuda_major(
     ep: OnnxExecutionProvider,
+    detected_cuda_major: Option<u32>,
 ) -> Result<(&'static str, String, String, &'static str, &'static str)> {
     let gpu_suffix = match ep {
         OnnxExecutionProvider::Cpu => "",
         OnnxExecutionProvider::Cuda => {
-            let cuda_major = detect_cuda_major_version().unwrap_or(12);
-            if cuda_major >= 13 {
+            let cuda_major = effective_cuda_major(detected_cuda_major);
+            if uses_cuda13_ort(detected_cuda_major) {
                 tracing::info!("detected CUDA {cuda_major}, using CUDA 13 ORT build");
                 "-gpu_cuda13"
             } else {
@@ -584,15 +796,13 @@ fn ort_platform_info(
         }
         // The CUDA 13 archive is named with `_cuda13` in the filename, but the
         // internal directory inside the tgz always uses plain `-gpu` (no `_cuda13`).
-        let archive_gpu_suffix = if matches!(ep, OnnxExecutionProvider::Cuda)
-            && detect_cuda_major_version().unwrap_or(12) >= 13
-        {
-            "-gpu_cuda13"
+        let archive_name = format!("onnxruntime-linux-x64{gpu_suffix}-{ORT_VERSION}");
+        let internal_gpu_suffix = if matches!(ep, OnnxExecutionProvider::Cuda) {
+            "-gpu"
         } else {
             gpu_suffix
         };
-        let archive_name = format!("onnxruntime-linux-x64{archive_gpu_suffix}-{ORT_VERSION}");
-        let internal_base = format!("onnxruntime-linux-x64{gpu_suffix}-{ORT_VERSION}");
+        let internal_base = format!("onnxruntime-linux-x64{internal_gpu_suffix}-{ORT_VERSION}");
         Ok((
             "tgz",
             archive_name,
@@ -657,16 +867,14 @@ fn ort_platform_info(
         }
         // The CUDA 13 archive is named with `_cuda13` in the filename, but the
         // internal directory inside the zip always uses plain `-gpu` (no `_cuda13`).
-        let archive_gpu_suffix = if matches!(ep, OnnxExecutionProvider::Cuda)
-            && detect_cuda_major_version().unwrap_or(12) >= 13
-        {
-            "-gpu_cuda13"
+        let archive_name = format!("onnxruntime-win-x64{gpu_suffix}-{ORT_VERSION}");
+        // Internal paths inside the zip always use the plain gpu suffix (no _cuda13).
+        let internal_gpu_suffix = if matches!(ep, OnnxExecutionProvider::Cuda) {
+            "-gpu"
         } else {
             gpu_suffix
         };
-        let archive_name = format!("onnxruntime-win-x64{archive_gpu_suffix}-{ORT_VERSION}");
-        // Internal paths inside the zip always use the plain gpu suffix (no _cuda13).
-        let internal_base = format!("onnxruntime-win-x64{gpu_suffix}-{ORT_VERSION}");
+        let internal_base = format!("onnxruntime-win-x64{internal_gpu_suffix}-{ORT_VERSION}");
         let entry = format!("{internal_base}/lib/onnxruntime.dll");
         Ok(("zip", archive_name, entry, "onnxruntime.dll", ORT_VERSION))
     }
@@ -945,7 +1153,25 @@ async fn copy_so_files_from_dir(
 /// 2. Direct wheel download from PyPI
 /// 3. Bail with manual instructions
 pub async fn ensure_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<PathBuf> {
-    let target_path = ort_library_path_for_ep(ep)?;
+    if let Ok(path) = std::env::var("ORT_DYLIB_PATH") {
+        if !path.is_empty() {
+            return ensure_ort_library_for_ep_with_cuda_major(ep, None).await;
+        }
+    }
+
+    let detected_cuda_major = match ep {
+        OnnxExecutionProvider::Cuda => detected_cuda_major_for_ep(ep),
+        _ => None,
+    };
+
+    ensure_ort_library_for_ep_with_cuda_major(ep, detected_cuda_major).await
+}
+
+async fn ensure_ort_library_for_ep_with_cuda_major(
+    ep: OnnxExecutionProvider,
+    detected_cuda_major: Option<u32>,
+) -> Result<PathBuf> {
+    let target_path = ort_library_path_for_ep_with_cuda_major(ep, detected_cuda_major)?;
     if let Ok(path) = std::env::var("ORT_DYLIB_PATH") {
         if !path.is_empty() {
             return Ok(target_path);
@@ -977,7 +1203,7 @@ pub async fn ensure_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<Path
 
     // Standard path: download from GitHub releases
     let (ext, archive_name, lib_path_in_archive, local_lib_name, ort_version) =
-        ort_platform_info(ep)?;
+        ort_platform_info_with_cuda_major(ep, detected_cuda_major)?;
     let is_gpu = ep != OnnxExecutionProvider::Cpu;
 
     let archive_filename = if ext == "tgz" {
@@ -1050,7 +1276,8 @@ pub async fn refresh_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<Pat
         }
     }
 
-    let target_path = ort_library_path_for_ep(ep)?;
+    let detected_cuda_major = detected_cuda_major_for_ep(ep);
+    let target_path = preferred_ort_library_path_for_ep_with_cuda_major(ep, detected_cuda_major)?;
     if ep == OnnxExecutionProvider::Cpu {
         if target_path.exists() {
             fs::remove_file(&target_path).await.with_context(|| {
@@ -1071,7 +1298,7 @@ pub async fn refresh_ort_library_for_ep(ep: OnnxExecutionProvider) -> Result<Pat
         }
     }
 
-    ensure_ort_library_for_ep(ep).await
+    ensure_ort_library_for_ep_with_cuda_major(ep, detected_cuda_major).await
 }
 
 /// Download ONNX Runtime DirectML from NuGet.
@@ -1204,14 +1431,84 @@ pub fn ort_library_path_for_ep(ep: OnnxExecutionProvider) -> Result<PathBuf> {
         }
     }
 
-    let vera_home = vera_home_dir()?;
-    let lib_dir = if ep == OnnxExecutionProvider::Cpu {
-        vera_home.join("lib")
-    } else {
-        vera_home.join("lib").join(ep.to_string())
+    let detected_cuda_major = match ep {
+        OnnxExecutionProvider::Cuda => detected_cuda_major_for_ep(ep),
+        _ => None,
     };
 
-    Ok(lib_dir.join(platform_ort_lib_name()))
+    ort_library_path_for_ep_with_cuda_major(ep, detected_cuda_major)
+}
+
+fn preferred_ort_library_path_for_ep_in_home(
+    vera_home: &Path,
+    ep: OnnxExecutionProvider,
+    detected_cuda_major: Option<u32>,
+) -> PathBuf {
+    let lib_dir = match ep {
+        OnnxExecutionProvider::Cpu => vera_home.join("lib"),
+        OnnxExecutionProvider::Cuda => vera_home
+            .join("lib")
+            .join(cuda_ort_cache_dir_name(detected_cuda_major)),
+        _ => vera_home.join("lib").join(ep.to_string()),
+    };
+
+    lib_dir.join(platform_ort_lib_name())
+}
+
+fn cached_ort_library_path_for_ep_in_home(
+    vera_home: &Path,
+    ep: OnnxExecutionProvider,
+    detected_cuda_major: Option<u32>,
+) -> PathBuf {
+    let preferred_path =
+        preferred_ort_library_path_for_ep_in_home(vera_home, ep, detected_cuda_major);
+    if matches!(ep, OnnxExecutionProvider::Cuda)
+        && detected_cuda_major.is_none()
+        && !preferred_path.exists()
+    {
+        let cuda13_path =
+            preferred_ort_library_path_for_ep_in_home(vera_home, ep, Some(CUDA_13_ORT_MIN_MAJOR));
+        if cuda13_path.exists() {
+            return cuda13_path;
+        }
+    }
+    preferred_path
+}
+
+fn preferred_ort_library_path_for_ep_with_cuda_major(
+    ep: OnnxExecutionProvider,
+    detected_cuda_major: Option<u32>,
+) -> Result<PathBuf> {
+    if let Ok(path) = std::env::var("ORT_DYLIB_PATH") {
+        if !path.is_empty() {
+            return Ok(PathBuf::from(path));
+        }
+    }
+
+    let vera_home = vera_home_dir()?;
+    Ok(preferred_ort_library_path_for_ep_in_home(
+        &vera_home,
+        ep,
+        detected_cuda_major,
+    ))
+}
+
+fn ort_library_path_for_ep_with_cuda_major(
+    ep: OnnxExecutionProvider,
+    detected_cuda_major: Option<u32>,
+) -> Result<PathBuf> {
+    if let Ok(path) = std::env::var("ORT_DYLIB_PATH") {
+        if !path.is_empty() {
+            return Ok(PathBuf::from(path));
+        }
+    }
+
+    let vera_home = vera_home_dir()?;
+    Ok(cached_ort_library_path_for_ep_in_home(
+        &vera_home,
+        ep,
+        detected_cuda_major,
+    ))
 }
 
 pub fn ensure_provider_dependencies(
@@ -2177,8 +2474,100 @@ mod tests {
             parse_cuda_major_version(r#"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2"#),
             Some(13)
         );
+        assert_eq!(parse_cuda_major_version("/opt/cuda-13.2"), Some(13));
         assert_eq!(parse_cuda_major_version("12.9"), Some(12));
         assert_eq!(parse_cuda_major_version("12_6"), Some(12));
+    }
+
+    #[test]
+    fn parse_cuda_major_from_runtime_library_entry_handles_ldconfig_output() {
+        assert_eq!(
+            parse_cuda_major_from_runtime_library_entry(
+                "libcudart.so.13 (libc6,x86-64) => /opt/cuda/lib64/libcudart.so.13"
+            ),
+            Some(13)
+        );
+        assert_eq!(
+            parse_cuda_major_from_runtime_library_entry("/opt/cuda/lib64/libcublasLt.so.13"),
+            Some(13)
+        );
+        assert_eq!(
+            parse_cuda_major_from_runtime_library_entry("libcufft.so.12"),
+            None
+        );
+    }
+
+    #[test]
+    fn detect_cuda_major_from_library_entries_prefers_supported_runtime_libs() {
+        let entries = [
+            "libcufft.so.12 (libc6,x86-64) => /opt/cuda/lib64/libcufft.so.12",
+            "libcublas.so.13 (libc6,x86-64) => /opt/cuda/lib64/libcublas.so.13",
+            "libcublasLt.so.13 (libc6,x86-64) => /opt/cuda/lib64/libcublasLt.so.13",
+            "libcudart.so.13 (libc6,x86-64) => /opt/cuda/lib64/libcudart.so.13",
+        ];
+        assert_eq!(detect_cuda_major_from_library_entries(entries), Some(13));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn detect_cuda_major_from_library_dir_groups_respects_group_order() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let cuda12_dir = temp_dir.path().join("cuda12");
+        let cuda13_dir = temp_dir.path().join("cuda13");
+        std::fs::create_dir_all(&cuda12_dir).unwrap();
+        std::fs::create_dir_all(&cuda13_dir).unwrap();
+        std::fs::write(cuda12_dir.join("libcudart.so.12"), b"").unwrap();
+        std::fs::write(cuda13_dir.join("libcudart.so.13"), b"").unwrap();
+
+        let groups = vec![vec![cuda12_dir], vec![cuda13_dir]];
+        assert_eq!(detect_cuda_major_from_library_dir_groups(&groups), Some(12));
+    }
+
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    #[test]
+    fn detect_cuda_major_from_ldconfig_entries_filters_non_native_arch_entries() {
+        let entries = [
+            "libcudart.so.13 (libc6,AArch64) => /usr/lib/aarch64-linux-gnu/libcudart.so.13",
+            "libcudart.so.12 (libc6,x86-64) => /usr/lib/x86_64-linux-gnu/libcudart.so.12",
+        ];
+        assert_eq!(detect_cuda_major_from_ldconfig_entries(entries), Some(12));
+    }
+
+    #[test]
+    fn cuda_ort_cache_dir_name_separates_cuda13_runtime() {
+        assert_eq!(cuda_ort_cache_dir_name(None), "cuda");
+        assert_eq!(cuda_ort_cache_dir_name(Some(12)), "cuda");
+        assert_eq!(cuda_ort_cache_dir_name(Some(13)), "cuda13");
+        assert_eq!(cuda_ort_cache_dir_name(Some(14)), "cuda13");
+    }
+
+    #[test]
+    fn cached_ort_library_path_reuses_cuda13_cache_when_detection_is_unknown() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let expected_path = temp_dir
+            .path()
+            .join("lib")
+            .join("cuda13")
+            .join(platform_ort_lib_name());
+        std::fs::create_dir_all(expected_path.parent().unwrap()).unwrap();
+        std::fs::write(&expected_path, b"").unwrap();
+
+        let resolved = cached_ort_library_path_for_ep_in_home(
+            temp_dir.path(),
+            OnnxExecutionProvider::Cuda,
+            None,
+        );
+        assert_eq!(resolved, expected_path);
+    }
+
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    #[test]
+    fn ort_platform_info_uses_cuda13_archive_and_plain_internal_gpu_dir() {
+        let (_, archive_name, internal_path, _, _) =
+            ort_platform_info_with_cuda_major(OnnxExecutionProvider::Cuda, Some(13)).unwrap();
+        assert!(archive_name.contains("-gpu_cuda13-"));
+        assert!(internal_path.contains("onnxruntime-linux-x64-gpu-"));
+        assert!(!internal_path.contains("_cuda13"));
     }
 
     #[test]
