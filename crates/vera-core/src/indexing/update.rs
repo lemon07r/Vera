@@ -305,8 +305,13 @@ pub async fn update_repository<P: EmbeddingProvider>(
                 match parsing::parse_and_chunk(src, rel_path, language, &config.indexing) {
                     Ok(chunks) => (chunks, refs),
                     Err(err) => {
-                        warn!(file = %rel_path, error = %err, "parse error during update");
-                        continue;
+                        warn!(
+                            file = %rel_path,
+                            error = %err,
+                            refs = refs.len(),
+                            "failed to chunk rst during update; keeping extracted references"
+                        );
+                        (Vec::new(), refs)
                     }
                 }
             } else {

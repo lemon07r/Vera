@@ -813,7 +813,7 @@ fn name_from_node(node: &tree_sitter::Node<'_>, source: &[u8]) -> Option<String>
 pub fn extract_symbols(tree: &tree_sitter::Tree, source: &[u8], lang: Language) -> Vec<RawSymbol> {
     let mut symbols = Vec::new();
     let mut cursor = tree.root_node().walk();
-    collect_symbols_cursor(&mut cursor, source, lang, &mut symbols, 0);
+    collect_symbols_cursor(&mut cursor, source, lang, &mut symbols, 1);
     symbols.sort_by_key(|s| s.start_byte);
     symbols
 }
