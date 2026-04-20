@@ -173,14 +173,14 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 
 ## MCP Server
 
-`vera mcp` exposes all capabilities over JSON-RPC (stdio), compatible with any MCP client:
+`vera mcp` exposes a small set of high-value tools over JSON-RPC (stdio), compatible with any MCP client:
 
 | Tool | What it does |
 |------|-------------|
 | `search_code` | Hybrid search with multi-query, intent, and all filters. Auto-indexes and starts watcher on first use. |
 | `get_stats` | File count, chunk count, index size, language breakdown |
 | `get_overview` | Architecture overview with conventions detection |
-| `regex_search` | Regex search with context lines |
+| `regex_search` | Regex search with context lines and scope controls |
 
 Tool descriptions include explicit WHEN TO USE / WHEN NOT TO USE guidance so AI agents route queries to the right tool automatically.
 

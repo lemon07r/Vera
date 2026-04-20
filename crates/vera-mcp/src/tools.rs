@@ -290,6 +290,24 @@ fn search_code_filters(
     }
 }
 
+fn regex_search_filters(
+    args: &Value,
+    scope: Option<vera_core::types::SearchScope>,
+) -> vera_core::types::SearchFilters {
+    // Keep regex_search intentionally small over MCP. search_code already
+    // exposes richer corpus filters, so regex_search sticks to the
+    // highest-value regex controls.
+    vera_core::types::SearchFilters {
+        scope,
+        include_generated: Some(
+            args.get("include_generated")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false),
+        ),
+        ..Default::default()
+    }
+}
+
 /// Handle the `search_code` tool.
 fn handle_search_code(args: &Value) -> ToolCallResult {
     // Collect queries: support both single `query` and multi `queries`.
@@ -528,15 +546,7 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
         );
     }
 
-    let filters = vera_core::types::SearchFilters {
-        scope,
-        include_generated: Some(
-            args.get("include_generated")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false),
-        ),
-        ..Default::default()
-    };
+    let filters = regex_search_filters(args, scope);
 
     match vera_core::retrieval::search_regex(
         &index_dir,
@@ -631,6 +641,23 @@ mod tests {
         assert_eq!(filters.symbol_type.as_deref(), Some("function"));
         assert_eq!(filters.scope, Some(vera_core::types::SearchScope::Source));
         assert_eq!(filters.include_generated, Some(true));
+    }
+
+    #[test]
+    fn regex_search_schema_stays_minimal() {
+        let tools = tool_definitions();
+        let regex_search = tools
+            .iter()
+            .find(|tool| tool.name == "regex_search")
+            .unwrap();
+        let properties = regex_search.input_schema["properties"].as_object().unwrap();
+
+        assert!(properties.contains_key("pattern"));
+        assert!(properties.contains_key("scope"));
+        assert!(properties.contains_key("include_generated"));
+        assert!(!properties.contains_key("lang"));
+        assert!(!properties.contains_key("path"));
+        assert!(!properties.contains_key("symbol_type"));
     }
 
     #[test]

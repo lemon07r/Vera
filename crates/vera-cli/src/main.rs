@@ -47,6 +47,19 @@ struct Cli {
     /// diagnostic commands emit structured JSON summaries.
     #[arg(long, global = true)]
     json: bool,
+
+    /// Output all fields with pretty-printed verbose formatting.
+    ///
+    /// Search-style commands honor this flag whether it appears before or
+    /// after the subcommand.
+    #[arg(long, global = true)]
+    raw: bool,
+
+    /// Print timing information to stderr when supported.
+    ///
+    /// Search prints per-stage timings; grep prints total elapsed time.
+    #[arg(long, global = true)]
+    timing: bool,
 }
 
 #[derive(Subcommand)]
@@ -386,14 +399,6 @@ enum Commands {
         #[arg(long)]
         compact: bool,
 
-        /// Output all fields with pretty-printed verbose formatting.
-        #[arg(long)]
-        raw: bool,
-
-        /// Print per-stage search timings to stderr.
-        #[arg(long)]
-        timing: bool,
-
         #[command(flatten)]
         backend: helpers::LocalBackendFlags,
     },
@@ -529,14 +534,6 @@ enum Commands {
         /// Show only function/class signatures (omit bodies).
         #[arg(long)]
         compact: bool,
-
-        /// Output all fields with pretty-printed verbose formatting.
-        #[arg(long)]
-        raw: bool,
-
-        /// Print total regex-search time to stderr.
-        #[arg(long)]
-        timing: bool,
     },
 
     /// Find symbols with no callers (potential dead code).
@@ -756,8 +753,6 @@ fn main() {
             include_generated,
             deep,
             compact,
-            raw,
-            timing,
             backend,
         } => {
             tracing::info!(queries = ?queries, deep, "searching");
@@ -774,8 +769,8 @@ fn main() {
                 limit,
                 &filters,
                 cli.json,
-                raw,
-                timing,
+                cli.raw,
+                cli.timing,
                 deep,
                 compact,
                 backend.resolve(),
@@ -817,8 +812,6 @@ fn main() {
             scope,
             include_generated,
             compact,
-            raw,
-            timing,
         } => {
             tracing::info!(pattern = %pattern, "grep");
             let filters = vera_core::types::SearchFilters {
@@ -835,8 +828,8 @@ fn main() {
                 context,
                 &filters,
                 cli.json,
-                raw,
-                timing,
+                cli.raw,
+                cli.timing,
                 compact,
             )
         }
@@ -1123,19 +1116,29 @@ mod tests {
     #[test]
     fn cli_parses_search_timing_flag() {
         let cli = Cli::parse_from(["vera", "search", "find auth", "--timing"]);
-        match cli.command {
-            Commands::Search { timing, .. } => assert!(timing),
-            _ => panic!("expected Search command"),
-        }
+        assert!(matches!(cli.command, Commands::Search { .. }));
+        assert!(cli.timing);
     }
 
     #[test]
     fn cli_parses_search_raw_flag() {
         let cli = Cli::parse_from(["vera", "search", "find auth", "--raw"]);
-        match cli.command {
-            Commands::Search { raw, .. } => assert!(raw),
-            _ => panic!("expected Search command"),
-        }
+        assert!(matches!(cli.command, Commands::Search { .. }));
+        assert!(cli.raw);
+    }
+
+    #[test]
+    fn cli_parses_global_search_timing_flag_before_subcommand() {
+        let cli = Cli::parse_from(["vera", "--timing", "search", "find auth"]);
+        assert!(matches!(cli.command, Commands::Search { .. }));
+        assert!(cli.timing);
+    }
+
+    #[test]
+    fn cli_parses_global_search_raw_flag_before_subcommand() {
+        let cli = Cli::parse_from(["vera", "--raw", "search", "find auth"]);
+        assert!(matches!(cli.command, Commands::Search { .. }));
+        assert!(cli.raw);
     }
 
     #[test]
@@ -1245,19 +1248,29 @@ mod tests {
     #[test]
     fn cli_parses_grep_timing_flag() {
         let cli = Cli::parse_from(["vera", "grep", "TODO", "--timing"]);
-        match cli.command {
-            Commands::Grep { timing, .. } => assert!(timing),
-            _ => panic!("expected Grep command"),
-        }
+        assert!(matches!(cli.command, Commands::Grep { .. }));
+        assert!(cli.timing);
     }
 
     #[test]
     fn cli_parses_grep_raw_flag() {
         let cli = Cli::parse_from(["vera", "grep", "TODO", "--raw"]);
-        match cli.command {
-            Commands::Grep { raw, .. } => assert!(raw),
-            _ => panic!("expected Grep command"),
-        }
+        assert!(matches!(cli.command, Commands::Grep { .. }));
+        assert!(cli.raw);
+    }
+
+    #[test]
+    fn cli_parses_global_grep_timing_flag_before_subcommand() {
+        let cli = Cli::parse_from(["vera", "--timing", "grep", "TODO"]);
+        assert!(matches!(cli.command, Commands::Grep { .. }));
+        assert!(cli.timing);
+    }
+
+    #[test]
+    fn cli_parses_global_grep_raw_flag_before_subcommand() {
+        let cli = Cli::parse_from(["vera", "--raw", "grep", "TODO"]);
+        assert!(matches!(cli.command, Commands::Grep { .. }));
+        assert!(cli.raw);
     }
 
     #[test]

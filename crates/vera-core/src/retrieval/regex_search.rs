@@ -14,7 +14,7 @@ use crate::corpus::{ContentClass, classify_content, classify_path};
 use crate::retrieval::query_utils::path_depth;
 use crate::retrieval::ranking::{RankingStage, apply_query_ranking_with_filters};
 use crate::storage::metadata::MetadataStore;
-use crate::types::{Chunk, Language, SearchFilters, SearchResult};
+use crate::types::{Chunk, Language, SearchFilters, SearchResult, SymbolType};
 
 /// Search indexed files for a regex pattern.
 ///
@@ -138,7 +138,7 @@ pub fn search_regex(
                 language,
             };
 
-            if !filters.matches(&result) {
+            if !regex_result_matches(filters, symbol_type) {
                 continue;
             }
 
@@ -146,9 +146,10 @@ pub fn search_regex(
         }
     }
 
-    let results =
+    let mut results =
         apply_query_ranking_with_filters(pattern, results, RankingStage::Initial, filters);
-    Ok(crate::retrieval::apply_filters(results, filters, limit))
+    results.truncate(limit);
+    Ok(results)
 }
 
 fn collect_minified_matches(
@@ -179,12 +180,16 @@ fn collect_minified_matches(
             language,
         };
 
-        if !filters.matches(&result) {
+        if !regex_result_matches(filters, symbol_type) {
             continue;
         }
 
         results.push(result);
     }
+}
+
+fn regex_result_matches(filters: &SearchFilters, symbol_type: Option<SymbolType>) -> bool {
+    filters.matches_symbol_type(symbol_type)
 }
 
 fn symbol_for_line(
@@ -416,6 +421,49 @@ mod tests {
 
         assert_eq!(results.len(), 1);
         assert!(results[0].content.len() < content.len());
+        assert!(results[0].content.contains("targetSymbol"));
+    }
+
+    #[test]
+    fn content_class_generated_files_survive_runtime_scope_filtering() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo_root = tmp.path();
+        let index_dir = repo_root.join(".vera");
+        std::fs::create_dir_all(&index_dir).unwrap();
+
+        let content = format!("const targetSymbol=1;{}", "a=1;".repeat(400));
+        std::fs::write(repo_root.join("app.min.js"), &content).unwrap();
+
+        let store = MetadataStore::open(&index_dir.join("metadata.db")).unwrap();
+        store
+            .insert_chunks(&[Chunk {
+                id: "app:0".to_string(),
+                file_path: "app.min.js".to_string(),
+                line_start: 1,
+                line_end: 1,
+                content: content.clone(),
+                language: Language::JavaScript,
+                symbol_type: None,
+                symbol_name: None,
+            }])
+            .unwrap();
+
+        let results = search_regex(
+            &index_dir,
+            "targetSymbol",
+            5,
+            false,
+            0,
+            &SearchFilters {
+                scope: Some(crate::types::SearchScope::Runtime),
+                include_generated: Some(true),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].file_path, "app.min.js");
         assert!(results[0].content.contains("targetSymbol"));
     }
 
