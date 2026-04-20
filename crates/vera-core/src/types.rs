@@ -70,32 +70,43 @@ impl SearchFilters {
             && self.include_generated.is_none()
     }
 
+    /// Check whether a file-level candidate matches active language/path filters.
+    pub fn matches_file(&self, file_path: &str, language: Language) -> bool {
+        if let Some(ref lang) = self.language {
+            if !language.to_string().eq_ignore_ascii_case(lang) {
+                return false;
+            }
+        }
+
+        if let Some(ref pattern) = self.path_glob {
+            if !glob_matches(pattern, file_path) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Check whether a symbol matches the active symbol-type filter.
+    pub fn matches_symbol_type(&self, symbol_type: Option<SymbolType>) -> bool {
+        if let Some(ref requested) = self.symbol_type {
+            match symbol_type {
+                Some(symbol_type) => symbol_type.to_string().eq_ignore_ascii_case(requested),
+                None => false,
+            }
+        } else {
+            true
+        }
+    }
+
     /// Check whether a search result matches all active filters.
     pub fn matches(&self, result: &SearchResult) -> bool {
-        // Language filter (case-insensitive).
-        if let Some(ref lang) = self.language {
-            if !result.language.to_string().eq_ignore_ascii_case(lang) {
-                return false;
-            }
+        if !self.matches_file(&result.file_path, result.language) {
+            return false;
         }
 
-        // Path glob filter.
-        if let Some(ref pattern) = self.path_glob {
-            if !glob_matches(pattern, &result.file_path) {
-                return false;
-            }
-        }
-
-        // Symbol type filter (case-insensitive).
-        if let Some(ref stype) = self.symbol_type {
-            match &result.symbol_type {
-                Some(st) => {
-                    if !st.to_string().eq_ignore_ascii_case(stype) {
-                        return false;
-                    }
-                }
-                None => return false,
-            }
+        if !self.matches_symbol_type(result.symbol_type) {
+            return false;
         }
 
         let mut class = None;

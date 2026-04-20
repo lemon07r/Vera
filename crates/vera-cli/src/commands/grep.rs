@@ -40,7 +40,6 @@ pub fn run(
         context_lines,
         filters,
     )?;
-    let elapsed = started_at.elapsed();
 
     let config = load_runtime_config()?;
     output_results(
@@ -52,6 +51,7 @@ pub fn run(
     );
 
     if timing {
+        let elapsed = started_at.elapsed();
         let stderr = std::io::stderr();
         let mut err = stderr.lock();
         let _ = writeln!(err, "[timing] total: {}ms", elapsed.as_millis());
