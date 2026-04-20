@@ -9,6 +9,8 @@ vera search "parse_config"
 vera search "request rate limiting" --lang rust
 vera search "routes" --path "src/**/*.ts"
 vera search "handler" --type function --limit 5
+vera search "token validation" --changed
+vera search "config loading" --base origin/main
 ```
 
 ## Weak Vera Queries
@@ -74,6 +76,22 @@ vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"
 
 Use this when one phrasing is too narrow but the task is still one coherent search.
 
+## Git-Scoped Search
+
+When the task is limited to modified files or a PR diff, scope the search first:
+
+```sh
+vera search "auth middleware" --changed
+vera grep "TODO|FIXME" --changed
+vera overview --base origin/main
+```
+
+Use:
+
+- `--changed` for modified, staged, and untracked files
+- `--since <rev>` for changes since a specific revision
+- `--base <rev>` for changes since `merge-base(HEAD, <rev>)`
+
 ## Intent-Based Reranking
 
 Add `--intent` when the raw query is short but you know the higher-level goal:
@@ -83,3 +101,14 @@ vera search "config" --intent "find where database connection strings are loaded
 ```
 
 Use this when the raw query is too short or ambiguous to capture what you actually need.
+
+## Structural Search
+
+Use `vera ast-query` when you know the AST shape you need and regex would be too blunt:
+
+```sh
+vera ast-query '(function_item name: (identifier) @fn)' --lang rust
+vera ast-query '(function_definition name: (identifier) @fn)' --lang python --path "src/**"
+```
+
+This is expert-oriented raw tree-sitter syntax, not a Semgrep-style rule DSL.

@@ -20,16 +20,20 @@ vera-ai index .
 vera-ai search "authentication logic"
 ```
 
-`vera-ai setup` only configures the backend. Run `vera-ai agent install` to set up skill files for your agents. The interactive flow can also update `AGENTS.md` / `CLAUDE.md` style project instructions for you.
+`vera-ai setup` with no flags runs an interactive wizard. `vera-ai agent install` manages skill files for your coding agents and can update `AGENTS.md` / `CLAUDE.md` style project instructions.
 
 ## Common Tasks
 
 | Task | Command |
 |------|---------|
-| Use API mode (recommended) | `vera-ai setup --api` |
 | Use the interactive setup wizard | `vera-ai setup` |
+| Use API mode (recommended) | `vera-ai setup --api` |
 | Use a local NVIDIA backend | `vera-ai setup --onnx-jina-cuda` |
 | Search semantically | `vera-ai search "authentication middleware"` |
+| Search only changed files | `vera-ai search "authentication middleware" --changed` |
+| Explain why a file is missing | `vera-ai explain-path path/to/file` |
+| Structural AST search | `vera-ai ast-query '(function_item name: (identifier) @fn)' --lang rust` |
+| Inspect index health | `vera-ai stats --json` |
 | Keep the index up to date | `vera-ai update .` |
 | Watch for file changes | `vera-ai watch .` |
 | Diagnose setup issues | `vera-ai doctor` |
@@ -45,6 +49,7 @@ For the full backend matrix, model options, Docker setup, and troubleshooting, s
 - **61+ languages** via tree-sitter AST parsing
 - **Hybrid search**: BM25 keyword + vector similarity, fused with Reciprocal Rank Fusion
 - **Cross-encoder reranking** for precision
-- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` and `--timing` work with `vera search` and `vera grep`, before or after the subcommand)
+- **Git-aware scopes and index debugging**: `--changed` / `--since` / `--base`, `explain-path`, and index health in `vera-ai stats`
+- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` and `--timing` work with `vera-ai search` and `vera-ai grep`, before or after the subcommand)
 
 For full documentation, including custom local ONNX embedding models and manual install steps, see the [GitHub repo](https://github.com/lemon07r/Vera).

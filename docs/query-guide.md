@@ -44,6 +44,22 @@ vera search "error handling" --lang rust --type function --limit 5
 vera search "mod loader" --scope runtime --include-generated
 ```
 
+## Git-Scoped Search
+
+When the task is limited to your working tree or a PR diff, scope the search before broadening the query:
+
+```bash
+vera search "token validation" --changed
+vera grep "TODO|FIXME" --changed
+vera overview --base origin/main
+```
+
+Use:
+
+- `--changed` for modified, staged, and untracked files
+- `--since <rev>` for changes since a specific revision
+- `--base <rev>` for changes since `merge-base(HEAD, <rev>)`
+
 ## Multi-Query Search
 
 If one phrasing is too narrow, pass 2-3 varied queries in one call:
@@ -95,6 +111,27 @@ Use `rg` when you need:
 - Find-and-replace prep
 - File name search
 - Files outside the Vera index
+
+## Structural Search
+
+Use `vera ast-query` when you know the AST shape you need and regex would be too blunt:
+
+```bash
+vera ast-query '(function_item name: (identifier) @fn)' --lang rust
+vera ast-query '(function_definition name: (identifier) @fn)' --lang python --path "src/**"
+```
+
+This is raw tree-sitter query syntax, not a Semgrep-style rule DSL.
+
+## Missing Files Or Surprising Exclusions
+
+If a file is missing from search results and you need the exact reason, ask Vera directly:
+
+```bash
+vera explain-path path/to/file
+```
+
+Use `vera stats --json` when you want the repo-wide health view for parse failures, tree-sitter errors, and Tier 0 fallback.
 
 ## Output Format
 

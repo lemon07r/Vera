@@ -30,10 +30,11 @@ vera mcp
 
 The server exposes:
 
-- `search_code` (supports `queries` array for multi-query search, `intent` for reranking; auto-indexes and starts watcher on first use)
+- `search_code` (supports `queries` array for multi-query search, `intent` for reranking, and `changed` / `since` / `base` git scopes; auto-indexes and starts watcher on first use)
 - `get_stats`
-- `get_overview` (includes detected project conventions)
-- `regex_search` (kept intentionally minimal: regex, context, scope, generated-file toggle, compact output)
+- `get_overview` (includes detected project conventions and supports git-scoped summaries)
+- `regex_search` (regex, context, scope, generated-file toggle, compact output, and git-scoped file selection)
+- `explain_path` (explains why a file is or is not indexed)
 
 ## Guidance
 

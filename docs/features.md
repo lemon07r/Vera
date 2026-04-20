@@ -37,6 +37,16 @@ Requires a completion endpoint: set `VERA_COMPLETION_BASE_URL` and `VERA_COMPLET
 
 `vera search "query" --compact` strips function and class bodies from results, returning only signatures (name, parameters, return type). This fits more results into fewer tokens, making it useful for broad exploration before drilling into specific implementations. Works with `vera grep` too. Falls back to the first 3 lines for languages or chunks where body stripping isn't applicable.
 
+### Git-Aware Search Scopes
+
+When a task is limited to modified files or a PR diff, scope the search before broadening the query:
+
+- `--changed`: modified, staged, and untracked files in the current working tree
+- `--since <rev>`: files changed since a specific revision
+- `--base <rev>`: files changed since `merge-base(HEAD, <rev>)`
+
+These flags work with `vera search`, `vera grep`, and `vera overview`.
+
 ### Query-Aware Ranking
 
 A deterministic ranking stage between fusion and reranking handles cases that dense retrieval alone is bad at: exact filename queries, path-heavy config lookups, noisy test/docs matches, and broad natural-language queries that need structural results. It also pulls in related implementation blocks or same-file context when the initial hit is too narrow.
@@ -84,13 +94,27 @@ Chunks that exceed the embedding model's input limit are automatically split in 
 
 Vera respects `.gitignore` by default. For more control, `.veraignore` (gitignore syntax) gives full control over what gets indexed. Use `#include .gitignore` at the top to layer extra exclusions on top of gitignore rules. One-off `--exclude` flags, `--no-ignore`, and `--no-default-excludes` are also available.
 
+### Path Explainability
+
+`vera explain-path path/to/file` explains the decisive reason a file is or is not indexed. It reports default excludes, `.veraignore`, `.ignore`, `.gitignore`, size limits, binary detection, missing files, and more. Use this instead of guessing when a file is unexpectedly missing from search results.
+
 ### Progress Reporting
 
 Indexing shows a live progress bar with file discovery, parsing, and embedding generation phases. JSON output mode (`--json`) skips the progress UI for machine consumption.
 
 ### Verbose Indexing
 
-`vera index . --verbose` shows skipped file details alongside indexed file counts, useful for debugging exclusion rules.
+`vera index . --verbose` shows detailed skipped-file output for categories Vera discovers after walking the tree, such as oversized files. For exact exclusion debugging, use `vera explain-path path/to/file`.
+
+### Index Health
+
+`vera stats` shows persisted file-level index health. `vera stats --json` returns the same data in machine-readable form:
+
+- files whose tree-sitter parse tree contained error nodes
+- files that fell back to Tier 0 line chunking
+- files that failed to parse and therefore produced no indexed chunks
+
+This makes parser regressions and partial indexing visible instead of silent.
 
 ## Code Intelligence
 
@@ -109,6 +133,10 @@ Indexing shows a live progress bar with file discovery, parsing, and embedding g
 ### Regex Search
 
 `vera grep "pattern"` runs regex search over indexed files with configurable context lines, case sensitivity, and the same corpus filters as `vera search` (`--lang`, `--path`, `--type`, `--scope`). It complements semantic search for exact string matching, import statements, TODOs, and known identifiers.
+
+### Structural Search
+
+`vera ast-query '<query>' --lang <lang>` runs a raw tree-sitter query against indexed files in one language and returns matched source spans. This is an expert-oriented structural search mode for cases where regex is too blunt and you already know the AST shape you need.
 
 ## Model Backend
 
@@ -177,10 +205,11 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 
 | Tool | What it does |
 |------|-------------|
-| `search_code` | Hybrid search with multi-query, intent, and all filters. Auto-indexes and starts watcher on first use. |
-| `get_stats` | File count, chunk count, index size, language breakdown |
-| `get_overview` | Architecture overview with conventions detection |
-| `regex_search` | Regex search with context lines and scope controls |
+| `search_code` | Hybrid search with multi-query, intent, all filters, and git-scoped changed-file search. Auto-indexes and starts watcher on first use. |
+| `get_stats` | File count, chunk count, index size, language breakdown, and index health |
+| `get_overview` | Architecture overview with conventions detection and optional git-scoped filtering |
+| `regex_search` | Regex search with context lines, scope controls, and git-scoped filtering |
+| `explain_path` | Explain why a file is or is not indexed |
 
 Tool descriptions include explicit WHEN TO USE / WHEN NOT TO USE guidance so AI agents route queries to the right tool automatically.
 
@@ -220,7 +249,7 @@ During setup, Vera offers to add a usage snippet to your project's agent config 
 
 ### Configuration and Stats
 
-`vera config` shows the current configuration. `vera stats` shows index statistics (file count, chunk count, index size, language breakdown).
+`vera config` shows the current configuration. `vera stats` shows index statistics plus persisted health signals such as tree-sitter errors, Tier 0 fallback, and parse failures.
 
 ### Uninstalling
 

@@ -3,13 +3,14 @@
 //! Provides functions to collect and report statistics about the Vera index,
 //! including file count, chunk count, index size on disk, and language breakdown.
 
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 
 use anyhow::{Context, Result};
 use serde::Serialize;
 
 use crate::indexing::index_dir;
-use crate::storage::metadata::MetadataStore;
+use crate::storage::metadata::{IndexHealth, MetadataStore};
 
 /// Architecture overview of an indexed repository.
 #[derive(Debug, Clone, Serialize)]
@@ -79,6 +80,8 @@ pub struct IndexStats {
     pub index_size_human: String,
     /// Language breakdown: language name -> chunk count.
     pub languages: Vec<LanguageStat>,
+    /// Persisted index health from file-level parse diagnostics.
+    pub index_health: IndexHealth,
 }
 
 /// Statistics for a single programming language.
@@ -146,6 +149,9 @@ pub fn collect_stats(repo_path: &Path) -> Result<IndexStats> {
             }
         })
         .collect();
+    let index_health = metadata_store
+        .index_health()
+        .context("failed to get index health")?;
 
     Ok(IndexStats {
         file_count,
@@ -153,6 +159,7 @@ pub fn collect_stats(repo_path: &Path) -> Result<IndexStats> {
         index_size_bytes,
         index_size_human,
         languages,
+        index_health,
     })
 }
 
@@ -161,6 +168,14 @@ pub fn collect_stats(repo_path: &Path) -> Result<IndexStats> {
 /// Returns a high-level summary: languages, directories, entry points,
 /// symbol types, and complexity hotspots. Designed for agent onboarding.
 pub fn collect_overview(repo_path: &Path) -> Result<ProjectOverview> {
+    collect_overview_filtered(repo_path, None)
+}
+
+/// Collect an architecture overview filtered to an exact set of file paths.
+pub fn collect_overview_filtered(
+    repo_path: &Path,
+    exact_paths: Option<&HashSet<String>>,
+) -> Result<ProjectOverview> {
     let idx_dir = index_dir(repo_path);
 
     if !idx_dir.exists() {
@@ -173,50 +188,125 @@ pub fn collect_overview(repo_path: &Path) -> Result<ProjectOverview> {
     let metadata_path = idx_dir.join("metadata.db");
     let store = MetadataStore::open(&metadata_path).context("failed to open metadata store")?;
 
-    let file_count = store.file_count()?;
-    let chunk_count = store.chunk_count()?;
-    let total_lines = store.total_lines()?;
     let index_size_bytes = compute_dir_size(&idx_dir)?;
     let index_size_human = format_bytes(index_size_bytes);
 
-    // Merge chunk stats and file counts by language.
-    let chunk_stats = store.language_stats()?;
-    let file_stats = store.language_file_counts()?;
-    let file_map: std::collections::HashMap<&str, u64> =
-        file_stats.iter().map(|(l, c)| (l.as_str(), *c)).collect();
-    let languages = chunk_stats
-        .iter()
-        .map(|(lang, chunks)| LanguageOverview {
-            language: lang.clone(),
-            files: file_map.get(lang.as_str()).copied().unwrap_or(0),
-            chunks: *chunks,
+    let mut files = store.indexed_files()?;
+    if let Some(exact_paths) = exact_paths {
+        files.retain(|path| exact_paths.contains(path));
+    }
+
+    if files.is_empty() {
+        return Ok(ProjectOverview {
+            file_count: 0,
+            chunk_count: 0,
+            total_lines: 0,
+            index_size_human,
+            languages: Vec::new(),
+            top_directories: Vec::new(),
+            symbol_types: Vec::new(),
+            entry_points: Vec::new(),
+            hotspots: Vec::new(),
+            conventions: Vec::new(),
+        });
+    }
+
+    let mut language_files: BTreeMap<String, u64> = BTreeMap::new();
+    let mut language_chunks: BTreeMap<String, u64> = BTreeMap::new();
+    let mut top_directories: HashMap<String, u64> = HashMap::new();
+    let mut symbol_types: HashMap<String, u64> = HashMap::new();
+    let mut hotspots: Vec<(String, u64)> = Vec::new();
+    let mut entry_points = Vec::new();
+    let mut total_lines = 0u64;
+    let mut chunk_count = 0u64;
+
+    for file in &files {
+        let chunks = store.get_chunks_by_file(file)?;
+        if chunks.is_empty() {
+            continue;
+        }
+
+        let file_chunk_count = chunks.len() as u64;
+        chunk_count += file_chunk_count;
+        hotspots.push((file.clone(), file_chunk_count));
+
+        if matches_entry_point(file) {
+            entry_points.push(file.clone());
+        }
+
+        let top_dir = file
+            .split('/')
+            .next()
+            .filter(|dir| !dir.is_empty())
+            .unwrap_or(".")
+            .to_string();
+        *top_directories.entry(top_dir).or_default() += 1;
+
+        let language = chunks[0].language.to_string();
+        *language_files.entry(language.clone()).or_default() += 1;
+        *language_chunks.entry(language).or_default() += file_chunk_count;
+
+        let mut max_line_end = 0u32;
+        for chunk in &chunks {
+            max_line_end = max_line_end.max(chunk.line_end);
+            if let Some(symbol_type) = chunk.symbol_type {
+                *symbol_types.entry(symbol_type.to_string()).or_default() += 1;
+            }
+        }
+        total_lines += max_line_end as u64;
+    }
+
+    let mut languages: Vec<LanguageOverview> = language_chunks
+        .into_iter()
+        .map(|(language, chunks)| LanguageOverview {
+            files: language_files.get(&language).copied().unwrap_or(0),
+            language,
+            chunks,
         })
         .collect();
+    languages.sort_by(|left, right| {
+        right
+            .files
+            .cmp(&left.files)
+            .then(right.chunks.cmp(&left.chunks))
+            .then(left.language.cmp(&right.language))
+    });
 
-    let top_directories = store
-        .top_directories(15)?
+    let mut top_directories: Vec<DirectoryStat> = top_directories
         .into_iter()
         .map(|(directory, files)| DirectoryStat { directory, files })
         .collect();
+    top_directories.sort_by(|left, right| {
+        right
+            .files
+            .cmp(&left.files)
+            .then(left.directory.cmp(&right.directory))
+    });
+    top_directories.truncate(15);
 
-    let symbol_types = store
-        .symbol_type_stats()?
+    let mut symbol_types: Vec<SymbolTypeStat> = symbol_types
         .into_iter()
         .map(|(symbol_type, count)| SymbolTypeStat { symbol_type, count })
         .collect();
+    symbol_types.sort_by(|left, right| {
+        right
+            .count
+            .cmp(&left.count)
+            .then(left.symbol_type.cmp(&right.symbol_type))
+    });
 
-    let entry_points = store.entry_points()?;
-
-    let hotspots = store
-        .hotspot_files(10)?
+    hotspots.sort_by(|left, right| right.1.cmp(&left.1).then(left.0.cmp(&right.0)));
+    hotspots.truncate(10);
+    let hotspots = hotspots
         .into_iter()
         .map(|(file_path, chunks)| HotspotFile { file_path, chunks })
         .collect();
 
-    let conventions = detect_conventions(&store)?;
+    entry_points.sort();
+    let conventions = detect_conventions_from_files(&files);
 
     Ok(ProjectOverview {
-        file_count,
+        file_count: files.len() as u64,
         chunk_count,
         total_lines,
         index_size_human,
@@ -229,9 +319,7 @@ pub fn collect_overview(repo_path: &Path) -> Result<ProjectOverview> {
     })
 }
 
-/// Detect project conventions by scanning indexed file paths for known patterns.
-fn detect_conventions(store: &MetadataStore) -> Result<Vec<String>> {
-    let files = store.indexed_files()?;
+fn detect_conventions_from_files(files: &[String]) -> Vec<String> {
     let mut conventions = Vec::new();
 
     let indicators: &[(&[&str], &str)] = &[
@@ -294,7 +382,13 @@ fn detect_conventions(store: &MetadataStore) -> Result<Vec<String>> {
         }
     }
 
-    Ok(conventions)
+    conventions
+}
+
+fn matches_entry_point(file_path: &str) -> bool {
+    ["main.", "index.", "app.", "lib.", "mod.", "server."]
+        .iter()
+        .any(|needle| file_path == *needle || file_path.ends_with(&format!("/{needle}")))
 }
 
 // ── Call graph queries ───────────────────────────────────────────────

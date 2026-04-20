@@ -96,7 +96,7 @@ For step-by-step instructions, API provider options, Docker, building from sourc
 ```bash
 vera mcp   # or: bunx @vera-ai/cli mcp / uvx vera-ai mcp
 ```
-Exposes `search_code`, `get_stats`, `get_overview`, and `regex_search` tools. `search_code` auto-indexes and starts a file watcher on first use if no index exists.
+Exposes `search_code`, `get_stats`, `get_overview`, `regex_search`, and `explain_path` tools. `search_code` auto-indexes and starts a file watcher on first use if no index exists.
 The MCP surface stays intentionally small; use the CLI skill path when you need the full command set.
 
 </details>
@@ -121,6 +121,9 @@ vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"
 vera search "config" --intent "find where database connection strings are loaded"
 vera search "config loading" --deep
 vera search "auth" --compact
+vera search "token validation" --changed
+vera search "config loading" --base origin/main
+vera ast-query '(function_item name: (identifier) @fn)' --lang rust
 ```
 
 ### Common Tasks
@@ -128,10 +131,14 @@ vera search "auth" --compact
 | Task | Command |
 |------|---------|
 | Regex or exact text | `vera grep "fn\s+main"` |
+| Explain why a file is missing from the index | `vera explain-path path/to/file` |
+| Structural AST search | `vera ast-query '(function_item name: (identifier) @fn)' --lang rust` |
+| Inspect index health | `vera stats --json` |
 | Find callers | `vera references foo` |
 | Find callees | `vera references foo --callees` |
 | Find dead code | `vera dead-code` |
 | Get a project overview | `vera overview` |
+| Scope a search to changed files | `vera search "query" --changed` |
 | Keep the index fresh | `vera watch .` |
 | Check your setup | `vera doctor` |
 | Repair missing local assets | `vera repair` |
@@ -154,6 +161,12 @@ Use `--json` for compact JSON. `--raw` and `--timing` work with `vera search` an
 ### Excluding Files
 
 Vera respects `.gitignore` by default. Create a `.veraignore` file (gitignore syntax) for more control, or use `--exclude` flags. Details: [docs/features.md](docs/features.md#flexible-exclusions).
+
+If a file is missing from the index and you need the exact reason, run:
+
+```bash
+vera explain-path path/to/file
+```
 
 ## Benchmarks
 

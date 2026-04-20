@@ -12,6 +12,8 @@ Each chunk carries metadata: file path, line range, language, symbol name, and s
 
 Large symbols (>150 lines) are split at logical boundaries. Languages without a tree-sitter grammar fall back to sliding-window chunking. See [features.md](features.md#tree-sitter-structural-parsing) for chunking benchmarks.
 
+During parsing, Vera also records file-level diagnostics such as tree-sitter error nodes, Tier 0 fallback, and outright parse failures. `vera stats` surfaces these later as index-health signals instead of silently dropping them on the floor.
+
 ## Retrieval: BM25 + Vector Search
 
 Two retrieval paths run in parallel for every query:
@@ -64,14 +66,14 @@ Large candidate sets are batched automatically to stay within the reranker's req
 
 Everything lives in two places:
 
-- **`.vera/`** in the project root. SQLite database with chunk metadata, Tantivy BM25 index, and sqlite-vec vector store. One directory per project.
+- **`.vera/`** in the project root. SQLite metadata (chunks, file hashes, file-level index state), Tantivy BM25 index, and sqlite-vec vector store. One directory per project.
 - **`$XDG_DATA_HOME/vera/models/`** (or `~/.vera/models/` on existing installs): cached ONNX models (only in local mode). Downloaded once by `vera setup`.
 
 The index is a single SQLite database file plus a Tantivy directory. No external services, no daemons, no background processes.
 
 ## Incremental Updates
 
-`vera update .` compares content hashes against the stored index and only re-processes changed files. See [features.md](features.md#incremental-updates) for details.
+`vera update .` compares content hashes against stored metadata, re-processes only changed files, and refreshes the persisted file-level index state. That keeps parse failures and fallback counts visible across incremental runs. See [features.md](features.md#incremental-updates) for details.
 
 ## Pipeline Summary
 

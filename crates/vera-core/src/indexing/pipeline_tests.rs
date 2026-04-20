@@ -186,6 +186,33 @@ async fn index_summary_reports_parse_errors() {
 }
 
 #[tokio::test]
+async fn index_persists_tree_sitter_health() {
+    let dir = TempDir::new().unwrap();
+    fs::write(
+        dir.path().join("broken.rs"),
+        "fn broken( {\n    let x = ;\n}\n",
+    )
+    .unwrap();
+
+    let provider = MockProvider::new(8);
+    let config = default_config();
+    let summary = index_repository(dir.path(), &provider, &config, "mock-model")
+        .await
+        .unwrap();
+
+    assert_eq!(summary.files_with_tree_sitter_errors, 1);
+
+    let idx = index_dir(&dir.path().canonicalize().unwrap());
+    let store = MetadataStore::open(&idx.join("metadata.db")).unwrap();
+    let states = store.file_states().unwrap();
+    assert_eq!(states.len(), 1);
+    assert!(states[0].tree_has_error);
+
+    let stats = crate::stats::collect_stats(dir.path()).unwrap();
+    assert_eq!(stats.index_health.files_with_tree_sitter_errors, 1);
+}
+
+#[tokio::test]
 async fn index_handles_mixed_languages() {
     let dir = TempDir::new().unwrap();
     fs::write(dir.path().join("main.rs"), "fn main() {}").unwrap();

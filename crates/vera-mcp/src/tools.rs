@@ -6,7 +6,7 @@
 //! - `get_overview` — architecture overview for agent onboarding
 //! - `regex_search` — regex search over indexed files
 
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use serde::Serialize;
 use serde_json::Value;
@@ -167,6 +167,18 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                         "type": "integer",
                         "description": "Maximum number of results (default: 5)"
                     },
+                    "changed": {
+                        "type": "boolean",
+                        "description": "Restrict search to modified, staged, and untracked files."
+                    },
+                    "since": {
+                        "type": "string",
+                        "description": "Restrict search to files changed since the given revision."
+                    },
+                    "base": {
+                        "type": "string",
+                        "description": "Restrict search to files changed since merge-base(HEAD, revision)."
+                    },
                     "compact": {
                         "type": "boolean",
                         "description": "Return only function/class signatures (omit bodies). Use for broad exploration; fits more results in fewer tokens."
@@ -186,6 +198,18 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "path": {
                         "type": "string",
                         "description": "Path to the project directory (default: current dir)"
+                    },
+                    "changed": {
+                        "type": "boolean",
+                        "description": "Restrict overview to modified, staged, and untracked files."
+                    },
+                    "since": {
+                        "type": "string",
+                        "description": "Restrict overview to files changed since the given revision."
+                    },
+                    "base": {
+                        "type": "string",
+                        "description": "Restrict overview to files changed since merge-base(HEAD, revision)."
                     }
                 }
             }),
@@ -245,12 +269,52 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                         "type": "boolean",
                         "description": "Include generated or minified files such as dist bundles."
                     },
+                    "changed": {
+                        "type": "boolean",
+                        "description": "Restrict regex search to modified, staged, and untracked files."
+                    },
+                    "since": {
+                        "type": "string",
+                        "description": "Restrict regex search to files changed since the given revision."
+                    },
+                    "base": {
+                        "type": "string",
+                        "description": "Restrict regex search to files changed since merge-base(HEAD, revision)."
+                    },
                     "compact": {
                         "type": "boolean",
                         "description": "Return only function/class signatures (omit bodies). Use for broad exploration."
                     }
                 },
                 "required": ["pattern"]
+            }),
+        },
+        ToolDefinition {
+            name: "explain_path".to_string(),
+            description: "Explain why a path is or is not indexed. Returns the decisive reason such as a default exclude, .veraignore, .gitignore, binary detection, size limit, or missing file."
+                .to_string(),
+            input_schema: serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Repository-relative or absolute path to explain."
+                    },
+                    "exclude": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Extra exclusion globs to apply, matching CLI --exclude semantics."
+                    },
+                    "no_ignore": {
+                        "type": "boolean",
+                        "description": "Disable .gitignore and .veraignore parsing."
+                    },
+                    "no_default_excludes": {
+                        "type": "boolean",
+                        "description": "Disable Vera's built-in default exclusions."
+                    }
+                },
+                "required": ["path"]
             }),
         },
     ]
@@ -266,8 +330,37 @@ pub fn handle_tool_call(name: &str, arguments: &Value) -> ToolCallResult {
         "get_stats" => handle_get_stats(arguments),
         "get_overview" => handle_get_overview(arguments),
         "regex_search" => handle_regex_search(arguments),
+        "explain_path" => handle_explain_path(arguments),
         _ => ToolCallResult::error(format!("Unknown tool: {name}")),
     }
+}
+
+fn git_scope_from_args(args: &Value) -> Result<Option<vera_core::git_scope::GitScope>, String> {
+    let changed = args
+        .get("changed")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let since = args
+        .get("since")
+        .and_then(|v| v.as_str())
+        .map(str::to_string);
+    let base = args
+        .get("base")
+        .and_then(|v| v.as_str())
+        .map(str::to_string);
+
+    let selected = changed as u8 + since.is_some() as u8 + base.is_some() as u8;
+    if selected > 1 {
+        return Err("Only one of 'changed', 'since', or 'base' may be set".to_string());
+    }
+
+    Ok(if changed {
+        Some(vera_core::git_scope::GitScope::Changed)
+    } else if let Some(rev) = since {
+        Some(vera_core::git_scope::GitScope::Since(rev))
+    } else {
+        base.map(vera_core::git_scope::GitScope::Base)
+    })
 }
 
 fn search_code_filters(
@@ -277,6 +370,7 @@ fn search_code_filters(
     vera_core::types::SearchFilters {
         language: args.get("lang").and_then(|v| v.as_str()).map(String::from),
         path_glob: args.get("path").and_then(|v| v.as_str()).map(String::from),
+        exact_paths: None,
         symbol_type: args
             .get("symbol_type")
             .and_then(|v| v.as_str())
@@ -299,6 +393,7 @@ fn regex_search_filters(
     // highest-value regex controls.
     vera_core::types::SearchFilters {
         scope,
+        exact_paths: None,
         include_generated: Some(
             args.get("include_generated")
                 .and_then(|v| v.as_bool())
@@ -340,7 +435,11 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         None => None,
     };
 
-    let filters = search_code_filters(args, scope);
+    let mut filters = search_code_filters(args, scope);
+    let git_scope = match git_scope_from_args(args) {
+        Ok(scope) => scope,
+        Err(err) => return ToolCallResult::error(err),
+    };
 
     let limit = args
         .get("limit")
@@ -356,6 +455,14 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         Ok(d) => d,
         Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
     };
+    if let Some(scope) = git_scope.as_ref() {
+        match vera_core::git_scope::resolve_scope(&cwd, scope) {
+            Ok(paths) => filters.exact_paths = Some(Arc::new(paths)),
+            Err(err) => {
+                return ToolCallResult::error(format!("Failed to resolve git scope: {err}"));
+            }
+        }
+    }
     let index_dir = vera_core::indexing::index_dir(&cwd);
 
     if !index_dir.exists() {
@@ -494,7 +601,17 @@ fn handle_get_overview(args: &Value) -> ToolCallResult {
         Ok(p) => p,
         Err(e) => return e,
     };
-    match vera_core::stats::collect_overview(&repo_path) {
+    let exact_paths = match git_scope_from_args(args) {
+        Ok(Some(scope)) => match vera_core::git_scope::resolve_scope(&repo_path, &scope) {
+            Ok(paths) => Some(paths),
+            Err(err) => {
+                return ToolCallResult::error(format!("Failed to resolve git scope: {err}"));
+            }
+        },
+        Ok(None) => None,
+        Err(err) => return ToolCallResult::error(err),
+    };
+    match vera_core::stats::collect_overview_filtered(&repo_path, exact_paths.as_ref()) {
         Ok(overview) => match serde_json::to_string_pretty(&overview) {
             Ok(json) => ToolCallResult::success(json),
             Err(e) => ToolCallResult::error(format!("Failed to serialize overview: {e}")),
@@ -546,7 +663,19 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
         );
     }
 
-    let filters = regex_search_filters(args, scope);
+    let mut filters = regex_search_filters(args, scope);
+    let git_scope = match git_scope_from_args(args) {
+        Ok(scope) => scope,
+        Err(err) => return ToolCallResult::error(err),
+    };
+    if let Some(scope) = git_scope.as_ref() {
+        match vera_core::git_scope::resolve_scope(&cwd, scope) {
+            Ok(paths) => filters.exact_paths = Some(Arc::new(paths)),
+            Err(err) => {
+                return ToolCallResult::error(format!("Failed to resolve git scope: {err}"));
+            }
+        }
+    }
 
     match vera_core::retrieval::search_regex(
         &index_dir,
@@ -570,20 +699,61 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
     }
 }
 
+fn handle_explain_path(args: &Value) -> ToolCallResult {
+    let path = match args.get("path").and_then(|v| v.as_str()) {
+        Some(path) => path,
+        None => return ToolCallResult::error("Missing required parameter: path"),
+    };
+
+    let cwd = match std::env::current_dir() {
+        Ok(d) => d,
+        Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
+    };
+
+    let mut config = vera_core::config::VeraConfig::default();
+    config.indexing.no_ignore = args
+        .get("no_ignore")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    config.indexing.no_default_excludes = args
+        .get("no_default_excludes")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    config.indexing.extra_excludes = args
+        .get("exclude")
+        .and_then(|v| v.as_array())
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    match vera_core::discovery::explain_path(&cwd, std::path::Path::new(path), &config.indexing) {
+        Ok(explanation) => match serde_json::to_string_pretty(&explanation) {
+            Ok(json) => ToolCallResult::success(json),
+            Err(e) => ToolCallResult::error(format!("Failed to serialize explanation: {e}")),
+        },
+        Err(e) => ToolCallResult::error(format!("Failed to explain path: {e}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn tool_definitions_has_four_tools() {
+    fn tool_definitions_has_five_tools() {
         let tools = tool_definitions();
-        assert_eq!(tools.len(), 4);
+        assert_eq!(tools.len(), 5);
 
         let names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
         assert!(names.contains(&"search_code"));
         assert!(names.contains(&"get_stats"));
         assert!(names.contains(&"get_overview"));
         assert!(names.contains(&"regex_search"));
+        assert!(names.contains(&"explain_path"));
     }
 
     #[test]
