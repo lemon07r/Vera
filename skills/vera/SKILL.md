@@ -51,7 +51,7 @@ pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }
 ```
 ````
 
-The info string contains `file_path:line_start-line_end` and optional `symbol_type:symbol_name`. Use `--json` for compact single-line JSON (programmatic consumption), `--raw` for verbose `vera search` or `vera grep` output, `--timing` on `vera search` for per-stage timings, or `--timing` on `vera grep` for total regex-search time.
+The info string contains `file_path:line_start-line_end` and optional `symbol_type:symbol_name`. Use `--json` for compact single-line JSON (programmatic consumption). `--raw` and `--timing` work with `vera search` and `vera grep`, and can appear before or after the subcommand.
 
 ## Choosing the Right Tool
 

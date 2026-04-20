@@ -98,7 +98,7 @@ Use `rg` when you need:
 
 ## Output Format
 
-See [features: output formats](features.md#multiple-output-formats) for all options (`--json`, `--raw`, `--timing`). `vera search --raw` and `vera grep --raw` print verbose result views. `vera search --timing` prints per-stage timings; `vera grep --timing` prints total regex-search time.
+See [features: output formats](features.md#multiple-output-formats) for all options (`--json`, `--raw`, `--timing`). `--raw` and `--timing` work with `vera search` and `vera grep`, and can appear before or after the subcommand. `vera search --timing` prints per-stage timings; `vera grep --timing` prints total regex-search time.
 
 ## Keeping Results Fresh
 

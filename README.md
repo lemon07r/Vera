@@ -149,7 +149,7 @@ pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }
 ```
 ````
 
-Use `--json` for compact JSON, `vera search --raw` or `vera grep --raw` for verbose human-readable output, `vera search --timing` for per-stage timings, or `vera grep --timing` for total regex-search time.
+Use `--json` for compact JSON. `--raw` and `--timing` work with `vera search` and `vera grep`, and you can place them before or after the subcommand (for example, `vera --timing search "auth"` or `vera grep "TODO" --raw`).
 
 ### Excluding Files
 

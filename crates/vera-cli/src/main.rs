@@ -35,6 +35,10 @@ use clap::{Parser, Subcommand};
                   vera doctor                         # Check local setup and index health\n  \
                   vera repair                         # Re-fetch missing backend assets\n  \
                   vera upgrade                        # Show the binary update plan",
+    after_long_help = "Output flags:\n  \
+                  --json                             Structured JSON when supported\n  \
+                  --raw                              Verbose search/grep output (before or after the subcommand)\n  \
+                  --timing                           Search/grep timings to stderr (before or after the subcommand)",
     version
 )]
 struct Cli {
@@ -865,6 +869,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use clap::CommandFactory;
 
     #[test]
     fn cli_parses_index_command() {
@@ -1289,6 +1294,14 @@ mod tests {
     fn cli_parses_json_flag() {
         let cli = Cli::parse_from(["vera", "--json", "stats"]);
         assert!(cli.json);
+    }
+
+    #[test]
+    fn cli_help_mentions_global_output_flags() {
+        let help = Cli::command().render_long_help().to_string();
+        assert!(help.contains("--raw"));
+        assert!(help.contains("--timing"));
+        assert!(help.contains("before or after the subcommand"));
     }
 
     #[test]
