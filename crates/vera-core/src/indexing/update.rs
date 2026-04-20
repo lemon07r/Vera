@@ -24,11 +24,12 @@ use crate::discovery;
 use crate::embedding::{EmbeddingProvider, embed_chunks_concurrent};
 use crate::parsing;
 use crate::storage::bm25::{Bm25Document, Bm25Index};
-use crate::storage::metadata::MetadataStore;
+use crate::storage::metadata::{FileIndexState, FileIndexStatus, MetadataStore};
 use crate::storage::vector::VectorStore;
 use crate::types::Language;
 
 use super::pipeline;
+use super::pipeline::FileError;
 
 /// Summary of an incremental update run.
 #[derive(Debug, Clone, serde::Serialize)]
@@ -41,6 +42,12 @@ pub struct UpdateSummary {
     pub files_deleted: usize,
     /// Files that were unchanged (skipped).
     pub files_unchanged: usize,
+    /// Number of processed files whose parse trees contained tree-sitter errors.
+    pub files_with_tree_sitter_errors: usize,
+    /// Number of processed files that fell back to Tier 0 chunking.
+    pub files_using_tier0_fallback: usize,
+    /// Files that failed to parse during the update.
+    pub parse_errors: Vec<FileError>,
     /// Total chunks after the update.
     pub total_chunks: u64,
     /// Wall-clock elapsed time in seconds.
@@ -183,8 +190,8 @@ pub async fn update_repository<P: EmbeddingProvider>(
     }
 
     let stored_files: HashSet<String> = metadata_store
-        .indexed_files()
-        .context("failed to list indexed files")?
+        .tracked_files()
+        .context("failed to list tracked files")?
         .into_iter()
         .collect();
 
@@ -281,12 +288,14 @@ pub async fn update_repository<P: EmbeddingProvider>(
 
         // Parse and chunk new/modified files.
         let mut all_chunks = Vec::new();
+        let mut file_states = Vec::new();
+        let mut parse_errors = Vec::new();
         for (rel_path, content, _hash) in &files_to_index {
             let language = detect_language_for_path(rel_path);
 
             // For RST, refs come from raw source; chunks from preprocessed.
             // For all other languages, parse once for both.
-            let (chunks, refs) = if language == Language::Rst {
+            let (chunks, refs, file_state) = if language == Language::Rst {
                 let refs = parsing::parse_and_extract_references(content, language);
                 let absolute_path = repo_root.join(rel_path);
                 let normalized_source =
@@ -302,8 +311,27 @@ pub async fn update_repository<P: EmbeddingProvider>(
                         }
                     };
                 let src = normalized_source.as_deref().unwrap_or(content);
-                match parsing::parse_and_chunk(src, rel_path, language, &config.indexing) {
-                    Ok(chunks) => (chunks, refs),
+                match parsing::parse_file_with_diagnostics(
+                    src,
+                    rel_path,
+                    language,
+                    &config.indexing,
+                ) {
+                    Ok((chunks, _ignored_refs, diagnostics)) => {
+                        let chunk_count = chunks.len() as u64;
+                        (
+                            chunks,
+                            refs,
+                            FileIndexState {
+                                file_path: rel_path.clone(),
+                                language: language.to_string(),
+                                status: FileIndexStatus::Indexed,
+                                tree_has_error: diagnostics.tree_has_error,
+                                tier0_fallback: diagnostics.used_tier0_fallback,
+                                chunk_count,
+                            },
+                        )
+                    }
                     Err(err) => {
                         warn!(
                             file = %rel_path,
@@ -311,18 +339,69 @@ pub async fn update_repository<P: EmbeddingProvider>(
                             refs = refs.len(),
                             "failed to chunk rst during update; keeping extracted references"
                         );
-                        (Vec::new(), refs)
+                        parse_errors.push(FileError {
+                            file_path: rel_path.clone(),
+                            error: err.to_string(),
+                        });
+                        (
+                            Vec::new(),
+                            refs,
+                            FileIndexState {
+                                file_path: rel_path.clone(),
+                                language: language.to_string(),
+                                status: FileIndexStatus::ParseError,
+                                tree_has_error: false,
+                                tier0_fallback: false,
+                                chunk_count: 0,
+                            },
+                        )
                     }
                 }
             } else {
-                match parsing::parse_file(content, rel_path, language, &config.indexing) {
-                    Ok(result) => result,
+                match parsing::parse_file_with_diagnostics(
+                    content,
+                    rel_path,
+                    language,
+                    &config.indexing,
+                ) {
+                    Ok((chunks, refs, diagnostics)) => {
+                        let chunk_count = chunks.len() as u64;
+                        (
+                            chunks,
+                            refs,
+                            FileIndexState {
+                                file_path: rel_path.clone(),
+                                language: language.to_string(),
+                                status: FileIndexStatus::Indexed,
+                                tree_has_error: diagnostics.tree_has_error,
+                                tier0_fallback: diagnostics.used_tier0_fallback,
+                                chunk_count,
+                            },
+                        )
+                    }
                     Err(err) => {
                         warn!(file = %rel_path, error = %err, "parse error during update");
-                        continue;
+                        parse_errors.push(FileError {
+                            file_path: rel_path.clone(),
+                            error: err.to_string(),
+                        });
+                        (
+                            Vec::new(),
+                            Vec::new(),
+                            FileIndexState {
+                                file_path: rel_path.clone(),
+                                language: language.to_string(),
+                                status: FileIndexStatus::ParseError,
+                                tree_has_error: false,
+                                tier0_fallback: false,
+                                chunk_count: 0,
+                            },
+                        )
                     }
                 }
             };
+
+            file_states.push(file_state);
 
             if !refs.is_empty() {
                 metadata_store
@@ -390,12 +469,50 @@ pub async fn update_repository<P: EmbeddingProvider>(
                 .context("failed to insert updated BM25 documents")?;
         }
 
+        if !file_states.is_empty() {
+            metadata_store
+                .insert_file_states(&file_states)
+                .context("failed to update file index states")?;
+        }
+
         // Update file hashes for all indexed files.
         for (rel_path, _content, hash) in &files_to_index {
             metadata_store
                 .set_file_hash(rel_path, hash)
                 .context("failed to update file hash")?;
         }
+
+        let summary = UpdateSummary {
+            files_modified: modified.len(),
+            files_added: added.len(),
+            files_deleted: deleted.len(),
+            files_unchanged: unchanged,
+            files_with_tree_sitter_errors: file_states
+                .iter()
+                .filter(|state| state.status == FileIndexStatus::Indexed && state.tree_has_error)
+                .count(),
+            files_using_tier0_fallback: file_states
+                .iter()
+                .filter(|state| state.status == FileIndexStatus::Indexed && state.tier0_fallback)
+                .count(),
+            parse_errors,
+            total_chunks: metadata_store
+                .chunk_count()
+                .context("failed to count chunks")?,
+            elapsed_secs: start.elapsed().as_secs_f64(),
+        };
+
+        info!(
+            modified = summary.files_modified,
+            added = summary.files_added,
+            deleted = summary.files_deleted,
+            unchanged = summary.files_unchanged,
+            total_chunks = summary.total_chunks,
+            elapsed = %format!("{:.2}s", summary.elapsed_secs),
+            "incremental update complete"
+        );
+
+        return Ok(summary);
     }
 
     // ── 6. Get final counts ──────────────────────────────────────
@@ -408,6 +525,9 @@ pub async fn update_repository<P: EmbeddingProvider>(
         files_added: added.len(),
         files_deleted: deleted.len(),
         files_unchanged: unchanged,
+        files_with_tree_sitter_errors: 0,
+        files_using_tier0_fallback: 0,
+        parse_errors: Vec::new(),
         total_chunks,
         elapsed_secs: start.elapsed().as_secs_f64(),
     };
@@ -460,6 +580,9 @@ fn remove_file_from_index(
     metadata_store
         .delete_file_hash(file_path)
         .with_context(|| format!("failed to delete file hash for {file_path}"))?;
+    metadata_store
+        .delete_file_state(file_path)
+        .with_context(|| format!("failed to delete file state for {file_path}"))?;
 
     debug!(
         file = %file_path,

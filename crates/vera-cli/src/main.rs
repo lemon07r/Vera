@@ -71,7 +71,7 @@ enum Commands {
     /// Start the MCP (Model Context Protocol) server.
     ///
     /// Runs a JSON-RPC 2.0 server over stdio for tool integration.
-    /// The server exposes tools: search_code, get_stats, get_overview, and regex_search.
+    /// The server exposes tools: search_code, get_stats, get_overview, regex_search, and explain_path.
     /// search_code auto-indexes and starts a file watcher on first use.
     ///
     /// Examples:
@@ -82,10 +82,11 @@ enum Commands {
                       The server reads JSON-RPC messages from stdin and writes responses \
                       to stdout. Logs go to stderr.\n\n\
                       Exposed tools:\n  \
-                      search_code      — Hybrid search (auto-indexes and watches on first use)\n  \
-                      get_stats        — Index statistics\n  \
-                      get_overview     — Project summary for onboarding\n  \
-                      regex_search     — Regex search over indexed files\n\n\
+                       search_code      — Hybrid search (auto-indexes and watches on first use)\n  \
+                       get_stats        — Index statistics and health\n  \
+                       get_overview     — Project summary for onboarding\n  \
+                       regex_search     — Regex search over indexed files\n  \
+                       explain_path     — Explain why a file is or is not indexed\n\n\
                       Examples:\n  \
                       vera mcp                       # Start MCP server on stdio")]
     Mcp,
@@ -315,6 +316,38 @@ enum Commands {
         low_vram: bool,
     },
 
+    /// Search indexed files with a raw tree-sitter query.
+    #[command(long_about = "Search indexed files with a raw tree-sitter query.\n\n\
+                      This is an expert-oriented structural search mode. Provide a valid \n\
+                      tree-sitter query and a required language, and Vera will run the query \n\
+                      against indexed files in that language, returning matched source spans.\n\n\
+                      Examples:\n  \
+                      vera ast-query '(function_item name: (identifier) @fn)' --lang rust\n  \
+                      vera ast-query '(function_definition name: (identifier) @fn)' --lang python --path 'src/**'\n  \
+                      vera ast-query '(class_declaration name: (type_identifier) @name)' --lang typescript --compact")]
+    AstQuery {
+        /// Raw tree-sitter query string.
+        query: String,
+        /// Language to compile the query against.
+        #[arg(long)]
+        lang: String,
+        /// Filter by file path glob pattern (e.g., "src/**/*.rs").
+        #[arg(long)]
+        path: Option<String>,
+        /// Maximum number of results (default: 20).
+        #[arg(long, short = 'n')]
+        limit: Option<usize>,
+        /// Restrict results to a coarse corpus scope.
+        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
+        scope: Option<String>,
+        /// Include generated or minified files such as dist bundles.
+        #[arg(long)]
+        include_generated: bool,
+        /// Show only function/class signatures (omit bodies).
+        #[arg(long)]
+        compact: bool,
+    },
+
     /// Search the indexed codebase.
     ///
     /// Performs hybrid search combining BM25 keyword matching and vector
@@ -397,6 +430,9 @@ enum Commands {
         #[arg(long)]
         deep: bool,
 
+        #[command(flatten)]
+        git_scope: helpers::GitScopeFlags,
+
         /// Show only function/class signatures (omit bodies).
         ///
         /// Useful for broad exploration: fits more results in fewer tokens.
@@ -459,7 +495,34 @@ enum Commands {
                       Examples:\n  \
                       vera overview             # Human-readable overview\n  \
                       vera overview --json      # Machine-readable JSON output")]
-    Overview,
+    Overview {
+        #[command(flatten)]
+        git_scope: helpers::GitScopeFlags,
+    },
+
+    /// Explain why a path is or is not indexed.
+    #[command(long_about = "Explain why a path is or is not indexed.\n\n\
+                      Resolves the path relative to the current working directory, then explains \n\
+                      the first decisive reason Vera would exclude it, such as a default exclude, \n\
+                      --exclude flag, .veraignore, .ignore, .gitignore, binary detection, size \n\
+                      limit, or RST include-fragment handling.\n\n\
+                      Examples:\n  \
+                      vera explain-path src/main.rs\n  \
+                      vera explain-path dist/bundle.js\n  \
+                      vera explain-path docs/includes/common.rst.inc --json")]
+    ExplainPath {
+        /// Path to explain.
+        path: String,
+        /// Exclude files matching this glob pattern (repeatable).
+        #[arg(long = "exclude")]
+        exclude: Vec<String>,
+        /// Disable .gitignore and .veraignore parsing.
+        #[arg(long)]
+        no_ignore: bool,
+        /// Disable smart default exclusions.
+        #[arg(long)]
+        no_default_excludes: bool,
+    },
 
     /// Find callers or callees of a symbol.
     ///
@@ -535,6 +598,9 @@ enum Commands {
         /// Include generated or minified files such as dist bundles.
         #[arg(long)]
         include_generated: bool,
+
+        #[command(flatten)]
+        git_scope: helpers::GitScopeFlags,
 
         /// Show only function/class signatures (omit bodies).
         #[arg(long)]
@@ -757,6 +823,7 @@ fn main() {
             scope,
             include_generated,
             deep,
+            git_scope,
             compact,
             backend,
         } => {
@@ -764,6 +831,7 @@ fn main() {
             let filters = vera_core::types::SearchFilters {
                 language: lang,
                 path_glob: path,
+                exact_paths: None,
                 symbol_type: r#type,
                 scope: scope.and_then(|value| value.parse().ok()),
                 include_generated: Some(include_generated),
@@ -777,8 +845,32 @@ fn main() {
                 cli.raw,
                 cli.timing,
                 deep,
+                git_scope.resolve(),
                 compact,
                 backend.resolve(),
+            )
+        }
+        Commands::AstQuery {
+            query,
+            lang,
+            path,
+            limit,
+            scope,
+            include_generated,
+            compact,
+        } => {
+            tracing::info!(language = %lang, "ast query");
+            commands::ast_query::run(
+                &query,
+                &lang,
+                path,
+                limit,
+                scope,
+                include_generated,
+                cli.json,
+                cli.raw,
+                cli.timing,
+                compact,
             )
         }
         Commands::Update {
@@ -798,9 +890,18 @@ fn main() {
                 no_default_excludes,
             )
         }
-        Commands::Overview => {
+        Commands::Overview { git_scope } => {
             tracing::info!("showing overview");
-            commands::overview::run(cli.json)
+            commands::overview::run(cli.json, git_scope.resolve())
+        }
+        Commands::ExplainPath {
+            path,
+            exclude,
+            no_ignore,
+            no_default_excludes,
+        } => {
+            tracing::info!(path = %path, "explaining path");
+            commands::explain_path::run(&path, cli.json, exclude, no_ignore, no_default_excludes)
         }
         Commands::References { symbol, callees } => {
             tracing::info!(symbol = %symbol, callees, "references query");
@@ -816,12 +917,14 @@ fn main() {
             context,
             scope,
             include_generated,
+            git_scope,
             compact,
         } => {
             tracing::info!(pattern = %pattern, "grep");
             let filters = vera_core::types::SearchFilters {
                 language: lang,
                 path_glob: path,
+                exact_paths: None,
                 symbol_type: r#type,
                 scope: scope.and_then(|value| value.parse().ok()),
                 include_generated: Some(include_generated),
@@ -835,6 +938,7 @@ fn main() {
                 cli.json,
                 cli.raw,
                 cli.timing,
+                git_scope.resolve(),
                 compact,
             )
         }

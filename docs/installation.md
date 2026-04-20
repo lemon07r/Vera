@@ -133,9 +133,13 @@ This is optional but recommended if you use AI coding agents. The interactive fl
 Use Vera before opening many files or running broad text search when you need to find where logic lives or how a feature works.
 
 - `vera search "query"` for semantic code search. Describe behavior: "JWT validation", not "auth". If one phrasing misses, try 2-3 varied queries or add `--intent "goal"`.
+- `vera search ... --changed`, `--since <rev>`, or `--base <rev>` when the task is limited to modified files or a PR diff
 - `vera grep "pattern"` for exact text or regex in indexed files
+- `vera ast-query '<query>' --lang <lang>` for expert-level structural search with raw tree-sitter queries
+- `vera explain-path path/to/file` to explain why a file is or is not indexed
 - `vera references <symbol>` for callers and callees
-- `vera overview` for a project summary (languages, entry points, hotspots)
+- `vera overview` for a project summary (languages, entry points, hotspots). Add `--changed`, `--since <rev>`, or `--base <rev>` to scope it to modified files.
+- `vera stats --json` for index health, including tree-sitter error, parse-failure, and Tier 0 fallback counts
 - `vera search --deep "query"` for RAG-fusion query expansion + merged ranking
 - Narrow `vera search` or `vera grep` with `--lang`, `--path`, `--type`, or `--scope docs`
 - `vera watch .` to auto-update the index, or `vera update .` after edits (`vera index .` if `.vera/` is missing)

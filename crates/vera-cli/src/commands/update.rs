@@ -106,8 +106,26 @@ fn print_update_summary(summary: &vera_core::indexing::UpdateSummary) {
     println!("  Files added:     {}", summary.files_added);
     println!("  Files deleted:   {}", summary.files_deleted);
     println!("  Files unchanged: {}", summary.files_unchanged);
+    if summary.files_with_tree_sitter_errors > 0 || summary.files_using_tier0_fallback > 0 {
+        println!(
+            "  Tree-sitter errors: {}",
+            summary.files_with_tree_sitter_errors
+        );
+        println!(
+            "  Tier 0 fallback:    {}",
+            summary.files_using_tier0_fallback
+        );
+    }
     println!("  Total chunks:    {}", summary.total_chunks);
     println!("  Elapsed time:    {:.2}s", summary.elapsed_secs);
+
+    if !summary.parse_errors.is_empty() {
+        println!();
+        println!("  Parse errors ({}):", summary.parse_errors.len());
+        for err in &summary.parse_errors {
+            println!("    {}: {}", err.file_path, err.error);
+        }
+    }
 
     let total_changed = summary.files_modified + summary.files_added + summary.files_deleted;
     if total_changed == 0 {

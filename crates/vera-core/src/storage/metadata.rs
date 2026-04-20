@@ -33,6 +33,65 @@ pub struct DeadSymbol {
     pub symbol_type: Option<String>,
 }
 
+/// Persisted file-level indexing state.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FileIndexStatus {
+    Indexed,
+    ParseError,
+}
+
+impl FileIndexStatus {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Indexed => "indexed",
+            Self::ParseError => "parse_error",
+        }
+    }
+
+    fn from_db(value: &str) -> std::result::Result<Self, std::io::Error> {
+        match value {
+            "indexed" => Ok(Self::Indexed),
+            "parse_error" => Ok(Self::ParseError),
+            other => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("unknown file index status: {other}"),
+            )),
+        }
+    }
+}
+
+/// File-level indexing state captured during indexing/update.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct FileIndexState {
+    pub file_path: String,
+    pub language: String,
+    pub status: FileIndexStatus,
+    pub tree_has_error: bool,
+    pub tier0_fallback: bool,
+    pub chunk_count: u64,
+}
+
+/// Aggregate index health derived from persisted file states.
+#[derive(Debug, Clone, Default, serde::Serialize)]
+pub struct IndexHealth {
+    pub files_indexed: u64,
+    pub files_with_tree_sitter_errors: u64,
+    pub files_using_tier0_fallback: u64,
+    pub files_with_parse_failures: u64,
+    pub by_language: Vec<LanguageHealthStat>,
+}
+
+/// Per-language index health derived from persisted file states.
+#[derive(Debug, Clone, Default, serde::Serialize)]
+pub struct LanguageHealthStat {
+    pub language: String,
+    pub files_indexed: u64,
+    pub files_with_tree_sitter_errors: u64,
+    pub files_using_tier0_fallback: u64,
+    pub files_with_parse_failures: u64,
+}
+
 /// SQLite-backed metadata store for chunk attributes.
 pub struct MetadataStore {
     conn: Connection,
@@ -91,11 +150,28 @@ impl MetadataStore {
         self.conn
             .execute_batch(
                 "CREATE TABLE IF NOT EXISTS file_hashes (
-                    file_path TEXT PRIMARY KEY,
-                    content_hash TEXT NOT NULL
-                );",
+                     file_path TEXT PRIMARY KEY,
+                     content_hash TEXT NOT NULL
+                 );",
             )
             .context("failed to create file_hashes table")?;
+
+        self.conn
+            .execute_batch(
+                "CREATE TABLE IF NOT EXISTS file_index_state (
+                    file_path TEXT PRIMARY KEY,
+                    language TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    tree_has_error INTEGER NOT NULL,
+                    tier0_fallback INTEGER NOT NULL,
+                    chunk_count INTEGER NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_file_index_state_language
+                    ON file_index_state(language);
+                CREATE INDEX IF NOT EXISTS idx_file_index_state_status
+                    ON file_index_state(status);",
+            )
+            .context("failed to create file_index_state table")?;
 
         // Index metadata (model name, dimensions, etc.)
         self.conn
@@ -316,9 +392,57 @@ impl MetadataStore {
     pub fn clear(&self) -> Result<()> {
         self.conn
             .execute_batch(
-                "DELETE FROM chunks; DELETE FROM file_hashes; DELETE FROM index_metadata; DELETE FROM [references];",
+                "DELETE FROM chunks; DELETE FROM file_hashes; DELETE FROM file_index_state; DELETE FROM index_metadata; DELETE FROM [references];",
             )
             .context("failed to clear metadata store")?;
+        Ok(())
+    }
+
+    /// Insert or replace a batch of file states.
+    pub fn insert_file_states(&self, states: &[FileIndexState]) -> Result<()> {
+        let tx = self
+            .conn
+            .unchecked_transaction()
+            .context("failed to begin file state transaction")?;
+        {
+            let mut stmt = self
+                .conn
+                .prepare_cached(
+                    "INSERT OR REPLACE INTO file_index_state
+                     (file_path, language, status, tree_has_error, tier0_fallback, chunk_count)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                )
+                .context("failed to prepare file state insert")?;
+
+            for state in states {
+                stmt.execute(params![
+                    state.file_path,
+                    state.language,
+                    state.status.as_str(),
+                    state.tree_has_error,
+                    state.tier0_fallback,
+                    state.chunk_count as i64,
+                ])
+                .with_context(|| format!("failed to insert file state: {}", state.file_path))?;
+            }
+        }
+        tx.commit().context("failed to commit file state inserts")?;
+        Ok(())
+    }
+
+    /// Insert or replace a single file state.
+    pub fn upsert_file_state(&self, state: &FileIndexState) -> Result<()> {
+        self.insert_file_states(std::slice::from_ref(state))
+    }
+
+    /// Delete file state for a path.
+    pub fn delete_file_state(&self, file_path: &str) -> Result<()> {
+        self.conn
+            .execute(
+                "DELETE FROM file_index_state WHERE file_path = ?1",
+                params![file_path],
+            )
+            .context("failed to delete file state")?;
         Ok(())
     }
 
@@ -382,6 +506,59 @@ impl MetadataStore {
             )
             .context("failed to delete file hash")?;
         Ok(())
+    }
+
+    /// Get all tracked files, including parse failures that produced no chunks.
+    pub fn tracked_files(&self) -> Result<Vec<String>> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT file_path FROM file_hashes ORDER BY file_path")
+            .context("failed to prepare tracked files query")?;
+        let rows = stmt
+            .query_map([], |row| row.get(0))
+            .context("failed to query tracked files")?;
+        let mut files = Vec::new();
+        for row in rows {
+            files.push(row.context("failed to read tracked file")?);
+        }
+        Ok(files)
+    }
+
+    /// Get all persisted file states.
+    pub fn file_states(&self) -> Result<Vec<FileIndexState>> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT file_path, language, status, tree_has_error, tier0_fallback, chunk_count
+                 FROM file_index_state
+                 ORDER BY file_path",
+            )
+            .context("failed to prepare file states query")?;
+        let rows = stmt
+            .query_map([], |row| {
+                let status: String = row.get(2)?;
+                Ok(FileIndexState {
+                    file_path: row.get(0)?,
+                    language: row.get(1)?,
+                    status: FileIndexStatus::from_db(&status).map_err(|err| {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            2,
+                            rusqlite::types::Type::Text,
+                            Box::new(err),
+                        )
+                    })?,
+                    tree_has_error: row.get(3)?,
+                    tier0_fallback: row.get(4)?,
+                    chunk_count: row.get::<_, i64>(5)? as u64,
+                })
+            })
+            .context("failed to query file states")?;
+
+        let mut states = Vec::new();
+        for row in rows {
+            states.push(row.context("failed to read file state")?);
+        }
+        Ok(states)
     }
 
     // ── Reference (call graph) operations ──────────────────────────
@@ -582,6 +759,83 @@ impl MetadataStore {
             stats.push((lang, count as u64));
         }
         Ok(stats)
+    }
+
+    /// Collect persisted index health metrics from file-level states.
+    pub fn index_health(&self) -> Result<IndexHealth> {
+        let files_indexed: i64 = self
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM file_index_state WHERE status = 'indexed'",
+                [],
+                |row| row.get(0),
+            )
+            .context("failed to count indexed files for health")?;
+        let files_with_tree_sitter_errors: i64 = self
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM file_index_state WHERE status = 'indexed' AND tree_has_error = 1",
+                [],
+                |row| row.get(0),
+            )
+            .context("failed to count tree-sitter errors for health")?;
+        let files_using_tier0_fallback: i64 = self
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM file_index_state WHERE status = 'indexed' AND tier0_fallback = 1",
+                [],
+                |row| row.get(0),
+            )
+            .context("failed to count tier0 fallbacks for health")?;
+        let files_with_parse_failures: i64 = self
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM file_index_state WHERE status = 'parse_error'",
+                [],
+                |row| row.get(0),
+            )
+            .context("failed to count parse failures for health")?;
+
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT
+                    language,
+                    SUM(CASE WHEN status = 'indexed' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN status = 'indexed' AND tree_has_error = 1 THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN status = 'indexed' AND tier0_fallback = 1 THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN status = 'parse_error' THEN 1 ELSE 0 END)
+                 FROM file_index_state
+                 GROUP BY language
+                 ORDER BY (SUM(CASE WHEN status = 'indexed' THEN 1 ELSE 0 END) +
+                           SUM(CASE WHEN status = 'parse_error' THEN 1 ELSE 0 END)) DESC,
+                          language ASC",
+            )
+            .context("failed to prepare index health query")?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(LanguageHealthStat {
+                    language: row.get(0)?,
+                    files_indexed: row.get::<_, i64>(1)? as u64,
+                    files_with_tree_sitter_errors: row.get::<_, i64>(2)? as u64,
+                    files_using_tier0_fallback: row.get::<_, i64>(3)? as u64,
+                    files_with_parse_failures: row.get::<_, i64>(4)? as u64,
+                })
+            })
+            .context("failed to execute index health query")?;
+
+        let mut by_language = Vec::new();
+        for row in rows {
+            by_language.push(row.context("failed to read index health row")?);
+        }
+
+        Ok(IndexHealth {
+            files_indexed: files_indexed as u64,
+            files_with_tree_sitter_errors: files_with_tree_sitter_errors as u64,
+            files_using_tier0_fallback: files_using_tier0_fallback as u64,
+            files_with_parse_failures: files_with_parse_failures as u64,
+            by_language,
+        })
     }
 
     /// Get top-level directories with file counts.

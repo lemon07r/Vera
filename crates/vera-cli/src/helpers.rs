@@ -33,6 +33,33 @@ pub struct LocalBackendFlags {
     pub local: bool,
 }
 
+#[derive(Debug, Clone, Default, Args)]
+pub struct GitScopeFlags {
+    /// Limit results to modified, staged, and untracked files.
+    #[arg(long, group = "git_scope")]
+    pub changed: bool,
+    /// Limit results to files changed since the given revision.
+    #[arg(long, value_name = "REV", group = "git_scope")]
+    pub since: Option<String>,
+    /// Limit results to files changed since merge-base(HEAD, REV).
+    #[arg(long, value_name = "REV", group = "git_scope")]
+    pub base: Option<String>,
+}
+
+impl GitScopeFlags {
+    pub fn resolve(&self) -> Option<vera_core::git_scope::GitScope> {
+        if self.changed {
+            Some(vera_core::git_scope::GitScope::Changed)
+        } else if let Some(rev) = self.since.as_ref() {
+            Some(vera_core::git_scope::GitScope::Since(rev.clone()))
+        } else {
+            self.base
+                .as_ref()
+                .map(|rev| vera_core::git_scope::GitScope::Base(rev.clone()))
+        }
+    }
+}
+
 impl LocalBackendFlags {
     pub fn any_set(&self) -> bool {
         self.onnx_jina_cpu
@@ -327,6 +354,23 @@ pub fn print_human_summary(summary: &vera_core::indexing::IndexSummary, verbose:
     println!("  Chunks created:      {}", summary.chunks_created);
     println!("  Embeddings generated: {}", summary.embeddings_generated);
     println!("  Elapsed time:        {:.2}s", summary.elapsed_secs);
+
+    if summary.files_with_tree_sitter_errors > 0 || summary.files_using_tier0_fallback > 0 {
+        println!();
+        println!("  Index health:");
+        if summary.files_with_tree_sitter_errors > 0 {
+            println!(
+                "    Tree-sitter errors: {}",
+                summary.files_with_tree_sitter_errors
+            );
+        }
+        if summary.files_using_tier0_fallback > 0 {
+            println!(
+                "    Tier 0 fallback:    {}",
+                summary.files_using_tier0_fallback
+            );
+        }
+    }
 
     // Report skipped files if any.
     let skipped_total = summary.binary_skipped + summary.large_skipped + summary.error_skipped;

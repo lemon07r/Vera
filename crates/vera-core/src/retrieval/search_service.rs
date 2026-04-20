@@ -205,6 +205,10 @@ fn compute_fetch_limit(query: &str, filters: &SearchFilters, result_limit: usize
         result_limit.saturating_mul(3).max(result_limit + 20)
     };
 
+    if filters.exact_paths.is_some() {
+        fetch_limit = fetch_limit.max(result_limit.saturating_mul(12).max(result_limit + 200));
+    }
+
     if needs_structural_overfetch(query, filters) {
         fetch_limit = fetch_limit.max(result_limit.saturating_mul(8).max(result_limit + 140));
     } else if matches!(classify_query(query), QueryType::NaturalLanguage) {
@@ -218,6 +222,7 @@ fn needs_structural_overfetch(query: &str, filters: &SearchFilters) -> bool {
     matches!(classify_query(query), QueryType::NaturalLanguage)
         && query.split_whitespace().count() >= 4
         && filters.path_glob.is_none()
+        && filters.exact_paths.is_none()
         && filters.symbol_type.is_none()
         && !is_path_weighted_query(query)
 }
@@ -245,6 +250,7 @@ fn effective_rerank_candidates(
 fn should_skip_reranking(query: &str, filters: &SearchFilters) -> bool {
     let word_count = query.split_whitespace().count();
     filters.path_glob.is_some()
+        || filters.exact_paths.is_some()
         || filters.symbol_type.is_some()
         || is_path_weighted_query(query)
         || (matches!(classify_query(query), QueryType::Identifier) && word_count <= 2)

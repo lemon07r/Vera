@@ -1,34 +1,27 @@
-//! `vera grep <pattern>` — Regex search over indexed files.
+//! `vera ast-query <query>` — Structural search with raw tree-sitter queries.
 
-use anyhow::bail;
+use anyhow::{Context, bail};
 use std::io::Write;
-use std::sync::Arc;
 use std::time::Instant;
 
 use crate::helpers::{load_runtime_config, output_results};
 
-/// Run the `vera grep <pattern>` command.
 #[allow(clippy::too_many_arguments)]
 pub fn run(
-    pattern: &str,
+    query: &str,
+    language: &str,
+    path: Option<String>,
     limit: Option<usize>,
-    case_insensitive: bool,
-    context_lines: usize,
-    filters: &vera_core::types::SearchFilters,
+    scope: Option<String>,
+    include_generated: bool,
     json_output: bool,
     raw: bool,
     timing: bool,
-    git_scope: Option<vera_core::git_scope::GitScope>,
     compact: bool,
 ) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()
         .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
-    let mut filters = filters.clone();
-    if let Some(scope) = git_scope.as_ref() {
-        filters.exact_paths = Some(Arc::new(vera_core::git_scope::resolve_scope(&cwd, scope)?));
-    }
     let index_dir = vera_core::indexing::index_dir(&cwd);
-
     if !index_dir.exists() {
         bail!(
             "no index found in current directory.\n\
@@ -36,16 +29,27 @@ pub fn run(
         );
     }
 
+    let language: vera_core::types::Language = language.parse().map_err(|_| {
+        anyhow::anyhow!(
+            "unsupported language '{}'. Use Vera's lowercase language names such as rust, python, or typescript.",
+            language
+        )
+    })?;
+
+    let filters = vera_core::types::SearchFilters {
+        language: None,
+        path_glob: path,
+        exact_paths: None,
+        symbol_type: None,
+        scope: scope.and_then(|value| value.parse().ok()),
+        include_generated: Some(include_generated),
+    };
+
     let result_limit = limit.unwrap_or(20);
     let started_at = Instant::now();
-    let results = vera_core::retrieval::search_regex(
-        &index_dir,
-        pattern,
-        result_limit,
-        case_insensitive,
-        context_lines,
-        &filters,
-    )?;
+    let results =
+        vera_core::retrieval::search_ast_query(&index_dir, query, language, result_limit, &filters)
+            .context("AST query failed")?;
 
     let config = load_runtime_config()?;
     output_results(

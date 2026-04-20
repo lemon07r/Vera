@@ -25,6 +25,21 @@ fn print_human_stats(stats: &vera_core::stats::IndexStats) {
     println!("  Files indexed:   {}", stats.file_count);
     println!("  Total chunks:    {}", stats.chunk_count);
     println!("  Index size:      {}", stats.index_size_human);
+
+    println!();
+    println!("  Index Health:");
+    println!(
+        "    Tree-sitter errors: {}",
+        stats.index_health.files_with_tree_sitter_errors
+    );
+    println!(
+        "    Tier 0 fallback:    {}",
+        stats.index_health.files_using_tier0_fallback
+    );
+    println!(
+        "    Parse failures:     {}",
+        stats.index_health.files_with_parse_failures
+    );
     println!();
     if !stats.languages.is_empty() {
         println!("  Language Breakdown:");
@@ -36,5 +51,20 @@ fn print_human_stats(stats: &vera_core::stats::IndexStats) {
         }
     } else {
         println!("  No languages indexed.");
+    }
+
+    if !stats.index_health.by_language.is_empty() {
+        println!();
+        println!("  Health by Language:");
+        for lang in &stats.index_health.by_language {
+            println!(
+                "    {:<15} indexed {:>4}  errors {:>3}  tier0 {:>3}  parse {:>3}",
+                lang.language,
+                lang.files_indexed,
+                lang.files_with_tree_sitter_errors,
+                lang.files_using_tier0_fallback,
+                lang.files_with_parse_failures,
+            );
+        }
     }
 }

@@ -3,6 +3,7 @@
 use anyhow::bail;
 use std::io::Write;
 use std::path::Path;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use vera_core::config::InferenceBackend;
 use vera_core::retrieval::search_service::SearchTimings;
@@ -21,6 +22,7 @@ pub fn run(
     raw: bool,
     timing: bool,
     deep: bool,
+    git_scope: Option<vera_core::git_scope::GitScope>,
     compact: bool,
     backend: InferenceBackend,
 ) -> anyhow::Result<()> {
@@ -38,6 +40,10 @@ pub fn run(
 
     let cwd = std::env::current_dir()
         .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
+    let mut filters = filters.clone();
+    if let Some(scope) = git_scope.as_ref() {
+        filters.exact_paths = Some(Arc::new(vera_core::git_scope::resolve_scope(&cwd, scope)?));
+    }
     let index_dir = vera_core::indexing::index_dir(&cwd);
 
     if !index_dir.exists() {
@@ -53,7 +59,7 @@ pub fn run(
             &index_dir,
             &effective_query,
             &config,
-            filters,
+            &filters,
             result_limit,
             backend,
             deep,
@@ -64,7 +70,7 @@ pub fn run(
             &queries,
             intent,
             &config,
-            filters,
+            &filters,
             result_limit,
             backend,
             deep,

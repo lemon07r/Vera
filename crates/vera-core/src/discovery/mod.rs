@@ -17,7 +17,10 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
+use ignore::Match;
 use ignore::WalkBuilder;
+use ignore::gitignore::{Gitignore, GitignoreBuilder, Glob as GitignoreGlob};
+use ignore::overrides::{Override, OverrideBuilder};
 use tracing::{debug, warn};
 
 use crate::config::IndexingConfig;
@@ -46,6 +49,111 @@ pub struct DiscoveryResult {
     pub large_skipped_paths: Vec<(String, u64)>,
     /// Number of files skipped due to read errors (permissions, etc.).
     pub error_skipped: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PathDecision {
+    Indexed,
+    Excluded,
+    Missing,
+    Directory,
+    OutsideRoot,
+}
+
+impl std::fmt::Display for PathDecision {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            Self::Indexed => "indexed",
+            Self::Excluded => "excluded",
+            Self::Missing => "missing",
+            Self::Directory => "directory",
+            Self::OutsideRoot => "outside_root",
+        };
+        write!(f, "{value}")
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PathReason {
+    Indexed,
+    Missing,
+    Directory,
+    OutsideRoot,
+    DefaultExclude,
+    CliExclude,
+    Veraignore,
+    DotIgnore,
+    Gitignore,
+    GitExclude,
+    GitGlobal,
+    RstIncludeFragment,
+    TooLarge,
+    EmptyFile,
+    BinaryExtension,
+    BinaryContent,
+}
+
+impl std::fmt::Display for PathReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            Self::Indexed => "indexed",
+            Self::Missing => "missing",
+            Self::Directory => "directory",
+            Self::OutsideRoot => "outside_root",
+            Self::DefaultExclude => "default_exclude",
+            Self::CliExclude => "cli_exclude",
+            Self::Veraignore => "veraignore",
+            Self::DotIgnore => "dot_ignore",
+            Self::Gitignore => "gitignore",
+            Self::GitExclude => "git_exclude",
+            Self::GitGlobal => "git_global",
+            Self::RstIncludeFragment => "rst_include_fragment",
+            Self::TooLarge => "too_large",
+            Self::EmptyFile => "empty_file",
+            Self::BinaryExtension => "binary_extension",
+            Self::BinaryContent => "binary_content",
+        };
+        write!(f, "{value}")
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct PathExplanation {
+    pub input_path: String,
+    pub absolute_path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relative_path: Option<String>,
+    pub decision: PathDecision,
+    pub reason: PathReason,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pattern: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct IgnoreStrategy {
+    use_gitignore: bool,
+    use_veraignore: bool,
+}
+
+#[derive(Debug, Clone)]
+struct IgnoreMatchExplanation {
+    reason: PathReason,
+    source: Option<String>,
+    pattern: Option<String>,
+    details: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+enum IgnoreDecision {
+    None,
+    Whitelist(IgnoreMatchExplanation),
+    Ignore(IgnoreMatchExplanation),
 }
 
 /// Known binary file extensions (skip without content inspection).
@@ -78,52 +186,23 @@ pub fn discover_files(root: &Path, config: &IndexingConfig) -> Result<DiscoveryR
         .canonicalize()
         .with_context(|| format!("failed to resolve path: {}", root.display()))?;
 
-    // Determine ignore file strategy based on .veraignore presence.
-    let veraignore_path = root.join(".veraignore");
-    let (use_gitignore, use_veraignore) = if config.no_ignore {
-        (false, false)
-    } else if veraignore_path.exists() {
-        let content = std::fs::read_to_string(&veraignore_path)
-            .with_context(|| format!("failed to read {}", veraignore_path.display()))?;
-        let has_include = content.lines().any(|l| l.trim() == "#include .gitignore");
-        (has_include, true)
-    } else {
-        (true, false)
-    };
+    let strategy = determine_ignore_strategy(&root, config)?;
 
     let mut walker = WalkBuilder::new(&root);
     walker
         .hidden(false)
-        .git_ignore(use_gitignore)
-        .git_global(use_gitignore)
-        .git_exclude(use_gitignore)
+        .git_ignore(strategy.use_gitignore)
+        .git_global(strategy.use_gitignore)
+        .git_exclude(strategy.use_gitignore)
         .require_git(false)
         .ignore(!config.no_ignore);
 
-    if use_veraignore {
+    if strategy.use_veraignore {
         walker.add_custom_ignore_filename(".veraignore");
     }
 
     // Add default directory exclusions and CLI --exclude patterns as overrides.
-    let mut overrides = ignore::overrides::OverrideBuilder::new(&root);
-    if !config.no_default_excludes {
-        for pattern in &config.default_excludes {
-            let glob = format!("!{pattern}/");
-            overrides
-                .add(&glob)
-                .with_context(|| format!("invalid exclusion pattern: {pattern}"))?;
-        }
-        // Always exclude .veraignore itself from indexing.
-        overrides.add("!.veraignore")?;
-    }
-    for pattern in &config.extra_excludes {
-        overrides
-            .add(&format!("!{pattern}"))
-            .with_context(|| format!("invalid --exclude pattern: {pattern}"))?;
-    }
-    let overrides = overrides
-        .build()
-        .context("failed to build override patterns")?;
+    let overrides = build_overrides(&root, config)?;
     walker.overrides(overrides);
 
     let mut files = Vec::new();
@@ -237,6 +316,489 @@ pub fn discover_files(root: &Path, config: &IndexingConfig) -> Result<DiscoveryR
         large_skipped_paths,
         error_skipped,
     })
+}
+
+/// Explain why a path would or would not be indexed.
+pub fn explain_path(root: &Path, path: &Path, config: &IndexingConfig) -> Result<PathExplanation> {
+    let root = root
+        .canonicalize()
+        .with_context(|| format!("failed to resolve path: {}", root.display()))?;
+    let candidate = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        root.join(path)
+    };
+    let display_input = path.display().to_string();
+    let absolute_display = candidate.display().to_string();
+
+    let relative_path = candidate
+        .strip_prefix(&root)
+        .ok()
+        .map(|p| p.to_string_lossy().to_string());
+    if relative_path.is_none() {
+        return Ok(PathExplanation {
+            input_path: display_input,
+            absolute_path: absolute_display,
+            relative_path: None,
+            decision: PathDecision::OutsideRoot,
+            reason: PathReason::OutsideRoot,
+            source: None,
+            pattern: None,
+            details: Some(format!(
+                "path is outside the repository root {}",
+                root.display()
+            )),
+        });
+    }
+    let relative_path = relative_path.unwrap();
+    let relative = Path::new(&relative_path);
+
+    if !candidate.exists() {
+        return Ok(PathExplanation {
+            input_path: display_input,
+            absolute_path: absolute_display,
+            relative_path: Some(relative_path),
+            decision: PathDecision::Missing,
+            reason: PathReason::Missing,
+            source: None,
+            pattern: None,
+            details: Some("path does not exist".to_string()),
+        });
+    }
+
+    if candidate.is_dir() {
+        return Ok(PathExplanation {
+            input_path: display_input,
+            absolute_path: absolute_display,
+            relative_path: Some(relative_path),
+            decision: PathDecision::Directory,
+            reason: PathReason::Directory,
+            source: None,
+            pattern: None,
+            details: Some("directories are not indexed directly".to_string()),
+        });
+    }
+
+    if let Some(explanation) = explain_override_match(&root, relative, config)? {
+        return Ok(path_excluded(
+            display_input,
+            absolute_display,
+            relative_path,
+            explanation,
+        ));
+    }
+
+    let mut whitelist = IgnoreDecision::None;
+    if !config.no_ignore {
+        let strategy = determine_ignore_strategy(&root, config)?;
+
+        for decision in [
+            explain_custom_ignore_match(&root, relative, strategy.use_veraignore)?,
+            explain_named_ignore_match(&root, relative, ".ignore", PathReason::DotIgnore)?,
+            if strategy.use_gitignore {
+                explain_named_ignore_match(&root, relative, ".gitignore", PathReason::Gitignore)?
+            } else {
+                IgnoreDecision::None
+            },
+            if strategy.use_gitignore {
+                explain_git_exclude_match(&root, &candidate)?
+            } else {
+                IgnoreDecision::None
+            },
+            if strategy.use_gitignore {
+                explain_git_global_match(&candidate)?
+            } else {
+                IgnoreDecision::None
+            },
+        ] {
+            match decision {
+                IgnoreDecision::Ignore(explanation) => {
+                    return Ok(path_excluded(
+                        display_input,
+                        absolute_display,
+                        relative_path,
+                        explanation,
+                    ));
+                }
+                IgnoreDecision::Whitelist(explanation) => {
+                    whitelist = IgnoreDecision::Whitelist(explanation)
+                }
+                IgnoreDecision::None => {}
+            }
+        }
+    }
+
+    if !config.no_default_excludes && is_rst_include_fragment(&candidate) {
+        return Ok(path_excluded(
+            display_input,
+            absolute_display,
+            relative_path,
+            IgnoreMatchExplanation {
+                reason: PathReason::RstIncludeFragment,
+                source: Some("default excludes".to_string()),
+                pattern: Some("*.rst.inc".to_string()),
+                details: Some(
+                    "reStructuredText include fragments are skipped because their content is indexed through the parent document"
+                        .to_string(),
+                ),
+            },
+        ));
+    }
+
+    let metadata = std::fs::metadata(&candidate)
+        .with_context(|| format!("failed to read metadata for {}", candidate.display()))?;
+    if metadata.len() > config.max_file_size_bytes {
+        return Ok(path_excluded(
+            display_input,
+            absolute_display,
+            relative_path,
+            IgnoreMatchExplanation {
+                reason: PathReason::TooLarge,
+                source: Some("indexing config".to_string()),
+                pattern: None,
+                details: Some(format!(
+                    "file size {} exceeds the configured limit {}",
+                    metadata.len(),
+                    config.max_file_size_bytes
+                )),
+            },
+        ));
+    }
+
+    if metadata.len() == 0 {
+        return Ok(path_excluded(
+            display_input,
+            absolute_display,
+            relative_path,
+            IgnoreMatchExplanation {
+                reason: PathReason::EmptyFile,
+                source: Some("discovery".to_string()),
+                pattern: None,
+                details: Some("empty files are skipped during indexing".to_string()),
+            },
+        ));
+    }
+
+    if is_binary_extension(&candidate) {
+        return Ok(path_excluded(
+            display_input,
+            absolute_display,
+            relative_path,
+            IgnoreMatchExplanation {
+                reason: PathReason::BinaryExtension,
+                source: Some("binary extension list".to_string()),
+                pattern: candidate
+                    .extension()
+                    .and_then(|ext| ext.to_str())
+                    .map(|ext| format!("*.{ext}")),
+                details: Some(
+                    "known binary file extensions are skipped before content inspection"
+                        .to_string(),
+                ),
+            },
+        ));
+    }
+
+    if is_binary_content(&candidate)? {
+        return Ok(path_excluded(
+            display_input,
+            absolute_display,
+            relative_path,
+            IgnoreMatchExplanation {
+                reason: PathReason::BinaryContent,
+                source: Some("binary content heuristic".to_string()),
+                pattern: None,
+                details: Some(
+                    "the first 8KB contains a null byte, so the file is treated as binary"
+                        .to_string(),
+                ),
+            },
+        ));
+    }
+
+    let (source, pattern, details) = match whitelist {
+        IgnoreDecision::Whitelist(explanation) => {
+            (explanation.source, explanation.pattern, explanation.details)
+        }
+        IgnoreDecision::Ignore(_) | IgnoreDecision::None => (None, None, None),
+    };
+
+    Ok(PathExplanation {
+        input_path: display_input,
+        absolute_path: absolute_display,
+        relative_path: Some(relative_path),
+        decision: PathDecision::Indexed,
+        reason: PathReason::Indexed,
+        source,
+        pattern,
+        details: details.or_else(|| Some("path would be indexed".to_string())),
+    })
+}
+
+fn determine_ignore_strategy(root: &Path, config: &IndexingConfig) -> Result<IgnoreStrategy> {
+    let veraignore_path = root.join(".veraignore");
+    if config.no_ignore {
+        return Ok(IgnoreStrategy {
+            use_gitignore: false,
+            use_veraignore: false,
+        });
+    }
+    if veraignore_path.exists() {
+        let content = std::fs::read_to_string(&veraignore_path)
+            .with_context(|| format!("failed to read {}", veraignore_path.display()))?;
+        let has_include = content.lines().any(|l| l.trim() == "#include .gitignore");
+        return Ok(IgnoreStrategy {
+            use_gitignore: has_include,
+            use_veraignore: true,
+        });
+    }
+    Ok(IgnoreStrategy {
+        use_gitignore: true,
+        use_veraignore: false,
+    })
+}
+
+fn build_overrides(root: &Path, config: &IndexingConfig) -> Result<Override> {
+    let mut overrides = OverrideBuilder::new(root);
+    if !config.no_default_excludes {
+        for pattern in &config.default_excludes {
+            overrides
+                .add(&format!("!{pattern}/"))
+                .with_context(|| format!("invalid exclusion pattern: {pattern}"))?;
+        }
+        overrides.add("!.veraignore")?;
+    }
+    for pattern in &config.extra_excludes {
+        overrides
+            .add(&format!("!{pattern}"))
+            .with_context(|| format!("invalid --exclude pattern: {pattern}"))?;
+    }
+    overrides
+        .build()
+        .context("failed to build override patterns")
+}
+
+fn explain_override_match(
+    root: &Path,
+    relative: &Path,
+    config: &IndexingConfig,
+) -> Result<Option<IgnoreMatchExplanation>> {
+    if !config.no_default_excludes {
+        for pattern in &config.default_excludes {
+            let mut builder = OverrideBuilder::new(root);
+            builder
+                .add(&format!("!{pattern}/"))
+                .with_context(|| format!("invalid exclusion pattern: {pattern}"))?;
+            let matcher = builder
+                .build()
+                .context("failed to build override matcher")?;
+            if override_matches_path_or_any_parents(&matcher, relative) {
+                return Ok(Some(IgnoreMatchExplanation {
+                    reason: PathReason::DefaultExclude,
+                    source: Some("default excludes".to_string()),
+                    pattern: Some(pattern.clone()),
+                    details: Some("matched Vera's built-in indexing exclusions".to_string()),
+                }));
+            }
+        }
+
+        let mut builder = OverrideBuilder::new(root);
+        builder.add("!.veraignore")?;
+        let matcher = builder
+            .build()
+            .context("failed to build .veraignore override")?;
+        if override_matches_path_or_any_parents(&matcher, relative) {
+            return Ok(Some(IgnoreMatchExplanation {
+                reason: PathReason::DefaultExclude,
+                source: Some("default excludes".to_string()),
+                pattern: Some(".veraignore".to_string()),
+                details: Some("the .veraignore file itself is never indexed".to_string()),
+            }));
+        }
+    }
+
+    for pattern in &config.extra_excludes {
+        let mut builder = OverrideBuilder::new(root);
+        builder
+            .add(&format!("!{pattern}"))
+            .with_context(|| format!("invalid --exclude pattern: {pattern}"))?;
+        let matcher = builder
+            .build()
+            .context("failed to build CLI override matcher")?;
+        if override_matches_path_or_any_parents(&matcher, relative) {
+            return Ok(Some(IgnoreMatchExplanation {
+                reason: PathReason::CliExclude,
+                source: Some("--exclude".to_string()),
+                pattern: Some(pattern.clone()),
+                details: Some("matched a CLI exclusion pattern".to_string()),
+            }));
+        }
+    }
+
+    Ok(None)
+}
+
+fn override_matches_path_or_any_parents(matcher: &Override, relative: &Path) -> bool {
+    if !matcher.matched(relative, false).is_none() {
+        return true;
+    }
+
+    let mut current = relative.parent();
+    while let Some(parent) = current {
+        if !matcher.matched(parent, true).is_none() {
+            return true;
+        }
+        current = parent.parent();
+    }
+    false
+}
+
+fn explain_custom_ignore_match(
+    root: &Path,
+    relative: &Path,
+    use_veraignore: bool,
+) -> Result<IgnoreDecision> {
+    if !use_veraignore {
+        return Ok(IgnoreDecision::None);
+    }
+    explain_named_ignore_match(root, relative, ".veraignore", PathReason::Veraignore)
+}
+
+fn explain_named_ignore_match(
+    root: &Path,
+    relative: &Path,
+    filename: &str,
+    reason: PathReason,
+) -> Result<IgnoreDecision> {
+    for dir in path_ancestors_from_child(relative) {
+        let ignore_file = root.join(&dir).join(filename);
+        if !ignore_file.exists() {
+            continue;
+        }
+        let (matcher, err) = Gitignore::new(&ignore_file);
+        if let Some(err) = err {
+            warn!(file = %ignore_file.display(), error = %err, "ignore file parse warning");
+        }
+        let candidate = relative.strip_prefix(&dir).unwrap_or(relative);
+        let matched = gitignore_matches_path_or_any_parents(&matcher, candidate, false);
+        match matched {
+            Match::Ignore(glob) => {
+                return Ok(IgnoreDecision::Ignore(glob_explanation(reason, glob)));
+            }
+            Match::Whitelist(glob) => {
+                return Ok(IgnoreDecision::Whitelist(glob_explanation(reason, glob)));
+            }
+            Match::None => {}
+        }
+    }
+    Ok(IgnoreDecision::None)
+}
+
+fn explain_git_exclude_match(root: &Path, absolute: &Path) -> Result<IgnoreDecision> {
+    let exclude = root.join(".git").join("info").join("exclude");
+    if !exclude.exists() {
+        return Ok(IgnoreDecision::None);
+    }
+    let mut builder = GitignoreBuilder::new(root);
+    if let Some(err) = builder.add(&exclude) {
+        warn!(file = %exclude.display(), error = %err, "git exclude parse warning");
+    }
+    let matcher = builder
+        .build()
+        .context("failed to build git exclude matcher")?;
+    let candidate = absolute.strip_prefix(root).unwrap_or(absolute);
+    Ok(
+        match gitignore_matches_path_or_any_parents(&matcher, candidate, false) {
+            Match::Ignore(glob) => {
+                IgnoreDecision::Ignore(glob_explanation(PathReason::GitExclude, glob))
+            }
+            Match::Whitelist(glob) => {
+                IgnoreDecision::Whitelist(glob_explanation(PathReason::GitExclude, glob))
+            }
+            Match::None => IgnoreDecision::None,
+        },
+    )
+}
+
+fn explain_git_global_match(absolute: &Path) -> Result<IgnoreDecision> {
+    let (matcher, err) = Gitignore::global();
+    if let Some(err) = err {
+        warn!(error = %err, "global gitignore parse warning");
+    }
+    Ok(
+        match gitignore_matches_path_or_any_parents(&matcher, absolute, false) {
+            Match::Ignore(glob) => {
+                IgnoreDecision::Ignore(glob_explanation(PathReason::GitGlobal, glob))
+            }
+            Match::Whitelist(glob) => {
+                IgnoreDecision::Whitelist(glob_explanation(PathReason::GitGlobal, glob))
+            }
+            Match::None => IgnoreDecision::None,
+        },
+    )
+}
+
+fn glob_explanation(reason: PathReason, glob: &GitignoreGlob) -> IgnoreMatchExplanation {
+    IgnoreMatchExplanation {
+        reason,
+        source: glob.from().map(|path| path.display().to_string()),
+        pattern: Some(glob.original().to_string()),
+        details: Some(if glob.is_whitelist() {
+            "matched a whitelist pattern".to_string()
+        } else {
+            "matched an ignore pattern".to_string()
+        }),
+    }
+}
+
+fn path_excluded(
+    input_path: String,
+    absolute_path: String,
+    relative_path: String,
+    explanation: IgnoreMatchExplanation,
+) -> PathExplanation {
+    PathExplanation {
+        input_path,
+        absolute_path,
+        relative_path: Some(relative_path),
+        decision: PathDecision::Excluded,
+        reason: explanation.reason,
+        source: explanation.source,
+        pattern: explanation.pattern,
+        details: explanation.details,
+    }
+}
+
+fn path_ancestors_from_child(path: &Path) -> Vec<PathBuf> {
+    let mut ancestors = Vec::new();
+    let mut current = path.parent();
+    while let Some(parent) = current {
+        ancestors.push(parent.to_path_buf());
+        current = parent.parent();
+    }
+    ancestors.push(PathBuf::new());
+    ancestors
+}
+
+fn gitignore_matches_path_or_any_parents<'a>(
+    matcher: &'a Gitignore,
+    path: &Path,
+    is_dir: bool,
+) -> Match<&'a GitignoreGlob> {
+    match matcher.matched(path, is_dir) {
+        Match::None => {}
+        decision => return decision,
+    }
+
+    let mut current = path.parent();
+    while let Some(parent) = current {
+        match matcher.matched(parent, true) {
+            Match::None => current = parent.parent(),
+            decision => return decision,
+        }
+    }
+
+    Match::None
 }
 
 /// Check if a file has a known binary extension.
@@ -777,6 +1339,68 @@ mod tests {
         assert!(
             !names.contains(&".veraignore"),
             ".veraignore should not be indexed"
+        );
+    }
+
+    #[test]
+    fn explain_path_reports_gitignore_match() {
+        let dir = TempDir::new().unwrap();
+        fs::write(dir.path().join("main.rs"), "fn main() {}").unwrap();
+        fs::write(dir.path().join("secret.txt"), "sensitive data").unwrap();
+        fs::write(dir.path().join(".gitignore"), "secret.txt\n").unwrap();
+
+        let explanation =
+            explain_path(dir.path(), Path::new("secret.txt"), &default_config()).unwrap();
+        assert_eq!(explanation.decision, PathDecision::Excluded);
+        assert_eq!(explanation.reason, PathReason::Gitignore);
+        assert_eq!(explanation.pattern.as_deref(), Some("secret.txt"));
+    }
+
+    #[test]
+    fn explain_path_reports_default_exclude() {
+        let dir = TempDir::new().unwrap();
+        fs::create_dir_all(dir.path().join("dist")).unwrap();
+        fs::write(dir.path().join("dist").join("bundle.js"), "var x = 1;").unwrap();
+
+        let explanation =
+            explain_path(dir.path(), Path::new("dist/bundle.js"), &default_config()).unwrap();
+        assert_eq!(explanation.decision, PathDecision::Excluded);
+        assert_eq!(explanation.reason, PathReason::DefaultExclude);
+        assert_eq!(explanation.pattern.as_deref(), Some("dist"));
+    }
+
+    #[test]
+    fn explain_path_reports_veraignore_override() {
+        let dir = TempDir::new().unwrap();
+        fs::write(dir.path().join("secret.txt"), "sensitive data").unwrap();
+        fs::write(dir.path().join("notes.md"), "draft").unwrap();
+        fs::write(dir.path().join(".gitignore"), "secret.txt\n").unwrap();
+        fs::write(dir.path().join(".veraignore"), "notes.md\n").unwrap();
+
+        let secret = explain_path(dir.path(), Path::new("secret.txt"), &default_config()).unwrap();
+        assert_eq!(secret.decision, PathDecision::Indexed);
+
+        let notes = explain_path(dir.path(), Path::new("notes.md"), &default_config()).unwrap();
+        assert_eq!(notes.decision, PathDecision::Excluded);
+        assert_eq!(notes.reason, PathReason::Veraignore);
+        assert_eq!(notes.pattern.as_deref(), Some("notes.md"));
+    }
+
+    #[test]
+    fn explain_path_reports_whitelist_match() {
+        let dir = TempDir::new().unwrap();
+        fs::write(dir.path().join("main.rs"), "fn main() {}").unwrap();
+        fs::write(dir.path().join(".gitignore"), "*.rs\n!main.rs\n").unwrap();
+
+        let explanation =
+            explain_path(dir.path(), Path::new("main.rs"), &default_config()).unwrap();
+        assert_eq!(explanation.decision, PathDecision::Indexed);
+        assert_eq!(explanation.pattern.as_deref(), Some("!main.rs"));
+        assert!(
+            explanation
+                .source
+                .as_deref()
+                .is_some_and(|source| source.ends_with(".gitignore"))
         );
     }
 }

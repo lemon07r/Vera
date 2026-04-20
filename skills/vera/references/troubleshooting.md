@@ -98,7 +98,9 @@ Use `rg` for file names, counting matches, or files outside the Vera index.
 If unexpected files are indexed or missing from results:
 
 ```sh
-vera index . --verbose            # shows which files are skipped and why
+vera explain-path path/to/file
 ```
+
+Use `vera stats --json` if you need to inspect parse failures, tree-sitter error nodes, or Tier 0 fallback counts across the whole index.
 
 Check `.veraignore` syntax (gitignore format). Remember: `.veraignore` replaces `.gitignore` rules entirely unless you add `#include .gitignore` at the top to merge both. When using `#include .gitignore`, only add patterns that aren't already in `.gitignore`.

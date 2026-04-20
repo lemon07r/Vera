@@ -1,5 +1,8 @@
 //! Shared types used across Vera's core modules.
 
+use std::collections::HashSet;
+use std::sync::Arc;
+
 use serde::{Deserialize, Serialize};
 
 /// Coarse scope filter for retrieval.
@@ -48,6 +51,8 @@ pub struct SearchFilters {
     pub language: Option<String>,
     /// Filter by file path glob pattern (e.g., `src/**/*.rs`).
     pub path_glob: Option<String>,
+    /// Restrict results to an exact set of repository-relative file paths.
+    pub exact_paths: Option<Arc<HashSet<String>>>,
     /// Filter by symbol type (case-insensitive match).
     pub symbol_type: Option<String>,
     /// Coarse corpus scope filter.
@@ -65,6 +70,7 @@ impl SearchFilters {
     pub fn is_empty(&self) -> bool {
         self.language.is_none()
             && self.path_glob.is_none()
+            && self.exact_paths.is_none()
             && self.symbol_type.is_none()
             && self.scope.is_none()
             && self.include_generated.is_none()
@@ -80,6 +86,12 @@ impl SearchFilters {
 
         if let Some(ref pattern) = self.path_glob {
             if !glob_matches(pattern, file_path) {
+                return false;
+            }
+        }
+
+        if let Some(ref exact_paths) = self.exact_paths {
+            if !exact_paths.contains(file_path) {
                 return false;
             }
         }
@@ -1305,6 +1317,21 @@ mod tests {
             symbol_type: None,
         };
         assert!(!filters.matches(&generated));
+    }
+
+    #[test]
+    fn filter_by_exact_paths() {
+        let mut exact_paths = HashSet::new();
+        exact_paths.insert("src/lib.rs".to_string());
+        let filters = SearchFilters {
+            exact_paths: Some(Arc::new(exact_paths)),
+            ..Default::default()
+        };
+
+        let allowed = make_test_result("src/lib.rs", Language::Rust, None, None);
+        let blocked = make_test_result("src/main.rs", Language::Rust, None, None);
+        assert!(filters.matches(&allowed));
+        assert!(!filters.matches(&blocked));
     }
 
     #[test]

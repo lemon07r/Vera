@@ -16,6 +16,7 @@ pub mod chunk_text;
 pub mod corpus;
 pub mod discovery;
 pub mod embedding;
+pub mod git_scope;
 
 /// Install the rustls crypto provider (ring). Safe to call multiple times.
 pub fn init_tls() {

@@ -3,11 +3,20 @@
 use vera_core::stats::{self, ProjectOverview};
 
 /// Run the `vera overview` command.
-pub fn run(json_output: bool) -> anyhow::Result<()> {
+pub fn run(
+    json_output: bool,
+    git_scope: Option<vera_core::git_scope::GitScope>,
+) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()
         .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
 
-    let overview = stats::collect_overview(&cwd)?;
+    let exact_paths = if let Some(scope) = git_scope.as_ref() {
+        Some(vera_core::git_scope::resolve_scope(&cwd, scope)?)
+    } else {
+        None
+    };
+
+    let overview = stats::collect_overview_filtered(&cwd, exact_paths.as_ref())?;
 
     if json_output {
         let json = serde_json::to_string_pretty(&overview)

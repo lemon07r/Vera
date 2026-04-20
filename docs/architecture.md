@@ -16,7 +16,7 @@
 
 Files: `mod.rs` (public API), `languages.rs` (grammar dispatch), `extractor.rs` (AST node → SymbolType), `chunker.rs` (symbol-aware, whole-file, and Tier 0 chunking).
 
-Data flow: file → grammar lookup → tree-sitter parse → node classification → chunk production.
+Data flow: file → grammar lookup → tree-sitter parse (+ diagnostics) → node classification → chunk production.
 
 ### `embedding/`: Embedding generation
 
@@ -37,9 +37,11 @@ Data flow: file → grammar lookup → tree-sitter parse → node classification
 
 Deep search (`--deep`): `rag_fusion.rs` runs a cheap BM25 pre-filter to collect symbol names and file paths, then passes these as context hints to the LLM (`completion_client.rs`) which decomposes the query into targeted sub-queries (default 2). Sub-queries execute in parallel via OS threads, and results merge with weighted RRF (original query gets 2x weight). Falls back to iterative symbol-following when no completion endpoint is configured.
 
+Structural search (`ast_query.rs`): runs raw tree-sitter queries against indexed files in one language and returns source spans with optional enclosing symbol metadata.
+
 ### `storage/`: Persistent storage
 
-- `metadata.rs`: SQLite: chunk metadata, file paths, content hashes
+- `metadata.rs`: SQLite: chunk metadata, file paths, content hashes, and persisted file-level index state used for health reporting
 - `bm25.rs`: Tantivy: full-text BM25 index
 - `vector.rs`: sqlite-vec: embedding vectors
 
@@ -47,8 +49,8 @@ All stored in `.vera/` at the project root.
 
 ### `indexing/`: Index build & update
 
-- `pipeline.rs`: Full build: discover → parse → chunk → embed → store
-- `update.rs`: Incremental: hash-based change detection, re-process only modified files
+- `pipeline.rs`: Full build: discover → parse → chunk → embed → store, including persisted parse diagnostics
+- `update.rs`: Incremental: hash-based change detection, re-process only modified files, and refresh file-level index state
 
 ### Other modules
 
@@ -56,15 +58,16 @@ All stored in `.vera/` at the project root.
 - `config.rs`: `RetrievalConfig`, `IndexConfig` defaults
 - `local_models.rs`: Manages local embedding presets, custom ONNX embedding configs, and ORT/model assets under the Vera data directory (XDG-compliant)
 - `discovery/`: File discovery with gitignore support, binary/size filtering
+- `git_scope.rs`: Resolves `--changed`, `--since`, and `--base` into exact repository-relative paths
 - `chunk_text.rs`: Line-boundary text splitting for byte-budget enforcement
 
 ## vera-cli
 
-`main.rs` parses args via clap. `commands/` contains the CLI subcommand implementations and helpers: `agent`, `config`, `doctor`, `grep`, `index`, `mcp`, `overview`, `references` (also used by `dead-code`), `repair`, `search`, `setup`, `stats`, `uninstall`, `update`, `upgrade`, and `watch`.
+`main.rs` parses args via clap. `commands/` contains the CLI subcommand implementations and helpers: `agent`, `ast_query`, `config`, `doctor`, `explain_path`, `grep`, `index`, `mcp`, `overview`, `references` (also used by `dead-code`), `repair`, `search`, `setup`, `stats`, `uninstall`, `update`, `upgrade`, and `watch`.
 
 ## vera-mcp
 
-`server.rs` routes JSON-RPC requests. `tools.rs` implements four MCP tools: `search_code`, `get_stats`, `get_overview`, and `regex_search`. `search_code` auto-indexes and starts a file watcher on first use.
+`server.rs` routes JSON-RPC requests. `tools.rs` implements five MCP tools: `search_code`, `get_stats`, `get_overview`, `regex_search`, and `explain_path`. `search_code` auto-indexes and starts a file watcher on first use. Search and overview tools also accept changed-file git scopes.
 
 ## Adding a new language
 
