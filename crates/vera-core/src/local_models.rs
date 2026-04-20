@@ -2713,19 +2713,16 @@ mod tests {
     }
 
     #[test]
-    fn reranker_onnx_file_keeps_quantized_cpu_model() {
-        assert_eq!(
-            reranker_onnx_file_for_ep(OnnxExecutionProvider::Cpu),
-            RERANKER_ONNX_FILE
-        );
-    }
+    fn reranker_onnx_file_selects_expected_model_per_backend() {
+        let cases = [
+            (OnnxExecutionProvider::Cpu, RERANKER_ONNX_FILE),
+            (OnnxExecutionProvider::Cuda, RERANKER_ONNX_FILE),
+            (OnnxExecutionProvider::CoreMl, RERANKER_ONNX_COREML_FILE),
+        ];
 
-    #[test]
-    fn reranker_onnx_file_switches_coreml_to_fp16() {
-        assert_eq!(
-            reranker_onnx_file_for_ep(OnnxExecutionProvider::CoreMl),
-            RERANKER_ONNX_COREML_FILE
-        );
+        for (ep, expected) in cases {
+            assert_eq!(reranker_onnx_file_for_ep(ep), expected);
+        }
     }
 
     #[tokio::test]

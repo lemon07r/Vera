@@ -33,7 +33,7 @@ Expected filenames for the curated presets:
 
 | Model | Files |
 | --- | --- |
-| Jina embeddings | `onnx/model_quantized.onnx`, `onnx/model_quantized.onnx_data`, `tokenizer.json` |
+| Jina embeddings | `onnx/model_quantized.onnx`, `onnx/model_quantized.onnx_data`, `tokenizer.json` (`vera setup --onnx-jina-coreml` and `vera repair --onnx-jina-coreml` use `onnx/model_fp16.onnx` and `onnx/model_fp16.onnx_data` instead) |
 | CodeRankEmbed | `onnx/model_quantized.onnx`, `tokenizer.json` |
 | Jina reranker | `onnx/model_quantized.onnx`, `tokenizer.json` (`vera setup --onnx-jina-coreml` and `vera repair --onnx-jina-coreml` use `onnx/model_fp16.onnx` instead) |
 
