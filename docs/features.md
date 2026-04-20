@@ -196,9 +196,9 @@ Docker images available for CPU, CUDA, ROCm, and OpenVINO. Details: [docker.md](
 
 During setup, Vera offers to add a usage snippet to your project's agent config file (`AGENTS.md`, `CLAUDE.md`, `COPILOT.md`, `.cursorrules`, `.clinerules`, `.windsurfrules`) so agents discover Vera automatically.
 
-### Auto-Sync on Upgrade
+### Syncing Stale Skills
 
-`vera upgrade --apply` automatically syncs stale agent skill installs to match the new binary version after upgrading. You can also run `vera agent sync` directly, or let the interactive installer refresh stale installs in one step before opening the full selector.
+`vera agent sync` refreshes stale agent skill installs to match the current binary version. When Vera notices stale installs during normal CLI use, it runs the same sync automatically. Project syncs also refresh managed markdown agent-config snippets such as `AGENTS.md`, `CLAUDE.md`, and `COPILOT.md`.
 
 ## CLI Tooling
 

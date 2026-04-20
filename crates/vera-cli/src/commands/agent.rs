@@ -947,14 +947,14 @@ fn skill_path_for(
 
 fn sync(json_output: bool) -> anyhow::Result<()> {
     let home = state::user_home_dir()?;
-    let cwd = std::env::current_dir().ok();
+    let project_cwd = std::env::current_dir().ok();
     let current_version = env!("CARGO_PKG_VERSION");
-    let scan_scope = if cwd.is_some() {
+    let scan_scope = if project_cwd.is_some() {
         AgentScope::All
     } else {
         AgentScope::Global
     };
-    let cwd = cwd.unwrap_or_else(|| home.clone());
+    let cwd = project_cwd.clone().unwrap_or_else(|| home.clone());
     let statuses = collect_client_install_statuses(scan_scope, &cwd, &home)?;
     let stale_locations = stale_locations_from_statuses(&statuses, &cwd, &home)?;
 
@@ -963,6 +963,19 @@ fn sync(json_output: bool) -> anyhow::Result<()> {
         install_skill_to(&location.path)?;
         updated.push(location.path.clone());
     }
+
+    let refreshed_snippets = if stale_locations
+        .iter()
+        .any(|location| location.scope == AgentScope::Project)
+    {
+        project_cwd
+            .as_deref()
+            .map(|cwd| refresh_existing_vera_snippets(&find_agent_configs(cwd)))
+            .transpose()?
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
 
     if json_output {
         let reports: Vec<_> = updated
@@ -990,10 +1003,24 @@ fn sync(json_output: bool) -> anyhow::Result<()> {
         }
     }
 
+    if !json_output && !refreshed_snippets.is_empty() {
+        let green = console::Style::new().green();
+        let dim = console::Style::new().dim();
+        println!();
+        println!("Refreshed Vera snippet in:");
+        println!();
+        for path in &refreshed_snippets {
+            println!("  {} {}", green.apply_to("✓"), dim.apply_to(path.display()));
+        }
+    }
+
     Ok(())
 }
 
 /// The snippet Vera offers to inject into agent config files.
+const AGENTS_MD_SNIPPET_HEADING: &str = "## Code Search";
+const AGENTS_MD_SNIPPET_INTRO: &str = "Use Vera before opening many files or running broad text search when you need to find where logic lives or how a feature works.";
+
 const AGENTS_MD_SNIPPET: &str = r#"## Code Search
 
 Use Vera before opening many files or running broad text search when you need to find where logic lives or how a feature works.
@@ -1109,6 +1136,76 @@ fn insert_vera_snippet(existing: &str, file_name: &str) -> String {
     content
 }
 
+fn refresh_existing_vera_snippets(
+    existing: &[DetectedAgentConfig],
+) -> anyhow::Result<Vec<PathBuf>> {
+    let mut updated = Vec::new();
+
+    for config in existing {
+        let content = fs::read_to_string(&config.path)
+            .with_context(|| format!("failed to read {}", config.path.display()))?;
+        let Some(refreshed) = refresh_vera_snippet(&content, config.file.name) else {
+            continue;
+        };
+        if refreshed == content {
+            continue;
+        }
+
+        fs::write(&config.path, refreshed)
+            .with_context(|| format!("failed to write {}", config.path.display()))?;
+        updated.push(config.path.clone());
+    }
+
+    Ok(updated)
+}
+
+fn refresh_vera_snippet(existing: &str, file_name: &str) -> Option<String> {
+    if file_name.ends_with(".md") {
+        return refresh_vera_snippet_in_markdown(existing);
+    }
+
+    None
+}
+
+fn refresh_vera_snippet_in_markdown(existing: &str) -> Option<String> {
+    let start = markdown_section_start(existing, AGENTS_MD_SNIPPET_HEADING)?;
+    let next_section_offset = existing[start + AGENTS_MD_SNIPPET_HEADING.len()..].find("\n## ");
+    let end = next_section_offset
+        .map(|offset| start + AGENTS_MD_SNIPPET_HEADING.len() + offset + 1)
+        .unwrap_or(existing.len());
+    let section = &existing[start..end];
+    if !section.contains(AGENTS_MD_SNIPPET_INTRO) {
+        return None;
+    }
+
+    let before = existing[..start].trim_end_matches('\n');
+    let after = existing[end..].trim_start_matches('\n');
+    let mut content = String::new();
+    if !before.is_empty() {
+        content.push_str(before);
+        content.push_str("\n\n");
+    }
+    content.push_str(AGENTS_MD_SNIPPET.trim_end());
+    if !after.is_empty() {
+        content.push_str("\n\n");
+        content.push_str(after);
+    } else {
+        content.push('\n');
+    }
+    if !content.ends_with('\n') {
+        content.push('\n');
+    }
+    Some(content)
+}
+
+fn markdown_section_start(existing: &str, heading: &str) -> Option<usize> {
+    if existing.starts_with(heading) {
+        return Some(0);
+    }
+
+    existing.find(&format!("\n{heading}")).map(|idx| idx + 1)
+}
+
 fn insert_vera_snippet_into_markdown(existing: &str) -> String {
     let heading_insert_pos = existing
         .lines()
@@ -1208,6 +1305,11 @@ fn choose_new_agent_config_path(cwd: &Path, preferred_name: &str) -> anyhow::Res
 fn offer_agents_md_snippet(selected_clients: &[AgentClient]) -> anyhow::Result<()> {
     let cwd = std::env::current_dir().context("failed to resolve current directory")?;
     let existing = find_agent_configs(&cwd);
+
+    for path in refresh_existing_vera_snippets(&existing)? {
+        let name = path.file_name().unwrap_or_default().to_string_lossy();
+        cliclack::log::success(format!("Updated Vera snippet in {name}"))?;
+    }
 
     if existing.iter().any(|config| config.mentions_vera) {
         return Ok(());
@@ -1351,6 +1453,29 @@ mod tests {
         let updated = insert_vera_snippet(existing, ".cursorrules");
         assert!(updated.starts_with("## Code Search\n"));
         assert!(updated.contains("- prefer concise answers"));
+    }
+
+    #[test]
+    fn refresh_vera_snippet_in_markdown_replaces_stale_managed_section() {
+        let existing = "# Repository Guidelines\n\n## Code Search\n\nUse Vera before opening many files or running broad text search when you need to find where logic lives or how a feature works.\n\n- `vera search \"query\"` for semantic code search. Describe behavior: \"JWT validation\", not \"auth\".\n- `vera grep \"pattern\"` for exact text or regex\n- `vera references <symbol>` for callers and callees\n- `vera overview` for a project summary (languages, entry points, hotspots)\n- `vera search --deep \"query\"` for RAG-fusion query expansion + merged ranking\n- Narrow results with `--lang`, `--path`, `--type`, or `--scope docs`\n- `vera watch .` to auto-update the index, or `vera update .` after edits (`vera index .` if `.vera/` is missing)\n- For detailed usage, query patterns, and troubleshooting, read the Vera skill file installed by `vera agent install`\n\n## Build\n\nRun tests.\n";
+
+        let updated = refresh_vera_snippet_in_markdown(existing).unwrap();
+
+        assert!(updated.contains(AGENTS_MD_SNIPPET.trim_end()));
+        assert!(!updated.contains("- `vera grep \"pattern\"` for exact text or regex\n"));
+        assert!(
+            !updated.contains(
+                "- Narrow results with `--lang`, `--path`, `--type`, or `--scope docs`\n"
+            )
+        );
+        assert!(updated.contains("## Build\n\nRun tests.\n"));
+    }
+
+    #[test]
+    fn refresh_vera_snippet_in_markdown_skips_custom_code_search_section() {
+        let existing = "# Repository Guidelines\n\n## Code Search\n\nUse ripgrep first.\n\n## Build\n\nRun tests.\n";
+
+        assert!(refresh_vera_snippet_in_markdown(existing).is_none());
     }
 
     #[test]
