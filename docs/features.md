@@ -168,8 +168,8 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 |------|--------|
 | *(default)* | Markdown codeblocks with file path, line range, and symbol metadata |
 | `--json` | Compact single-line JSON |
-| `--raw` | Verbose human-readable search/grep output |
-| `--timing` | Timing info to stderr (`search`: per-stage, `grep`: total) |
+| `--raw` | Verbose human-readable search/grep output. Works before or after the subcommand. |
+| `--timing` | Timing info to stderr (`search`: per-stage, `grep`: total). Works before or after the subcommand. |
 
 ## MCP Server
 

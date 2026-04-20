@@ -45,6 +45,6 @@ For the full backend matrix, model options, Docker setup, and troubleshooting, s
 - **61+ languages** via tree-sitter AST parsing
 - **Hybrid search**: BM25 keyword + vector similarity, fused with Reciprocal Rank Fusion
 - **Cross-encoder reranking** for precision
-- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON, `--raw` for verbose output, `--timing` for step durations)
+- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` and `--timing` work with `vera search` and `vera grep`, before or after the subcommand)
 
 For full documentation, including custom local ONNX embedding models and manual install steps, see the [GitHub repo](https://github.com/lemon07r/Vera).
