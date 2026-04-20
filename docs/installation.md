@@ -136,7 +136,7 @@ Use Vera before opening many files or running broad text search when you need to
 - `vera grep "pattern"` for exact text or regex in indexed files
 - `vera references <symbol>` for callers and callees
 - `vera overview` for a project summary (languages, entry points, hotspots)
-- `vera search --deep "query"` for query decomposition + parallel search with weighted fusion
+- `vera search --deep "query"` for RAG-fusion query expansion + merged ranking
 - Narrow `vera search` or `vera grep` with `--lang`, `--path`, `--type`, or `--scope docs`
 - `vera watch .` to auto-update the index, or `vera update .` after edits (`vera index .` if `.vera/` is missing)
 - For detailed usage, query patterns, and troubleshooting, read the Vera skill file installed by `vera agent install`

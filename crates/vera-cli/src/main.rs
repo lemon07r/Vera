@@ -107,7 +107,8 @@ enum Commands {
                       interactive flow can refresh them in one step before \
                       opening the full selector.\n\n\
                       `vera agent sync` refreshes all stale skill installs to match \
-                      the current binary version, no prompts needed.\n\n\
+                      the current binary version and updates managed markdown agent \
+                      config snippets in the current project, no prompts needed.\n\n\
                       Examples:\n  \
                       vera agent install                       # Interactive: choose scope and agents\n  \
                       vera agent install --client claude       # Install for Claude Code (global)\n  \
