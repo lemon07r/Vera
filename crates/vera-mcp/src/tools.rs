@@ -303,18 +303,13 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
     };
 
     let filters = vera_core::types::SearchFilters {
-        language: args.get("lang").and_then(|v| v.as_str()).map(String::from),
-        path_glob: args.get("path").and_then(|v| v.as_str()).map(String::from),
-        symbol_type: args
-            .get("symbol_type")
-            .and_then(|v| v.as_str())
-            .map(String::from),
         scope,
         include_generated: Some(
             args.get("include_generated")
                 .and_then(|v| v.as_bool())
                 .unwrap_or(false),
         ),
+        ..Default::default()
     };
 
     let limit = args

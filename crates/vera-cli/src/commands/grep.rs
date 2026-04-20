@@ -1,6 +1,8 @@
 //! `vera grep <pattern>` — Regex search over indexed files.
 
 use anyhow::bail;
+use std::io::Write;
+use std::time::Instant;
 
 use crate::helpers::{load_runtime_config, output_results};
 
@@ -14,6 +16,7 @@ pub fn run(
     filters: &vera_core::types::SearchFilters,
     json_output: bool,
     raw: bool,
+    timing: bool,
     compact: bool,
 ) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()
@@ -28,6 +31,7 @@ pub fn run(
     }
 
     let result_limit = limit.unwrap_or(20);
+    let started_at = Instant::now();
     let results = vera_core::retrieval::search_regex(
         &index_dir,
         pattern,
@@ -36,6 +40,7 @@ pub fn run(
         context_lines,
         filters,
     )?;
+    let elapsed = started_at.elapsed();
 
     let config = load_runtime_config()?;
     output_results(
@@ -45,5 +50,12 @@ pub fn run(
         compact,
         config.retrieval.max_output_chars,
     );
+
+    if timing {
+        let stderr = std::io::stderr();
+        let mut err = stderr.lock();
+        let _ = writeln!(err, "[timing] total: {}ms", elapsed.as_millis());
+    }
+
     Ok(())
 }

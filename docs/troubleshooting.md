@@ -99,9 +99,17 @@ See the [query guide](query-guide.md) for more tips on writing effective queries
 
 ## Need an exact text match?
 
-Vera is a semantic search tool. For exact string or regex matching, use `rg` (ripgrep) instead:
+Use `vera grep` for exact string or regex matching across indexed files:
 
 ```bash
-rg "EMBEDDING_MODEL_BASE_URL"
+vera grep "EMBEDDING_MODEL_BASE_URL"
+vera grep "TODO\(" -i
+vera grep "queryClient|invalidateQueries" --path "frontend/src/**"
+```
+
+Use `rg` when you need to count matches, search filenames, or scan files outside the index:
+
+```bash
 rg "TODO\(" -n
+rg --files | rg "docker"
 ```

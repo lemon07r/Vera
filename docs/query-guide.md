@@ -44,6 +44,26 @@ vera search "error handling" --lang rust --type function --limit 5
 vera search "mod loader" --scope runtime --include-generated
 ```
 
+## Multi-Query Search
+
+If one phrasing is too narrow, pass 2-3 varied queries in one call:
+
+```bash
+vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"
+```
+
+Vera runs each query, then merges the results with reciprocal rank fusion.
+
+## Intent
+
+If the query is short but your goal is specific, add `--intent`:
+
+```bash
+vera search "config" --intent "find where database connection strings are loaded from environment variables"
+```
+
+This works best when the query alone is too ambiguous to steer ranking.
+
 ## Exact Symbol Names
 
 If you already know the symbol name, search for it directly:
@@ -61,18 +81,24 @@ Vera favors source files by default. Docs, archives, runtime extracts, and gener
 
 Use `--scope docs` when you are reading guides or ADRs. Use `--scope runtime` when you're debugging extracted app bundles or decompiled runtime code. Add `--include-generated` when you intentionally want minified or generated files in the result set.
 
-## When to Use `rg` Instead
+## When to Use `vera grep` vs `rg`
 
-Vera is a semantic search tool. For these tasks, use `rg` (ripgrep) or plain grep:
+Use `vera grep` when you want exact text or regex matches limited to indexed files:
 
-- Exact string matching (`rg "EMBEDDING_MODEL_BASE_URL"`)
-- Regex search (`rg "TODO\(" -n`)
+- `vera grep "EMBEDDING_MODEL_BASE_URL"`
+- `vera grep "TODO\(" -i`
+- `vera grep "queryClient|invalidateQueries" --path "frontend/src/**"`
+
+Use `rg` when you need:
+
 - Counting occurrences
 - Find-and-replace prep
+- File name search
+- Files outside the Vera index
 
 ## Output Format
 
-See [features: output formats](features.md#multiple-output-formats) for all options (`--json`, `--raw`, `--timing`).
+See [features: output formats](features.md#multiple-output-formats) for all options (`--json`, `--raw`, `--timing`). `vera search --raw` and `vera grep --raw` print verbose result views. `vera search --timing` prints per-stage timings; `vera grep --timing` prints total regex-search time.
 
 ## Keeping Results Fresh
 

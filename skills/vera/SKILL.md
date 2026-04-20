@@ -17,21 +17,25 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
 6. Use `vera references <symbol>` to find callers; add `--callees` to see what it calls. `vera dead-code` lists functions with no callers.
 7. Search:
    ```sh
-   vera search "authentication middleware"
-   vera search "parse_config" --type function --limit 5
-   vera search "database connection" --lang rust --path "src/**"
-   vera search "keybind handling" --scope docs
-   vera search "mod loader" --scope runtime --include-generated
-   vera search "config loading" --deep    # RAG-fusion query expansion (falls back to iterative symbol-following)
-   vera search "auth" --compact            # signatures only: broad exploration in fewer tokens
+    vera search "authentication middleware"
+    vera search "parse_config" --type function --limit 5
+    vera search "database connection" --lang rust --path "src/**"
+    vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"
+    vera search "config" --intent "find where database connection strings are loaded"
+    vera search "keybind handling" --scope docs
+    vera search "mod loader" --scope runtime --include-generated
+    vera search "config loading" --deep    # RAG-fusion query expansion (falls back to iterative symbol-following)
+    vera search "auth" --compact            # signatures only: broad exploration in fewer tokens
    ```
 8. Regex search (exact patterns, imports, TODOs). `vera grep` only searches indexed files, so `.veraignore` and exclusion rules apply:
    ```sh
-   vera grep "fn\s+main"
-   vera grep "TODO|FIXME" -i              # case-insensitive
-   vera grep "keybind" --scope docs        # scoped to docs
-   vera grep "use std::collections" --context 0  # no surrounding lines
-   vera grep "handler" --compact           # signatures only
+    vera grep "fn\s+main"
+    vera grep "TODO|FIXME" -i              # case-insensitive
+    vera grep "queryClient|invalidateQueries" --path "frontend/src/**"
+    vera grep "Authorization" --lang rust --type function
+    vera grep "keybind" --scope docs        # scoped to docs
+    vera grep "use std::collections" --context 0  # no surrounding lines
+    vera grep "handler" --compact           # signatures only
    ```
 9. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
 
@@ -47,15 +51,15 @@ pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }
 ```
 ````
 
-The info string contains `file_path:line_start-line_end` and optional `symbol_type:symbol_name`. Use `--json` for compact single-line JSON (programmatic consumption), or `--raw` for verbose human-readable output. Use `--timing` to print pipeline step durations to stderr.
+The info string contains `file_path:line_start-line_end` and optional `symbol_type:symbol_name`. Use `--json` for compact single-line JSON (programmatic consumption), `--raw` for verbose `vera search` or `vera grep` output, `--timing` on `vera search` for per-stage timings, or `--timing` on `vera grep` for total regex-search time.
 
 ## Choosing the Right Tool
 
 | Need | Tool |
 |------|------|
 | Concepts, behavior, "how does X work" | `vera search` |
-| Exact strings, regex, imports, TODOs | `vera grep` |
-| Bulk find-and-replace, files outside index | `rg` |
+| Exact strings, regex, imports, TODOs within indexed files | `vera grep` |
+| Bulk find-and-replace, file names, files outside index | `rg` |
 
 `vera search` understands synonyms and related concepts. `vera grep` matches literal patterns.
 
@@ -81,8 +85,8 @@ Vera favors source files by default. Use `--scope docs` for prose and ADRs, `--s
 - Describe behavior or intent: "JWT token validation", "request rate limiting", not "code" or "utils".
 - Avoid overly broad queries like "authentication" or "tools". Be specific about what aspect you need.
 - Match your intent to the query: for documentation, use doc-focused keywords ("setup guide", "configuration README"); for code, use implementation terms ("token refresh logic", "error handling implementation").
-- Use 2-3 varied queries to capture different aspects (e.g., "OAuth token refresh", "JWT expiry handling", "auth middleware"). Results are deduplicated and reranked together.
-- Add an `intent` parameter to describe your higher-level goal when the query alone is ambiguous (e.g., query: "config", intent: "find where database connection strings are loaded from environment variables").
+- Use 2-3 varied queries to capture different aspects (e.g., "OAuth token refresh", "JWT expiry handling", "auth middleware"). You can pass them in one call: `vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"`.
+- Add `--intent` when the query is ambiguous but your higher-level goal is clear (e.g., `vera search "config" --intent "find where database connection strings are loaded from environment variables"`).
 - For known symbol names, search the exact name: `vera search "parse_config"`.
 - Start broad, then narrow with `--lang`, `--path`, `--type`, `--limit`.
 - After code changes mid-session, run `vera update .` before searching again (or use `vera watch .` to auto-update).
