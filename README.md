@@ -97,6 +97,7 @@ For step-by-step instructions, API provider options, Docker, building from sourc
 vera mcp   # or: bunx @vera-ai/cli mcp / uvx vera-ai mcp
 ```
 Exposes `search_code`, `get_stats`, `get_overview`, and `regex_search` tools. `search_code` auto-indexes and starts a file watcher on first use if no index exists.
+The MCP surface stays intentionally small; use the CLI skill path when you need the full command set.
 
 </details>
 

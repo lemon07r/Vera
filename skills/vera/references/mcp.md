@@ -33,10 +33,11 @@ The server exposes:
 - `search_code` (supports `queries` array for multi-query search, `intent` for reranking; auto-indexes and starts watcher on first use)
 - `get_stats`
 - `get_overview` (includes detected project conventions)
-- `regex_search`
+- `regex_search` (kept intentionally minimal: regex, context, scope, generated-file toggle, compact output)
 
 ## Guidance
 
 - Keep the Vera skill CLI-centered.
+- Keep the MCP surface small. Reach for the CLI skill when you need the full set of filters and commands.
 - Only mention MCP when the task or client explicitly depends on it.
 - Do not assume MCP is installed if the user only asked for Vera search capability.
