@@ -40,6 +40,8 @@ These query the call graph built during indexing (direct calls only, no dynamic 
 ```sh
 vera grep "fn\s+main"                      # regex over indexed files
 vera grep "TODO|FIXME" -i                   # case-insensitive
+vera grep "queryClient|invalidateQueries" --path "frontend/src/**"
+vera grep "Authorization" --lang rust --type function
 vera grep "handler" --scope docs             # scoped to documentation
 vera grep "use std::collections" --context 0 # no surrounding context lines
 vera grep "parse" --compact                  # signatures only
@@ -47,8 +49,6 @@ vera grep "parse" --compact                  # signatures only
 
 ## When To Use `rg` Instead
 
-- Exact string: `rg "EMBEDDING_MODEL_BASE_URL"`
-- Regex: `rg "TODO\\(" -n`
 - File name search: `rg --files | rg "docker"`
 - Counting occurrences
 - Bulk find-and-replace prep
@@ -66,20 +66,20 @@ Add one filter at a time:
 
 ## Multi-Query Search
 
-A single search call can accept multiple queries for better recall. Results are deduplicated and reranked together:
+`vera search` accepts multiple quoted queries and merges the results with reciprocal rank fusion:
 
 ```sh
 vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"
 ```
 
-This reduces round-trips and captures different phrasings of the same concept.
+Use this when one phrasing is too narrow but the task is still one coherent search.
 
 ## Intent-Based Reranking
 
-Add an `intent` to describe your higher-level goal separately from the query. The reranker uses this to score candidates against what you actually need:
+Add `--intent` when the raw query is short but you know the higher-level goal:
 
 ```sh
 vera search "config" --intent "find where database connection strings are loaded from environment variables"
 ```
 
-Useful when the query is ambiguous or too short to convey full context.
+Use this when the raw query is too short or ambiguous to capture what you actually need.

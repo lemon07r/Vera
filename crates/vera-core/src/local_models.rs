@@ -36,7 +36,17 @@ pub const LEGACY_EMBEDDING_QUERY_PREFIX_ENV: &str = "VERA_EMBEDDING_QUERY_PREFIX
 
 const RERANKER_REPO: &str = "jinaai/jina-reranker-v2-base-multilingual";
 const RERANKER_ONNX_FILE: &str = "onnx/model_quantized.onnx";
+/// CoreML cannot execute the quantized reranker export because it contains
+/// DynamicQuantizeLinear/MatMulInteger ops that the CoreML EP does not support.
+const RERANKER_ONNX_COREML_FILE: &str = "onnx/model_fp16.onnx";
 const RERANKER_TOKENIZER_FILE: &str = "tokenizer.json";
+
+pub fn reranker_onnx_file_for_ep(ep: OnnxExecutionProvider) -> &'static str {
+    match ep {
+        OnnxExecutionProvider::CoreMl => RERANKER_ONNX_COREML_FILE,
+        _ => RERANKER_ONNX_FILE,
+    }
+}
 
 /// ONNX Runtime version to auto-download. Using 1.24.4 for CUDA 13 support.
 /// The `ort` crate (rc.11) uses `load-dynamic` so any ABI-compatible ORT works.
@@ -2356,7 +2366,7 @@ pub async fn prepare_local_models_for_ep(
         paths.push(path);
     }
     paths.push(embedding_paths.tokenizer_path);
-    paths.push(ensure_model_file(RERANKER_REPO, RERANKER_ONNX_FILE).await?);
+    paths.push(ensure_model_file(RERANKER_REPO, reranker_onnx_file_for_ep(ep)).await?);
     paths.push(ensure_model_file(RERANKER_REPO, RERANKER_TOKENIZER_FILE).await?);
     Ok(paths)
 }
@@ -2373,7 +2383,7 @@ pub fn inspect_local_model_files_for_ep(
     let reranker_onnx = vera_home
         .join("models")
         .join(RERANKER_REPO)
-        .join(RERANKER_ONNX_FILE);
+        .join(reranker_onnx_file_for_ep(ep));
     let reranker_tokenizer = vera_home
         .join("models")
         .join(RERANKER_REPO)
@@ -2700,6 +2710,19 @@ mod tests {
             "LoadLibrary failed for onnxruntime.dll: The specified module could not be found",
         );
         assert!(message.contains("ONNX Runtime shared library not found"));
+    }
+
+    #[test]
+    fn reranker_onnx_file_selects_expected_model_per_backend() {
+        let cases = [
+            (OnnxExecutionProvider::Cpu, RERANKER_ONNX_FILE),
+            (OnnxExecutionProvider::Cuda, RERANKER_ONNX_FILE),
+            (OnnxExecutionProvider::CoreMl, RERANKER_ONNX_COREML_FILE),
+        ];
+
+        for (ep, expected) in cases {
+            assert_eq!(reranker_onnx_file_for_ep(ep), expected);
+        }
     }
 
     #[tokio::test]

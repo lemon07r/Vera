@@ -270,6 +270,26 @@ pub fn handle_tool_call(name: &str, arguments: &Value) -> ToolCallResult {
     }
 }
 
+fn search_code_filters(
+    args: &Value,
+    scope: Option<vera_core::types::SearchScope>,
+) -> vera_core::types::SearchFilters {
+    vera_core::types::SearchFilters {
+        language: args.get("lang").and_then(|v| v.as_str()).map(String::from),
+        path_glob: args.get("path").and_then(|v| v.as_str()).map(String::from),
+        symbol_type: args
+            .get("symbol_type")
+            .and_then(|v| v.as_str())
+            .map(String::from),
+        scope,
+        include_generated: Some(
+            args.get("include_generated")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false),
+        ),
+    }
+}
+
 /// Handle the `search_code` tool.
 fn handle_search_code(args: &Value) -> ToolCallResult {
     // Collect queries: support both single `query` and multi `queries`.
@@ -302,20 +322,7 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         None => None,
     };
 
-    let filters = vera_core::types::SearchFilters {
-        language: args.get("lang").and_then(|v| v.as_str()).map(String::from),
-        path_glob: args.get("path").and_then(|v| v.as_str()).map(String::from),
-        symbol_type: args
-            .get("symbol_type")
-            .and_then(|v| v.as_str())
-            .map(String::from),
-        scope,
-        include_generated: Some(
-            args.get("include_generated")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false),
-        ),
-    };
+    let filters = search_code_filters(args, scope);
 
     let limit = args
         .get("limit")
@@ -605,6 +612,25 @@ mod tests {
         );
         // Should fail (either auto-index fails or embedding provider fails).
         assert!(result.is_error);
+    }
+
+    #[test]
+    fn search_code_filters_include_lang_path_and_symbol_type() {
+        let filters = search_code_filters(
+            &serde_json::json!({
+                "lang": "rust",
+                "path": "src/**/*.rs",
+                "symbol_type": "function",
+                "include_generated": true,
+            }),
+            Some(vera_core::types::SearchScope::Source),
+        );
+
+        assert_eq!(filters.language.as_deref(), Some("rust"));
+        assert_eq!(filters.path_glob.as_deref(), Some("src/**/*.rs"));
+        assert_eq!(filters.symbol_type.as_deref(), Some("function"));
+        assert_eq!(filters.scope, Some(vera_core::types::SearchScope::Source));
+        assert_eq!(filters.include_generated, Some(true));
     }
 
     #[test]

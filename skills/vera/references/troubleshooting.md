@@ -83,7 +83,15 @@ Try one of these:
 
 ## Exact Match Requested
 
-Do not force Vera for exact text search. Use `rg`.
+Use `vera grep` for exact text or regex inside indexed files:
+
+```sh
+vera grep "EMBEDDING_MODEL_BASE_URL"
+vera grep "TODO\(" -i
+vera grep "queryClient|invalidateQueries" --path "frontend/src/**"
+```
+
+Use `rg` for file names, counting matches, or files outside the Vera index.
 
 ## Debugging Exclusion Rules
 

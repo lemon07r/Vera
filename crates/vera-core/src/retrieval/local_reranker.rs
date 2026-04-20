@@ -8,7 +8,6 @@ use tokenizers::Tokenizer;
 use tokio::task;
 
 const RERANKER_REPO: &str = "jinaai/jina-reranker-v2-base-multilingual";
-const ONNX_FILE: &str = "onnx/model_quantized.onnx";
 const TOKENIZER_FILE: &str = "tokenizer.json";
 const MAX_RERANK_BATCH_SIZE: usize = 8;
 
@@ -39,12 +38,15 @@ impl LocalReranker {
             }
         })?;
 
-        let onnx_path = ensure_model_file(RERANKER_REPO, ONNX_FILE)
-            .await
-            .map_err(|e| RerankerError::ApiError {
-                status: 500,
-                message: format!("Failed to download ONNX model: {}", e),
-            })?;
+        let onnx_path = ensure_model_file(
+            RERANKER_REPO,
+            crate::local_models::reranker_onnx_file_for_ep(ep),
+        )
+        .await
+        .map_err(|e| RerankerError::ApiError {
+            status: 500,
+            message: format!("Failed to download ONNX model: {}", e),
+        })?;
 
         let tokenizer_path = ensure_model_file(RERANKER_REPO, TOKENIZER_FILE)
             .await
@@ -84,7 +86,7 @@ impl LocalReranker {
     pub fn probe_session(ep: OnnxExecutionProvider) -> Result<()> {
         let ort_path = crate::local_models::ort_library_path_for_ep(ep)?;
         crate::local_models::ensure_ort_runtime(Some(&ort_path))?;
-        let (onnx_path, _) = default_asset_paths()?;
+        let (onnx_path, _) = default_asset_paths(ep)?;
         let _ = build_session(ep, onnx_path)?;
         Ok(())
     }
@@ -92,7 +94,7 @@ impl LocalReranker {
     pub fn probe_inference(ep: OnnxExecutionProvider) -> Result<()> {
         let ort_path = crate::local_models::ort_library_path_for_ep(ep)?;
         crate::local_models::ensure_ort_runtime(Some(&ort_path))?;
-        let (onnx_path, tokenizer_path) = default_asset_paths()?;
+        let (onnx_path, tokenizer_path) = default_asset_paths(ep)?;
         let mut session = build_session(ep, onnx_path)?;
         let tokenizer = load_tokenizer(tokenizer_path)?;
         run_probe_inference(&mut session, &tokenizer)
@@ -211,11 +213,16 @@ impl LocalReranker {
     }
 }
 
-fn default_asset_paths() -> Result<(std::path::PathBuf, std::path::PathBuf)> {
+fn default_asset_paths(
+    ep: OnnxExecutionProvider,
+) -> Result<(std::path::PathBuf, std::path::PathBuf)> {
     let model_dir = crate::local_models::vera_home_dir()?
         .join("models")
         .join(RERANKER_REPO);
-    Ok((model_dir.join(ONNX_FILE), model_dir.join(TOKENIZER_FILE)))
+    Ok((
+        model_dir.join(crate::local_models::reranker_onnx_file_for_ep(ep)),
+        model_dir.join(TOKENIZER_FILE),
+    ))
 }
 
 fn load_tokenizer(tokenizer_path: std::path::PathBuf) -> Result<Tokenizer> {

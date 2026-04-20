@@ -116,6 +116,8 @@ vera update .
 vera search "error handling" --lang rust
 vera search "routes" --path "src/**/*.ts"
 vera search "handler" --type function --limit 5
+vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"
+vera search "config" --intent "find where database connection strings are loaded"
 vera search "config loading" --deep
 vera search "auth" --compact
 ```
@@ -146,7 +148,7 @@ pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }
 ```
 ````
 
-Use `--json` for compact JSON, `--raw` for verbose human-readable output, or `--timing` for per-stage pipeline durations.
+Use `--json` for compact JSON, `vera search --raw` or `vera grep --raw` for verbose human-readable output, `vera search --timing` for per-stage timings, or `vera grep --timing` for total regex-search time.
 
 ### Excluding Files
 

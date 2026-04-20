@@ -21,11 +21,11 @@ Large candidate sets are automatically batched (default 20 per request, configur
 
 ### Multi-Query Search
 
-A single search call can accept multiple queries at once. Run 2-3 varied queries to capture different aspects of what you're looking for (e.g., "OAuth token refresh", "JWT expiry handling", "auth middleware"). Results are deduplicated and reranked together. This reduces round-trips and improves recall.
+`vera search` accepts multiple quoted queries at once. Run 2-3 varied queries to capture different aspects of what you're looking for (e.g., "OAuth token refresh", "JWT expiry handling", "auth middleware"). Results merge with reciprocal rank fusion, which cuts round-trips and improves recall when one phrasing misses relevant code.
 
 ### Intent-Based Reranking
 
-An optional `intent` parameter lets you describe your higher-level goal separately from the search query. The reranker uses this to score candidates against what you actually need, not just what you typed. Useful when the query is ambiguous or too short to convey full context.
+`vera search --intent "goal"` lets you describe your higher-level goal separately from the search query. Vera folds that intent into the retrieval query so ranking can target what you actually need, not just the short keyword you typed. This is useful when the query is ambiguous or too short to convey enough context.
 
 ### Deep Search
 
@@ -108,7 +108,7 @@ Indexing shows a live progress bar with file discovery, parsing, and embedding g
 
 ### Regex Search
 
-`vera grep "pattern"` runs regex search over all indexed files with configurable context lines and case sensitivity. Complements semantic search for exact string matching, import statements, TODOs, and known identifiers.
+`vera grep "pattern"` runs regex search over indexed files with configurable context lines, case sensitivity, and the same corpus filters as `vera search` (`--lang`, `--path`, `--type`, `--scope`). It complements semantic search for exact string matching, import statements, TODOs, and known identifiers.
 
 ## Model Backend
 
@@ -168,8 +168,8 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 |------|--------|
 | *(default)* | Markdown codeblocks with file path, line range, and symbol metadata |
 | `--json` | Compact single-line JSON |
-| `--raw` | Verbose human-readable output |
-| `--timing` | Per-stage pipeline durations to stderr |
+| `--raw` | Verbose human-readable search/grep output |
+| `--timing` | Timing info to stderr (`search`: per-stage, `grep`: total) |
 
 ## MCP Server
 

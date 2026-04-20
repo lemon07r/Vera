@@ -13,7 +13,8 @@ use regex::{Match, RegexBuilder};
 use crate::corpus::{ContentClass, classify_content, classify_path};
 use crate::retrieval::query_utils::path_depth;
 use crate::retrieval::ranking::{RankingStage, apply_query_ranking_with_filters};
-use crate::types::{Language, SearchFilters, SearchResult};
+use crate::storage::metadata::MetadataStore;
+use crate::types::{Chunk, Language, SearchFilters, SearchResult};
 
 /// Search indexed files for a regex pattern.
 ///
@@ -34,7 +35,7 @@ pub fn search_regex(
         .map_err(|e| anyhow::anyhow!("Invalid regex pattern: {e}"))?;
 
     let metadata_path = index_dir.join("metadata.db");
-    let store = crate::storage::metadata::MetadataStore::open(&metadata_path)?;
+    let store = MetadataStore::open(&metadata_path)?;
     let mut files = store.indexed_files()?;
     files.sort_by(|left, right| {
         let left_key = {
@@ -62,12 +63,29 @@ pub fn search_regex(
             break;
         }
 
+        let language = language_for_path(file_rel);
+        if !filters.matches_file(file_rel, language) {
+            continue;
+        }
+
+        let file_chunks = if filters.symbol_type.is_some() {
+            let chunks = store.get_chunks_by_file(file_rel)?;
+            if !chunks
+                .iter()
+                .any(|chunk| filters.matches_symbol_type(chunk.symbol_type))
+            {
+                continue;
+            }
+            Some(chunks)
+        } else {
+            None
+        };
+
         let file_abs = project_root.join(file_rel);
         let content = match std::fs::read_to_string(&file_abs) {
             Ok(c) => c,
             Err(_) => continue,
         };
-        let language = language_for_path(file_rel);
         let class = classify_content(file_rel, language, &content);
 
         if !allows_class(filters, class) {
@@ -81,7 +99,15 @@ pub fn search_regex(
         }
 
         if matches!(class, ContentClass::Generated) {
-            collect_minified_matches(&mut results, &regex, file_rel, &content, language, limit);
+            collect_minified_matches(
+                &mut results,
+                &regex,
+                file_rel,
+                &content,
+                limit,
+                filters,
+                file_chunks.as_deref(),
+            );
             continue;
         }
 
@@ -98,26 +124,31 @@ pub fn search_regex(
             let ctx_start = i.saturating_sub(context_lines);
             let ctx_end = (i + context_lines + 1).min(lines.len());
             let snippet = lines[ctx_start..ctx_end].join("\n");
+            let (symbol_name, symbol_type) =
+                symbol_for_line(file_chunks.as_deref(), (i + 1) as u32);
 
-            results.push(SearchResult {
+            let result = SearchResult {
                 file_path: file_rel.clone(),
                 line_start: (ctx_start + 1) as u32,
                 line_end: ctx_end as u32,
                 content: snippet,
                 score: 1.0,
-                symbol_name: None,
-                symbol_type: None,
+                symbol_name,
+                symbol_type,
                 language,
-            });
+            };
+
+            if !filters.matches(&result) {
+                continue;
+            }
+
+            results.push(result);
         }
     }
 
-    Ok(apply_query_ranking_with_filters(
-        pattern,
-        results,
-        RankingStage::Initial,
-        filters,
-    ))
+    let results =
+        apply_query_ranking_with_filters(pattern, results, RankingStage::Initial, filters);
+    Ok(crate::retrieval::apply_filters(results, filters, limit))
 }
 
 fn collect_minified_matches(
@@ -125,25 +156,57 @@ fn collect_minified_matches(
     regex: &regex::Regex,
     file_rel: &str,
     content: &str,
-    language: Language,
     limit: usize,
+    filters: &SearchFilters,
+    file_chunks: Option<&[Chunk]>,
 ) {
+    let language = language_for_path(file_rel);
+
     for found in regex.find_iter(content) {
         if results.len() >= limit {
             break;
         }
         let (snippet, line_start, line_end) = bounded_match_snippet(content, found, 220);
-        results.push(SearchResult {
+        let (symbol_name, symbol_type) = symbol_for_line(file_chunks, line_start);
+        let result = SearchResult {
             file_path: file_rel.to_string(),
             line_start,
             line_end,
             content: snippet,
             score: 1.0,
-            symbol_name: None,
-            symbol_type: None,
+            symbol_name,
+            symbol_type,
             language,
-        });
+        };
+
+        if !filters.matches(&result) {
+            continue;
+        }
+
+        results.push(result);
     }
+}
+
+fn symbol_for_line(
+    chunks: Option<&[Chunk]>,
+    line: u32,
+) -> (Option<String>, Option<crate::types::SymbolType>) {
+    chunks
+        .and_then(|chunks| {
+            chunks
+                .iter()
+                .filter(|chunk| chunk.line_start <= line && line <= chunk.line_end)
+                .filter(|chunk| chunk.symbol_type.is_some() || chunk.symbol_name.is_some())
+                .min_by_key(|chunk| {
+                    (
+                        chunk.line_end.saturating_sub(chunk.line_start),
+                        chunk.line_start,
+                        chunk.line_end,
+                    )
+                })
+                .map(|chunk| (chunk.symbol_name.clone(), chunk.symbol_type))
+        })
+        .unwrap_or((None, None))
 }
 
 fn bounded_match_snippet(content: &str, found: Match<'_>, window: usize) -> (String, u32, u32) {
@@ -236,7 +299,7 @@ fn language_for_path(file_path: &str) -> Language {
 mod tests {
     use super::*;
     use crate::storage::metadata::MetadataStore;
-    use crate::types::Chunk;
+    use crate::types::{Chunk, SymbolType};
 
     #[test]
     fn invalid_regex_returns_error() {
@@ -354,5 +417,130 @@ mod tests {
         assert_eq!(results.len(), 1);
         assert!(results[0].content.len() < content.len());
         assert!(results[0].content.contains("targetSymbol"));
+    }
+
+    #[test]
+    fn language_and_path_filters_apply_before_limit() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo_root = tmp.path();
+        let index_dir = repo_root.join(".vera");
+        std::fs::create_dir_all(repo_root.join("src")).unwrap();
+        std::fs::create_dir_all(repo_root.join("tests")).unwrap();
+        std::fs::create_dir_all(&index_dir).unwrap();
+
+        std::fs::write(
+            repo_root.join("src/main.rs"),
+            "const NEEDLE: &str = \"needle\";\n",
+        )
+        .unwrap();
+        std::fs::write(repo_root.join("tests/helper.py"), "needle = 'needle'\n").unwrap();
+
+        let store = MetadataStore::open(&index_dir.join("metadata.db")).unwrap();
+        store
+            .insert_chunks(&[
+                Chunk {
+                    id: "src:0".to_string(),
+                    file_path: "src/main.rs".to_string(),
+                    line_start: 1,
+                    line_end: 1,
+                    content: "const NEEDLE: &str = \"needle\";".to_string(),
+                    language: Language::Rust,
+                    symbol_type: None,
+                    symbol_name: None,
+                },
+                Chunk {
+                    id: "tests:0".to_string(),
+                    file_path: "tests/helper.py".to_string(),
+                    line_start: 1,
+                    line_end: 1,
+                    content: "needle = 'needle'".to_string(),
+                    language: Language::Python,
+                    symbol_type: None,
+                    symbol_name: None,
+                },
+            ])
+            .unwrap();
+
+        let results = search_regex(
+            &index_dir,
+            "needle",
+            1,
+            false,
+            0,
+            &SearchFilters {
+                language: Some("python".to_string()),
+                path_glob: Some("tests/**".to_string()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].file_path, "tests/helper.py");
+        assert_eq!(results[0].language, Language::Python);
+    }
+
+    #[test]
+    fn symbol_type_filter_matches_enclosing_chunk() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo_root = tmp.path();
+        let index_dir = repo_root.join(".vera");
+        std::fs::create_dir_all(repo_root.join("src")).unwrap();
+        std::fs::create_dir_all(&index_dir).unwrap();
+
+        let content = "struct TokenConfig {\n    token: String,\n}\n\nfn build_token() {\n    let token = String::new();\n}\n";
+        std::fs::write(repo_root.join("src/lib.rs"), content).unwrap();
+
+        let store = MetadataStore::open(&index_dir.join("metadata.db")).unwrap();
+        store
+            .insert_chunks(&[
+                Chunk {
+                    id: "struct:0".to_string(),
+                    file_path: "src/lib.rs".to_string(),
+                    line_start: 1,
+                    line_end: 3,
+                    content: "struct TokenConfig {\n    token: String,\n}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Struct),
+                    symbol_name: Some("TokenConfig".to_string()),
+                },
+                Chunk {
+                    id: "fn:0".to_string(),
+                    file_path: "src/lib.rs".to_string(),
+                    line_start: 5,
+                    line_end: 7,
+                    content: "fn build_token() {\n    let token = String::new();\n}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Function),
+                    symbol_name: Some("build_token".to_string()),
+                },
+            ])
+            .unwrap();
+
+        let results = search_regex(
+            &index_dir,
+            "token",
+            10,
+            true,
+            0,
+            &SearchFilters {
+                symbol_type: Some("function".to_string()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 2);
+        assert!(
+            results
+                .iter()
+                .all(|result| result.symbol_type == Some(SymbolType::Function))
+        );
+        assert!(
+            results
+                .iter()
+                .all(|result| result.symbol_name.as_deref() == Some("build_token"))
+        );
+        assert_eq!(results[0].file_path, "src/lib.rs");
     }
 }

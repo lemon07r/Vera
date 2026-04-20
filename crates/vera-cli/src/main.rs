@@ -41,24 +41,12 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
 
-    /// Output results as compact JSON (machine-readable).
+    /// Output command results as JSON when supported.
     ///
-    /// By default, search output uses markdown codeblocks optimized for
-    /// AI agent token budgets. Use --json for compact single-line JSON
-    /// (useful for programmatic consumption or piping to other tools).
+    /// Search commands emit compact machine-readable JSON; status and
+    /// diagnostic commands emit structured JSON summaries.
     #[arg(long, global = true)]
     json: bool,
-
-    /// Output all fields with pretty-printed verbose formatting.
-    ///
-    /// Shows numbered results with scores, language, symbol info, and
-    /// decorated code previews. Useful for human debugging.
-    #[arg(long, global = true)]
-    raw: bool,
-
-    /// Print search pipeline step timings to stderr.
-    #[arg(long, global = true)]
-    timing: bool,
 }
 
 #[derive(Subcommand)]
@@ -318,11 +306,15 @@ enum Commands {
     /// Examples:
     ///   vera search "authentication logic"
     ///   vera search "parse_config" --lang rust
-    ///   vera search "error handling" --limit 5 --json
+    ///   vera search "OAuth token refresh" "JWT expiry handling" "auth middleware"
+    ///   vera search "config" --intent "find where database connection strings are loaded"
     #[command(long_about = "Search the indexed codebase.\n\n\
                       Performs hybrid search combining BM25 keyword matching and vector \
                       similarity via Reciprocal Rank Fusion (RRF). Optional cross-encoder \
                       reranking for improved precision.\n\n\
+                      Pass multiple quoted queries to merge different phrasings into a \
+                      single result set. Use `--intent` when the query is short but your \
+                      higher-level goal needs to guide reranking.\n\n\
                       Source files are favored by default. Use `--scope docs` for prose, \
                       `--scope runtime` for extracted runtime trees, and `--include-generated` \
                       when you intentionally want dist/minified artifacts.\n\n\
@@ -330,17 +322,25 @@ enum Commands {
                       search. If reranker is unavailable, returns unreranked hybrid results.\n\n\
                       Requires an existing index (run `vera index <path>` first).\n\n\
                       Examples:\n  \
-                      vera search \"auth logic\"                  # Semantic search\n  \
-                      vera search \"parse_config\"                 # Symbol lookup\n  \
-                      vera search \"hotkeys\" --scope docs         # Search docs only\n  \
-                      vera search \"mod loader\" --scope runtime --include-generated\n  \
-                      vera search \"error handling\" --lang rust   # Filter by language\n  \
-                      vera search \"routes\" --path \"src/**/*.ts\"  # Filter by path\n  \
-                      vera search \"DB queries\" --type function   # Filter by symbol type\n  \
-                      vera search \"config\" --limit 5 --json      # JSON output, 5 results")]
+                      vera search \"auth logic\"                                # Semantic search\n  \
+                      vera search \"parse_config\"                               # Symbol lookup\n  \
+                      vera search \"hotkeys\" --scope docs                       # Search docs only\n  \
+                      vera search \"OAuth token refresh\" \"JWT expiry handling\" \"auth middleware\"\n  \
+                      vera search \"config\" --intent \"find env-based DB loading\"\n  \
+                      vera search \"error handling\" --lang rust                 # Filter by language\n  \
+                      vera search \"routes\" --path \"src/**/*.ts\"                # Filter by path\n  \
+                      vera search \"DB queries\" --type function                 # Filter by symbol type\n  \
+                      vera search \"config\" --limit 5 --json --timing            # JSON output + timings")]
     Search {
-        /// The search query (keyword or natural language).
-        query: String,
+        /// One or more search queries (keyword or natural language).
+        ///
+        /// Pass multiple quoted queries to merge different phrasings in one call.
+        #[arg(required = true, num_args = 1..)]
+        queries: Vec<String>,
+
+        /// Higher-level goal used to disambiguate the query before reranking.
+        #[arg(long)]
+        intent: Option<String>,
 
         /// Filter by programming language (case-insensitive).
         ///
@@ -385,6 +385,14 @@ enum Commands {
         /// Use default mode for targeted retrieval of full implementations.
         #[arg(long)]
         compact: bool,
+
+        /// Output all fields with pretty-printed verbose formatting.
+        #[arg(long)]
+        raw: bool,
+
+        /// Print per-stage search timings to stderr.
+        #[arg(long)]
+        timing: bool,
 
         #[command(flatten)]
         backend: helpers::LocalBackendFlags,
@@ -473,18 +481,30 @@ enum Commands {
                       Searches file contents using a regex pattern, returning matches \
                       with surrounding context lines. Only searches files that are in \
                       the Vera index, so .gitignore and .veraignore rules apply.\n\n\
-                      Source files are scanned first by default. Use `--scope docs` or \
-                      `--scope runtime` when you are targeting prose or extracted runtime \
-                      trees. Add `--include-generated` to scan minified/generated files.\n\n\
+                      Supports the same corpus filters as `vera search`: language, file \
+                      path glob, symbol type, scope, and generated-file inclusion.\n\n\
                       Examples:\n  \
-                      vera grep \"fn\\s+main\"              # Find main functions\n  \
-                      vera grep \"TODO|FIXME\" -i           # Case-insensitive\n  \
-                      vera grep \"keybind\" --scope docs    # Search docs first\n  \
-                      vera grep \"impl.*Display\" -n 5      # 5 results\n  \
-                      vera grep \"use std::\" --context 0   # No context lines")]
+                      vera grep \"fn\\s+main\"                            # Find main functions\n  \
+                      vera grep \"TODO|FIXME\" -i                         # Case-insensitive\n  \
+                      vera grep \"queryClient|invalidateQueries\" --path \"frontend/src/**\"\n  \
+                      vera grep \"Authorization\" --lang rust --type function\n  \
+                      vera grep \"keybind\" --scope docs                  # Search docs first\n  \
+                      vera grep \"use std::\" --context 0                 # No context lines")]
     Grep {
         /// Regex pattern to search for.
         pattern: String,
+
+        /// Filter by programming language (case-insensitive).
+        #[arg(long)]
+        lang: Option<String>,
+
+        /// Filter by file path glob pattern (e.g., "src/**/*.rs").
+        #[arg(long)]
+        path: Option<String>,
+
+        /// Filter by symbol type.
+        #[arg(long, rename_all = "snake_case")]
+        r#type: Option<String>,
 
         /// Maximum number of results (default: 20).
         #[arg(long, short = 'n')]
@@ -509,6 +529,14 @@ enum Commands {
         /// Show only function/class signatures (omit bodies).
         #[arg(long)]
         compact: bool,
+
+        /// Output all fields with pretty-printed verbose formatting.
+        #[arg(long)]
+        raw: bool,
+
+        /// Print total regex-search time to stderr.
+        #[arg(long)]
+        timing: bool,
     },
 
     /// Find symbols with no callers (potential dead code).
@@ -718,7 +746,8 @@ fn main() {
             )
         }
         Commands::Search {
-            query,
+            queries,
+            intent,
             lang,
             path,
             limit,
@@ -727,9 +756,11 @@ fn main() {
             include_generated,
             deep,
             compact,
+            raw,
+            timing,
             backend,
         } => {
-            tracing::info!(query = %query, deep, "searching");
+            tracing::info!(queries = ?queries, deep, "searching");
             let filters = vera_core::types::SearchFilters {
                 language: lang,
                 path_glob: path,
@@ -738,12 +769,13 @@ fn main() {
                 include_generated: Some(include_generated),
             };
             commands::search::run(
-                &query,
+                &queries,
+                intent.as_deref(),
                 limit,
                 &filters,
                 cli.json,
-                cli.raw,
-                cli.timing,
+                raw,
+                timing,
                 deep,
                 compact,
                 backend.resolve(),
@@ -776,18 +808,25 @@ fn main() {
         }
         Commands::Grep {
             pattern,
+            lang,
+            path,
+            r#type,
             limit,
             ignore_case,
             context,
             scope,
             include_generated,
             compact,
+            raw,
+            timing,
         } => {
             tracing::info!(pattern = %pattern, "grep");
             let filters = vera_core::types::SearchFilters {
+                language: lang,
+                path_glob: path,
+                symbol_type: r#type,
                 scope: scope.and_then(|value| value.parse().ok()),
                 include_generated: Some(include_generated),
-                ..Default::default()
             };
             commands::grep::run(
                 &pattern,
@@ -796,7 +835,8 @@ fn main() {
                 context,
                 &filters,
                 cli.json,
-                cli.raw,
+                raw,
+                timing,
                 compact,
             )
         }
@@ -957,7 +997,9 @@ mod tests {
     #[test]
     fn cli_parses_search_command() {
         let cli = Cli::parse_from(["vera", "search", "find auth"]);
-        assert!(matches!(cli.command, Commands::Search { query, .. } if query == "find auth"));
+        assert!(
+            matches!(cli.command, Commands::Search { queries, .. } if queries == vec!["find auth".to_string()])
+        );
     }
 
     #[test]
@@ -973,9 +1015,12 @@ mod tests {
         ]);
         match cli.command {
             Commands::Search {
-                query, lang, limit, ..
+                queries,
+                lang,
+                limit,
+                ..
             } => {
-                assert_eq!(query, "find auth");
+                assert_eq!(queries, vec!["find auth".to_string()]);
                 assert_eq!(lang, Some("rust".to_string()));
                 assert_eq!(limit, Some(5));
             }
@@ -987,8 +1032,10 @@ mod tests {
     fn cli_parses_search_with_type_filter() {
         let cli = Cli::parse_from(["vera", "search", "find auth", "--type", "function"]);
         match cli.command {
-            Commands::Search { query, r#type, .. } => {
-                assert_eq!(query, "find auth");
+            Commands::Search {
+                queries, r#type, ..
+            } => {
+                assert_eq!(queries, vec!["find auth".to_string()]);
                 assert_eq!(r#type, Some("function".to_string()));
             }
             _ => panic!("expected Search command"),
@@ -999,8 +1046,8 @@ mod tests {
     fn cli_parses_search_with_path_filter() {
         let cli = Cli::parse_from(["vera", "search", "config", "--path", "src/**/*.rs"]);
         match cli.command {
-            Commands::Search { query, path, .. } => {
-                assert_eq!(query, "config");
+            Commands::Search { queries, path, .. } => {
+                assert_eq!(queries, vec!["config".to_string()]);
                 assert_eq!(path, Some("src/**/*.rs".to_string()));
             }
             _ => panic!("expected Search command"),
@@ -1024,19 +1071,69 @@ mod tests {
         ]);
         match cli.command {
             Commands::Search {
-                query,
+                queries,
                 lang,
                 path,
                 limit,
                 r#type,
                 ..
             } => {
-                assert_eq!(query, "handle request");
+                assert_eq!(queries, vec!["handle request".to_string()]);
                 assert_eq!(lang, Some("typescript".to_string()));
                 assert_eq!(path, Some("src/**/*.ts".to_string()));
                 assert_eq!(r#type, Some("function".to_string()));
                 assert_eq!(limit, Some(3));
             }
+            _ => panic!("expected Search command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_search_with_multiple_queries_and_intent() {
+        let cli = Cli::parse_from([
+            "vera",
+            "search",
+            "OAuth token refresh",
+            "JWT expiry handling",
+            "auth middleware",
+            "--intent",
+            "find where tokens are refreshed and validated",
+        ]);
+        match cli.command {
+            Commands::Search {
+                queries, intent, ..
+            } => {
+                assert_eq!(
+                    queries,
+                    vec![
+                        "OAuth token refresh".to_string(),
+                        "JWT expiry handling".to_string(),
+                        "auth middleware".to_string(),
+                    ]
+                );
+                assert_eq!(
+                    intent,
+                    Some("find where tokens are refreshed and validated".to_string())
+                );
+            }
+            _ => panic!("expected Search command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_search_timing_flag() {
+        let cli = Cli::parse_from(["vera", "search", "find auth", "--timing"]);
+        match cli.command {
+            Commands::Search { timing, .. } => assert!(timing),
+            _ => panic!("expected Search command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_search_raw_flag() {
+        let cli = Cli::parse_from(["vera", "search", "find auth", "--raw"]);
+        match cli.command {
+            Commands::Search { raw, .. } => assert!(raw),
             _ => panic!("expected Search command"),
         }
     }
@@ -1089,6 +1186,76 @@ mod tests {
                 assert_eq!(scope, Some("docs".to_string()));
                 assert!(include_generated);
             }
+            _ => panic!("expected Grep command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_grep_with_path_filter() {
+        let cli = Cli::parse_from([
+            "vera",
+            "grep",
+            "queryClient|invalidateQueries",
+            "--path",
+            "frontend/src/**",
+        ]);
+        match cli.command {
+            Commands::Grep { pattern, path, .. } => {
+                assert_eq!(pattern, "queryClient|invalidateQueries");
+                assert_eq!(path, Some("frontend/src/**".to_string()));
+            }
+            _ => panic!("expected Grep command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_grep_with_all_filters() {
+        let cli = Cli::parse_from([
+            "vera",
+            "grep",
+            "Authorization",
+            "--lang",
+            "rust",
+            "--path",
+            "src/**/*.rs",
+            "--type",
+            "function",
+            "--scope",
+            "source",
+        ]);
+        match cli.command {
+            Commands::Grep {
+                pattern,
+                lang,
+                path,
+                r#type,
+                scope,
+                ..
+            } => {
+                assert_eq!(pattern, "Authorization");
+                assert_eq!(lang, Some("rust".to_string()));
+                assert_eq!(path, Some("src/**/*.rs".to_string()));
+                assert_eq!(r#type, Some("function".to_string()));
+                assert_eq!(scope, Some("source".to_string()));
+            }
+            _ => panic!("expected Grep command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_grep_timing_flag() {
+        let cli = Cli::parse_from(["vera", "grep", "TODO", "--timing"]);
+        match cli.command {
+            Commands::Grep { timing, .. } => assert!(timing),
+            _ => panic!("expected Grep command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_grep_raw_flag() {
+        let cli = Cli::parse_from(["vera", "grep", "TODO", "--raw"]);
+        match cli.command {
+            Commands::Grep { raw, .. } => assert!(raw),
             _ => panic!("expected Grep command"),
         }
     }
