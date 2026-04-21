@@ -160,37 +160,12 @@ fn run_incremental_update(repo_path: &Path, updating: &AtomicBool, progress_logs
     updating.store(false, Ordering::SeqCst);
 }
 
-/// Load the saved runtime config from Vera's home config.json, falling back to defaults.
-fn load_saved_runtime_config() -> vera_core::config::VeraConfig {
-    let config_path = match vera_core::local_models::vera_home_dir() {
-        Ok(dir) => dir.join("config.json"),
-        Err(_) => return vera_core::config::VeraConfig::default(),
-    };
-    load_config_from_path(&config_path)
-}
-
-/// Load config from a specific path, falling back to defaults on any error.
-fn load_config_from_path(config_path: &std::path::Path) -> vera_core::config::VeraConfig {
-    let data = match std::fs::read_to_string(config_path) {
-        Ok(d) => d,
-        Err(_) => return vera_core::config::VeraConfig::default(),
-    };
-    let json: serde_json::Value = match serde_json::from_str(&data) {
-        Ok(v) => v,
-        Err(_) => return vera_core::config::VeraConfig::default(),
-    };
-    match json.get("core_config") {
-        Some(v) => serde_json::from_value(v.clone()).unwrap_or_default(),
-        None => vera_core::config::VeraConfig::default(),
-    }
-}
-
 /// Blocking wrapper around the async update_repository.
 fn run_update_blocking(
     repo_path: &Path,
 ) -> Result<vera_core::indexing::UpdateSummary, anyhow::Error> {
     let backend = vera_core::config::resolve_backend(None);
-    let mut config = load_saved_runtime_config();
+    let mut config = crate::saved_config::load_saved_runtime_config();
     config.adjust_for_backend(backend);
 
     let rt = tokio::runtime::Runtime::new()?;
@@ -205,47 +180,4 @@ fn run_update_blocking(
         &config,
         &model_name,
     ))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn load_config_missing_file_returns_default() {
-        let tmp = tempfile::tempdir().unwrap();
-        let config = load_config_from_path(&tmp.path().join("config.json"));
-        assert_eq!(
-            config.indexing.max_chunk_lines,
-            vera_core::config::VeraConfig::default()
-                .indexing
-                .max_chunk_lines
-        );
-    }
-
-    #[test]
-    fn load_config_reads_core_config() {
-        let tmp = tempfile::tempdir().unwrap();
-        let mut cfg = vera_core::config::VeraConfig::default();
-        cfg.indexing.max_chunk_lines = 99;
-        cfg.indexing.max_chunk_bytes = 1800;
-        let json = serde_json::json!({ "core_config": cfg });
-        std::fs::write(tmp.path().join("config.json"), json.to_string()).unwrap();
-        let config = load_config_from_path(&tmp.path().join("config.json"));
-        assert_eq!(config.indexing.max_chunk_lines, 99);
-        assert_eq!(config.indexing.max_chunk_bytes, 1800);
-    }
-
-    #[test]
-    fn load_config_no_core_config_key_returns_default() {
-        let tmp = tempfile::tempdir().unwrap();
-        std::fs::write(tmp.path().join("config.json"), r#"{"backend":"api"}"#).unwrap();
-        let config = load_config_from_path(&tmp.path().join("config.json"));
-        assert_eq!(
-            config.indexing.max_chunk_lines,
-            vera_core::config::VeraConfig::default()
-                .indexing
-                .max_chunk_lines
-        );
-    }
 }

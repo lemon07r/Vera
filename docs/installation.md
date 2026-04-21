@@ -135,6 +135,7 @@ Use Vera before opening many files or running broad text search when you need to
 - `vera search "query"` for semantic code search. Describe behavior: "JWT validation", not "auth". If one phrasing misses, try 2-3 varied queries or add `--intent "goal"`.
 - `vera search ... --changed`, `--since <rev>`, or `--base <rev>` when the task is limited to modified files or a PR diff
 - `vera grep "pattern"` for exact text or regex in indexed files
+- `vera structural <intent> [query]` for common structural tasks such as definitions, call sites, env reads, routes, SQL execution, and interface implementations
 - `vera ast-query '<query>' --lang <lang>` for expert-level structural search with raw tree-sitter queries
 - `vera explain-path path/to/file` to explain why a file is or is not indexed
 - `vera references <symbol>` for callers and callees

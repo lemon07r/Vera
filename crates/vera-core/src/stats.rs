@@ -191,6 +191,10 @@ pub fn collect_overview_filtered(
     let index_size_bytes = compute_dir_size(&idx_dir)?;
     let index_size_human = format_bytes(index_size_bytes);
 
+    if exact_paths.is_none() {
+        return collect_full_overview(&store, index_size_human);
+    }
+
     let mut files = store.indexed_files()?;
     if let Some(exact_paths) = exact_paths {
         files.retain(|path| exact_paths.contains(path));
@@ -319,6 +323,63 @@ pub fn collect_overview_filtered(
     })
 }
 
+fn collect_full_overview(
+    store: &MetadataStore,
+    index_size_human: String,
+) -> Result<ProjectOverview> {
+    let file_count = store.file_count()?;
+    let chunk_count = store.chunk_count()?;
+    let total_lines = store.total_lines()?;
+
+    let chunk_stats = store.language_stats()?;
+    let file_stats = store.language_file_counts()?;
+    let file_map: HashMap<&str, u64> = file_stats
+        .iter()
+        .map(|(lang, count)| (lang.as_str(), *count))
+        .collect();
+    let languages = chunk_stats
+        .iter()
+        .map(|(lang, chunks)| LanguageOverview {
+            language: lang.clone(),
+            files: file_map.get(lang.as_str()).copied().unwrap_or(0),
+            chunks: *chunks,
+        })
+        .collect();
+
+    let top_directories = store
+        .top_directories(15)?
+        .into_iter()
+        .map(|(directory, files)| DirectoryStat { directory, files })
+        .collect();
+
+    let symbol_types = store
+        .symbol_type_stats()?
+        .into_iter()
+        .map(|(symbol_type, count)| SymbolTypeStat { symbol_type, count })
+        .collect();
+
+    let entry_points = store.entry_points()?;
+    let hotspots = store
+        .hotspot_files(10)?
+        .into_iter()
+        .map(|(file_path, chunks)| HotspotFile { file_path, chunks })
+        .collect();
+    let conventions = detect_conventions_from_files(&store.indexed_files()?);
+
+    Ok(ProjectOverview {
+        file_count,
+        chunk_count,
+        total_lines,
+        index_size_human,
+        languages,
+        top_directories,
+        symbol_types,
+        entry_points,
+        hotspots,
+        conventions,
+    })
+}
+
 fn detect_conventions_from_files(files: &[String]) -> Vec<String> {
     let mut conventions = Vec::new();
 
@@ -386,9 +447,16 @@ fn detect_conventions_from_files(files: &[String]) -> Vec<String> {
 }
 
 fn matches_entry_point(file_path: &str) -> bool {
-    ["main.", "index.", "app.", "lib.", "mod.", "server."]
-        .iter()
-        .any(|needle| file_path == *needle || file_path.ends_with(&format!("/{needle}")))
+    let Some(file_name) = Path::new(file_path)
+        .file_name()
+        .and_then(|name| name.to_str())
+    else {
+        return false;
+    };
+    let Some((stem, _rest)) = file_name.split_once('.') else {
+        return false;
+    };
+    matches!(stem, "main" | "index" | "app" | "lib" | "mod" | "server")
 }
 
 // ── Call graph queries ───────────────────────────────────────────────
@@ -464,6 +532,10 @@ fn format_bytes(bytes: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::VeraConfig;
+    use crate::embedding::test_helpers::MockProvider;
+    use crate::indexing::index_repository;
+    use std::collections::HashSet;
 
     #[test]
     fn format_bytes_units() {
@@ -482,5 +554,31 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("no index found"), "error was: {err}");
+    }
+
+    #[test]
+    fn matches_entry_point_accepts_main_rs() {
+        assert!(matches_entry_point("src/main.rs"));
+        assert!(matches_entry_point("server.ts"));
+        assert!(!matches_entry_point("src/main"));
+        assert!(!matches_entry_point("src/domain.rs"));
+    }
+
+    #[tokio::test]
+    async fn filtered_overview_keeps_entry_points() {
+        let dir = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(dir.path().join("src")).unwrap();
+        std::fs::write(dir.path().join("src").join("main.rs"), "fn main() {}\n").unwrap();
+        std::fs::write(dir.path().join("src").join("helper.rs"), "fn helper() {}\n").unwrap();
+
+        let provider = MockProvider::new(8);
+        let config = VeraConfig::default();
+        index_repository(dir.path(), &provider, &config, "mock-model")
+            .await
+            .unwrap();
+
+        let exact_paths = HashSet::from([String::from("src/main.rs")]);
+        let overview = collect_overview_filtered(dir.path(), Some(&exact_paths)).unwrap();
+        assert_eq!(overview.entry_points, vec![String::from("src/main.rs")]);
     }
 }

@@ -13,6 +13,7 @@
 //! from stdin and writes responses to stdout. Logs go to stderr.
 
 pub mod protocol;
+pub mod saved_config;
 pub mod server;
 pub mod tools;
 pub mod watcher;

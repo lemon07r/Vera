@@ -116,6 +116,19 @@ Use `rg` when you need:
 
 ## Structural Search
 
+Use `vera structural` for the common structural cases where you want an intent, not raw query syntax:
+
+```bash
+vera structural definitions parse_config
+vera structural calls parse_config --changed
+vera structural env DATABASE_URL
+vera structural routes --path "src/**"
+vera structural sql
+vera structural impls Display
+```
+
+This is the better default for agents.
+
 Use `vera ast-query` when you know the AST shape you need and regex would be too blunt:
 
 ```bash

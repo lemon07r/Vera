@@ -37,7 +37,9 @@ Data flow: file → grammar lookup → tree-sitter parse (+ diagnostics) → nod
 
 Deep search (`--deep`): `rag_fusion.rs` runs a cheap BM25 pre-filter to collect symbol names and file paths, then passes these as context hints to the LLM (`completion_client.rs`) which decomposes the query into targeted sub-queries (default 2). Sub-queries execute in parallel via OS threads, and results merge with weighted RRF (original query gets 2x weight). Falls back to iterative symbol-following when no completion endpoint is configured.
 
-Structural search (`ast_query.rs`): runs raw tree-sitter queries against indexed files in one language and returns source spans with optional enclosing symbol metadata.
+Structural search:
+- `ast_query.rs`: raw tree-sitter queries against indexed files in one language, returning source spans with optional enclosing symbol metadata
+- `structural.rs`: agent-oriented structural intents for definitions, call sites, env reads, routes, SQL, and impls
 
 ### `storage/`: Persistent storage
 
@@ -63,11 +65,11 @@ All stored in `.vera/` at the project root.
 
 ## vera-cli
 
-`main.rs` parses args via clap. `commands/` contains the CLI subcommand implementations and helpers: `agent`, `ast_query`, `config`, `doctor`, `explain_path`, `grep`, `index`, `mcp`, `overview`, `references` (also used by `dead-code`), `repair`, `search`, `setup`, `stats`, `uninstall`, `update`, `upgrade`, and `watch`.
+`main.rs` parses args via clap. `commands/` contains the CLI subcommand implementations and helpers: `agent`, `ast_query`, `config`, `doctor`, `explain_path`, `grep`, `index`, `mcp`, `overview`, `references` (also used by `dead-code`), `repair`, `search`, `setup`, `stats`, `structural`, `uninstall`, `update`, `upgrade`, and `watch`.
 
 ## vera-mcp
 
-`server.rs` routes JSON-RPC requests. `tools.rs` implements five MCP tools: `search_code`, `get_stats`, `get_overview`, `regex_search`, and `explain_path`. `search_code` auto-indexes and starts a file watcher on first use. Search and overview tools also accept changed-file git scopes.
+`server.rs` routes JSON-RPC requests. `tools.rs` implements six MCP tools: `search_code`, `get_stats`, `get_overview`, `regex_search`, `structural_search`, and `explain_path`. `search_code` and `structural_search` auto-index and start a file watcher on first use. Search and overview tools also accept changed-file git scopes.
 
 ## Adding a new language
 

@@ -4,7 +4,7 @@ use anyhow::{Context, bail};
 use std::io::Write;
 use std::time::Instant;
 
-use crate::helpers::{load_runtime_config, output_results};
+use crate::helpers::{load_runtime_config, output_results, warn_if_index_stale};
 
 #[allow(clippy::too_many_arguments)]
 pub fn run(
@@ -45,13 +45,14 @@ pub fn run(
         include_generated: Some(include_generated),
     };
 
+    let config = load_runtime_config()?;
     let result_limit = limit.unwrap_or(20);
     let started_at = Instant::now();
+    warn_if_index_stale(&cwd, &config.indexing);
     let results =
         vera_core::retrieval::search_ast_query(&index_dir, query, language, result_limit, &filters)
             .context("AST query failed")?;
 
-    let config = load_runtime_config()?;
     output_results(
         &results,
         json_output,

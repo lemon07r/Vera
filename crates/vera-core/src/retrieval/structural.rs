@@ -1,0 +1,839 @@
+//! Agent-oriented structural search intents built on top of the index.
+
+use std::collections::HashSet;
+use std::path::Path;
+
+use anyhow::{Result, bail};
+use regex::{Captures, Regex};
+
+use crate::corpus::{ContentClass, classify_content, classify_path};
+use crate::retrieval::apply_filters;
+use crate::retrieval::file_scan::{
+    allows_class, bounded_byte_snippet, file_scan_priority, language_for_path,
+    line_context_snippet, smallest_symbol_chunk_for_line, symbol_for_line,
+};
+use crate::retrieval::query_utils::path_depth;
+use crate::storage::metadata::MetadataStore;
+use crate::types::{Chunk, Language, SearchFilters, SearchResult};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StructuralSearchKind {
+    Definitions,
+    Calls,
+    EnvReads,
+    RouteHandlers,
+    SqlQueries,
+    Implementations,
+}
+
+impl std::str::FromStr for StructuralSearchKind {
+    type Err = ();
+
+    fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
+        match value {
+            "definitions" | "defs" => Ok(Self::Definitions),
+            "calls" | "callers" => Ok(Self::Calls),
+            "env" | "env_reads" => Ok(Self::EnvReads),
+            "routes" | "route_handlers" => Ok(Self::RouteHandlers),
+            "sql" | "sql_queries" => Ok(Self::SqlQueries),
+            "impls" | "implementations" => Ok(Self::Implementations),
+            _ => Err(()),
+        }
+    }
+}
+
+pub fn search_structural(
+    index_dir: &Path,
+    kind: StructuralSearchKind,
+    query: Option<&str>,
+    limit: usize,
+    filters: &SearchFilters,
+) -> Result<Vec<SearchResult>> {
+    if limit == 0 {
+        bail!("limit must be greater than zero");
+    }
+
+    let metadata_path = index_dir.join("metadata.db");
+    let store = MetadataStore::open(&metadata_path)?;
+    let repo_root = index_dir
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("Cannot determine project root from index dir"))?;
+
+    match kind {
+        StructuralSearchKind::Definitions => {
+            let symbol = required_query(kind, query)?;
+            search_definitions(&store, symbol, limit, filters)
+        }
+        StructuralSearchKind::Calls => {
+            let symbol = required_query(kind, query)?;
+            search_calls(repo_root, &store, symbol, limit, filters)
+        }
+        StructuralSearchKind::EnvReads => {
+            search_env_reads(repo_root, &store, query, limit, filters)
+        }
+        StructuralSearchKind::RouteHandlers => {
+            search_route_handlers(repo_root, &store, limit, filters)
+        }
+        StructuralSearchKind::SqlQueries => search_sql_queries(repo_root, &store, limit, filters),
+        StructuralSearchKind::Implementations => {
+            let target = required_query(kind, query)?;
+            search_implementations(repo_root, &store, target, limit, filters)
+        }
+    }
+}
+
+fn required_query(kind: StructuralSearchKind, query: Option<&str>) -> Result<&str> {
+    query
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| anyhow::anyhow!("{} requires a query", kind_label(kind)))
+}
+
+fn kind_label(kind: StructuralSearchKind) -> &'static str {
+    match kind {
+        StructuralSearchKind::Definitions => "definitions",
+        StructuralSearchKind::Calls => "calls",
+        StructuralSearchKind::EnvReads => "env reads",
+        StructuralSearchKind::RouteHandlers => "route handlers",
+        StructuralSearchKind::SqlQueries => "SQL queries",
+        StructuralSearchKind::Implementations => "implementations",
+    }
+}
+
+fn search_definitions(
+    store: &MetadataStore,
+    symbol: &str,
+    limit: usize,
+    filters: &SearchFilters,
+) -> Result<Vec<SearchResult>> {
+    let chunks = {
+        let exact = store.get_chunks_by_symbol_name_case_sensitive(symbol)?;
+        if exact.is_empty() {
+            store.get_chunks_by_symbol_name(symbol)?
+        } else {
+            exact
+        }
+    };
+
+    let results = chunks
+        .into_iter()
+        .map(|chunk| SearchResult {
+            file_path: chunk.file_path,
+            line_start: chunk.line_start,
+            line_end: chunk.line_end,
+            content: chunk.content,
+            language: chunk.language,
+            score: 1.0,
+            symbol_name: chunk.symbol_name,
+            symbol_type: chunk.symbol_type,
+        })
+        .collect();
+
+    Ok(apply_filters(results, filters, limit))
+}
+
+fn search_calls(
+    repo_root: &Path,
+    store: &MetadataStore,
+    symbol: &str,
+    limit: usize,
+    filters: &SearchFilters,
+) -> Result<Vec<SearchResult>> {
+    let callers = store.find_callers(symbol)?;
+    let mut results = Vec::new();
+    let mut seen = HashSet::new();
+
+    for caller in callers {
+        if results.len() >= limit {
+            break;
+        }
+
+        let language = language_for_path(&caller.file_path);
+        if !filters.matches_file(&caller.file_path, language) {
+            continue;
+        }
+
+        let file_abs = repo_root.join(&caller.file_path);
+        let content = match std::fs::read_to_string(&file_abs) {
+            Ok(content) => content,
+            Err(_) => continue,
+        };
+        let class = classify_content(&caller.file_path, language, &content);
+        if !allows_class(filters, class) {
+            continue;
+        }
+        if matches!(filters.include_generated, Some(false))
+            && matches!(class, ContentClass::Generated)
+        {
+            continue;
+        }
+
+        let chunks = store.get_chunks_by_file(&caller.file_path)?;
+        let (snippet, line_start, line_end) = line_context_snippet(&content, caller.line, 2);
+        let (symbol_name, symbol_type) = symbol_for_line(Some(&chunks), caller.line);
+        if !filters.matches_symbol_type(symbol_type) {
+            continue;
+        }
+
+        let key = format!("{}:{}:{}", caller.file_path, line_start, line_end);
+        if !seen.insert(key) {
+            continue;
+        }
+
+        results.push(SearchResult {
+            file_path: caller.file_path,
+            line_start,
+            line_end,
+            content: snippet,
+            language,
+            score: 1.0,
+            symbol_name,
+            symbol_type,
+        });
+    }
+
+    Ok(results)
+}
+
+fn search_env_reads(
+    repo_root: &Path,
+    store: &MetadataStore,
+    query: Option<&str>,
+    limit: usize,
+    filters: &SearchFilters,
+) -> Result<Vec<SearchResult>> {
+    let target = query.map(str::trim).filter(|value| !value.is_empty());
+    let patterns = env_patterns();
+    search_regex_intent(
+        repo_root,
+        store,
+        limit,
+        filters,
+        |file, language, content, chunks| {
+            let Some(patterns) = patterns_for_language(&patterns, language) else {
+                return Ok(Vec::new());
+            };
+            let mut results = Vec::new();
+            for pattern in patterns {
+                for captures in pattern.captures_iter(content) {
+                    let Some(full) = captures.get(0) else {
+                        continue;
+                    };
+                    let Some(found_name) = first_capture(&captures) else {
+                        continue;
+                    };
+                    if let Some(target) = target {
+                        if !found_name.eq_ignore_ascii_case(target) {
+                            continue;
+                        }
+                    }
+                    results.push(result_for_match(
+                        file,
+                        language,
+                        content,
+                        full.start(),
+                        full.end(),
+                        chunks,
+                        true,
+                    ));
+                }
+            }
+            Ok(results)
+        },
+    )
+}
+
+fn search_route_handlers(
+    repo_root: &Path,
+    store: &MetadataStore,
+    limit: usize,
+    filters: &SearchFilters,
+) -> Result<Vec<SearchResult>> {
+    let patterns = route_patterns();
+    search_regex_intent(
+        repo_root,
+        store,
+        limit,
+        filters,
+        |file, language, content, chunks| {
+            let Some(patterns) = patterns_for_language(&patterns, language) else {
+                return Ok(Vec::new());
+            };
+            Ok(patterns
+                .iter()
+                .flat_map(|pattern| pattern.find_iter(content))
+                .map(|found| {
+                    result_for_match(
+                        file,
+                        language,
+                        content,
+                        found.start(),
+                        found.end(),
+                        chunks,
+                        true,
+                    )
+                })
+                .collect())
+        },
+    )
+}
+
+fn search_sql_queries(
+    repo_root: &Path,
+    store: &MetadataStore,
+    limit: usize,
+    filters: &SearchFilters,
+) -> Result<Vec<SearchResult>> {
+    let patterns = sql_patterns();
+    search_regex_intent(
+        repo_root,
+        store,
+        limit,
+        filters,
+        |file, language, content, chunks| {
+            let Some(patterns) = patterns_for_language(&patterns, language) else {
+                return Ok(Vec::new());
+            };
+            Ok(patterns
+                .iter()
+                .flat_map(|pattern| pattern.find_iter(content))
+                .map(|found| {
+                    result_for_match(
+                        file,
+                        language,
+                        content,
+                        found.start(),
+                        found.end(),
+                        chunks,
+                        true,
+                    )
+                })
+                .collect())
+        },
+    )
+}
+
+fn search_implementations(
+    repo_root: &Path,
+    store: &MetadataStore,
+    target: &str,
+    limit: usize,
+    filters: &SearchFilters,
+) -> Result<Vec<SearchResult>> {
+    let target = target.trim();
+    let patterns = implementation_patterns();
+    search_regex_intent(
+        repo_root,
+        store,
+        limit,
+        filters,
+        |file, language, content, chunks| {
+            let Some(patterns) = patterns_for_language(&patterns, language) else {
+                return Ok(Vec::new());
+            };
+            let mut results = Vec::new();
+            for pattern in patterns {
+                for captures in pattern.captures_iter(content) {
+                    let Some(full) = captures.get(0) else {
+                        continue;
+                    };
+                    let Some(captured) = first_capture(&captures) else {
+                        continue;
+                    };
+                    if !matches_implementation_target(captured, target) {
+                        continue;
+                    }
+                    results.push(result_for_match(
+                        file,
+                        language,
+                        content,
+                        full.start(),
+                        full.end(),
+                        chunks,
+                        true,
+                    ));
+                }
+            }
+            Ok(results)
+        },
+    )
+}
+
+fn search_regex_intent<F>(
+    repo_root: &Path,
+    store: &MetadataStore,
+    limit: usize,
+    filters: &SearchFilters,
+    mut collect: F,
+) -> Result<Vec<SearchResult>>
+where
+    F: FnMut(&str, Language, &str, &[Chunk]) -> Result<Vec<SearchResult>>,
+{
+    let mut files = store.indexed_files()?;
+    files.sort_by(|left, right| {
+        let left_language = language_for_path(left);
+        let right_language = language_for_path(right);
+        let left_key = (
+            file_scan_priority(classify_path(left, left_language), filters),
+            path_depth(left),
+        );
+        let right_key = (
+            file_scan_priority(classify_path(right, right_language), filters),
+            path_depth(right),
+        );
+        left_key.cmp(&right_key).then_with(|| left.cmp(right))
+    });
+
+    let mut results = Vec::new();
+    let mut seen = HashSet::new();
+
+    for file_rel in files {
+        if results.len() >= limit {
+            break;
+        }
+
+        let language = language_for_path(&file_rel);
+        if !filters.matches_file(&file_rel, language) {
+            continue;
+        }
+
+        let file_abs = repo_root.join(&file_rel);
+        let content = match std::fs::read_to_string(&file_abs) {
+            Ok(content) => content,
+            Err(_) => continue,
+        };
+        let class = classify_content(&file_rel, language, &content);
+        if !allows_class(filters, class) {
+            continue;
+        }
+        if matches!(filters.include_generated, Some(false))
+            && matches!(class, ContentClass::Generated)
+        {
+            continue;
+        }
+
+        let chunks = store.get_chunks_by_file(&file_rel)?;
+        for result in collect(&file_rel, language, &content, &chunks)? {
+            if results.len() >= limit {
+                break;
+            }
+            if !filters.matches_symbol_type(result.symbol_type) {
+                continue;
+            }
+            let key = format!(
+                "{}:{}:{}",
+                result.file_path, result.line_start, result.line_end
+            );
+            if seen.insert(key) {
+                results.push(result);
+            }
+        }
+    }
+
+    Ok(results)
+}
+
+fn result_for_match(
+    file_path: &str,
+    language: Language,
+    content: &str,
+    start_byte: usize,
+    end_byte: usize,
+    chunks: &[Chunk],
+    prefer_chunk: bool,
+) -> SearchResult {
+    let line = crate::retrieval::file_scan::byte_to_line(content, start_byte);
+    if prefer_chunk {
+        if let Some(chunk) = smallest_symbol_chunk_for_line(chunks, line)
+            .filter(|chunk| chunk.line_end.saturating_sub(chunk.line_start) <= 80)
+        {
+            return SearchResult {
+                file_path: file_path.to_string(),
+                line_start: chunk.line_start,
+                line_end: chunk.line_end,
+                content: chunk.content.clone(),
+                language,
+                score: 1.0,
+                symbol_name: chunk.symbol_name.clone(),
+                symbol_type: chunk.symbol_type,
+            };
+        }
+    }
+
+    let (snippet, line_start, line_end) = bounded_byte_snippet(content, start_byte, end_byte, 220);
+    let (symbol_name, symbol_type) = symbol_for_line(Some(chunks), line);
+    SearchResult {
+        file_path: file_path.to_string(),
+        line_start,
+        line_end,
+        content: snippet,
+        language,
+        score: 1.0,
+        symbol_name,
+        symbol_type,
+    }
+}
+
+fn first_capture<'a>(captures: &'a Captures<'a>) -> Option<&'a str> {
+    captures
+        .iter()
+        .skip(1)
+        .flatten()
+        .next()
+        .map(|value| value.as_str())
+}
+
+type PatternSets = Vec<(Vec<Language>, Vec<Regex>)>;
+
+fn patterns_for_language(pattern_sets: &PatternSets, language: Language) -> Option<&[Regex]> {
+    pattern_sets
+        .iter()
+        .find(|(languages, _)| languages.contains(&language))
+        .map(|(_, patterns)| patterns.as_slice())
+}
+
+fn env_patterns() -> PatternSets {
+    vec![
+        (
+            vec![Language::JavaScript, Language::TypeScript],
+            compile_patterns(&[
+                r#"process\.env(?:\.([A-Za-z_][A-Za-z0-9_]*)|\[\s*["']([^"'\\]+)["']\s*\])"#,
+                r#"(?:import\.meta|Deno)\.env\.get\(\s*["']([^"'\\]+)["']\s*\)"#,
+            ]),
+        ),
+        (
+            vec![Language::Python],
+            compile_patterns(&[
+                r#"os\.getenv\(\s*["']([^"'\\]+)["']\s*\)"#,
+                r#"os\.environ(?:\.get\(\s*["']([^"'\\]+)["']\s*\)|\[\s*["']([^"'\\]+)["']\s*\])"#,
+            ]),
+        ),
+        (
+            vec![Language::Rust],
+            compile_patterns(&[
+                r#"(?:std::)?env::(?:var|var_os)\(\s*"([^"\\]+)""#,
+                r#"option_env!\(\s*"([^"\\]+)""#,
+            ]),
+        ),
+        (
+            vec![Language::Go],
+            compile_patterns(&[r#"os\.(?:Getenv|LookupEnv)\(\s*"([^"\\]+)""#]),
+        ),
+        (
+            vec![Language::Java],
+            compile_patterns(&[r#"System\.getenv\(\s*"([^"\\]+)""#]),
+        ),
+        (
+            vec![Language::CSharp],
+            compile_patterns(&[r#"Environment\.GetEnvironmentVariable\(\s*"([^"\\]+)""#]),
+        ),
+    ]
+}
+
+fn route_patterns() -> PatternSets {
+    vec![
+        (
+            vec![Language::JavaScript, Language::TypeScript],
+            compile_patterns(&[
+                r#"\.(?:get|post|put|patch|delete|all|use)\s*\(\s*["'`][^"'`]+["'`]"#,
+                r#"\.route\(\s*["'`][^"'`]+["'`]\s*\)"#,
+            ]),
+        ),
+        (
+            vec![Language::Python],
+            compile_patterns(&[
+                r#"@(?:\w+\.)?(?:get|post|put|patch|delete|route)\(\s*["'][^"'\\]+["']"#,
+                r#"\.add_api_route\(\s*["'][^"'\\]+["']"#,
+            ]),
+        ),
+        (
+            vec![Language::Rust],
+            compile_patterns(&[
+                r#"#\[(?:get|post|put|patch|delete|route)\(\s*"[^"\\]+""#,
+                r#"\.route\(\s*"[^"\\]+""#,
+            ]),
+        ),
+        (
+            vec![Language::Go],
+            compile_patterns(&[
+                r#"\.(?:GET|POST|PUT|PATCH|DELETE|HandleFunc|Handle)\(\s*"[^"\\]+""#,
+                r#"http\.HandleFunc\(\s*"[^"\\]+""#,
+            ]),
+        ),
+        (
+            vec![Language::Java],
+            compile_patterns(&[
+                r#"@(?:GetMapping|PostMapping|PutMapping|PatchMapping|DeleteMapping|RequestMapping)\(\s*(?:value\s*=\s*)?"[^"\\]+""#,
+            ]),
+        ),
+        (
+            vec![Language::CSharp],
+            compile_patterns(&[
+                r#"Map(?:Get|Post|Put|Patch|Delete)\(\s*"[^"\\]+""#,
+                r#"\[(?:HttpGet|HttpPost|HttpPut|HttpPatch|HttpDelete)(?:\(\s*"[^"\\]+"\s*\))?\]"#,
+            ]),
+        ),
+    ]
+}
+
+fn sql_patterns() -> PatternSets {
+    vec![
+        (
+            vec![Language::JavaScript, Language::TypeScript],
+            compile_patterns(&[
+                r#"\b(?:db|pool|client|conn|connection|trx|tx|prisma|sequelize|knex)\s*\.\s*(?:query|execute|queryRaw|queryUnsafe|executeRaw|raw)\s*\("#,
+                r#"\bsql\s*`"#,
+            ]),
+        ),
+        (
+            vec![Language::Python],
+            compile_patterns(&[
+                r#"\b(?:cursor|conn|connection|db|session|engine)\s*\.\s*(?:execute|executemany|exec_driver_sql)\s*\("#,
+            ]),
+        ),
+        (
+            vec![Language::Rust],
+            compile_patterns(&[
+                r#"\b(?:sqlx|diesel)::(?:query|query_as|query_scalar|sql_query)\s*!?\s*\("#,
+                r#"\b(?:conn|pool|tx|db)\s*\.\s*(?:execute|fetch_one|fetch_all|fetch_optional|query)\s*\("#,
+            ]),
+        ),
+        (
+            vec![Language::Go],
+            compile_patterns(&[
+                r#"\b(?:db|tx|conn)\s*\.\s*(?:Query|QueryContext|Exec|ExecContext|Prepare)\s*\("#,
+            ]),
+        ),
+        (
+            vec![Language::Java],
+            compile_patterns(&[
+                r#"\b(?:statement|preparedStatement|entityManager|query)\s*\.\s*(?:executeQuery|executeUpdate|prepareStatement|createQuery|createNativeQuery)\s*\("#,
+            ]),
+        ),
+        (
+            vec![Language::CSharp],
+            compile_patterns(&[
+                r#"\b(?:db|context|command|connection)\s*\.\s*(?:ExecuteReader|ExecuteNonQuery|ExecuteSqlRaw|ExecuteSqlInterpolated|FromSqlRaw|FromSqlInterpolated|Query|QueryAsync)\s*\("#,
+            ]),
+        ),
+    ]
+}
+
+fn implementation_patterns() -> PatternSets {
+    vec![
+        (
+            vec![Language::Rust],
+            compile_patterns(&[
+                r#"impl(?:<[^>]+>)?\s+([A-Za-z_][A-Za-z0-9_:<>]*)\s+for\s+[A-Za-z_][A-Za-z0-9_:<>]*"#,
+            ]),
+        ),
+        (
+            vec![Language::TypeScript, Language::JavaScript, Language::Java],
+            compile_patterns(&[
+                r#"(?s)class\s+[A-Za-z_][A-Za-z0-9_<>]*.*?\bimplements\s+([^{]+)\{"#,
+            ]),
+        ),
+        (
+            vec![Language::CSharp],
+            compile_patterns(&[r#"(?s)class\s+[A-Za-z_][A-Za-z0-9_<>]*\s*:\s*([^{]+)\{"#]),
+        ),
+    ]
+}
+
+fn compile_patterns(patterns: &[&str]) -> Vec<Regex> {
+    patterns
+        .iter()
+        .map(|pattern| Regex::new(pattern).expect("structural regex should compile"))
+        .collect()
+}
+
+fn matches_implementation_target(captured: &str, target: &str) -> bool {
+    captured
+        .split(',')
+        .map(normalize_impl_target)
+        .any(|candidate| candidate == normalize_impl_target(target))
+}
+
+fn normalize_impl_target(value: &str) -> String {
+    value
+        .trim()
+        .trim_start_matches('&')
+        .split('<')
+        .next()
+        .unwrap_or("")
+        .split_whitespace()
+        .last()
+        .unwrap_or("")
+        .rsplit([':', '.'])
+        .next()
+        .unwrap_or("")
+        .trim_matches(|ch: char| ch == '{' || ch == ')' || ch == '(')
+        .to_ascii_lowercase()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::VeraConfig;
+    use crate::embedding::test_helpers::MockProvider;
+    use crate::indexing::index_repository;
+
+    async fn index_repo(files: &[(&str, &str)]) -> tempfile::TempDir {
+        let dir = tempfile::TempDir::new().unwrap();
+        for (path, content) in files {
+            let abs = dir.path().join(path);
+            if let Some(parent) = abs.parent() {
+                std::fs::create_dir_all(parent).unwrap();
+            }
+            std::fs::write(abs, content).unwrap();
+        }
+        let provider = MockProvider::new(8);
+        let config = VeraConfig::default();
+        index_repository(dir.path(), &provider, &config, "mock-model")
+            .await
+            .unwrap();
+        dir
+    }
+
+    #[tokio::test]
+    async fn definitions_find_symbol_chunks() {
+        let dir = index_repo(&[("src/main.rs", "fn parse_config() {}\nfn other() {}\n")]).await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::Definitions,
+            Some("parse_config"),
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].symbol_name.as_deref(), Some("parse_config"));
+    }
+
+    #[tokio::test]
+    async fn calls_find_callsites() {
+        let dir = index_repo(&[(
+            "src/main.rs",
+            "fn target() {}\nfn caller() {\n    target();\n}\n",
+        )])
+        .await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::Calls,
+            Some("target"),
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert!(results[0].content.contains("target();"));
+        assert_eq!(results[0].symbol_name.as_deref(), Some("caller"));
+    }
+
+    #[tokio::test]
+    async fn env_reads_find_common_patterns() {
+        let dir = index_repo(&[
+            ("src/app.ts", "const db = process.env.DATABASE_URL;\n"),
+            (
+                "server.py",
+                "import os\nvalue = os.environ.get('DATABASE_URL')\n",
+            ),
+            ("src/main.rs", "let v = std::env::var(\"DATABASE_URL\");\n"),
+        ])
+        .await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::EnvReads,
+            Some("DATABASE_URL"),
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn route_handlers_find_common_patterns() {
+        let dir = index_repo(&[
+            ("src/router.ts", "router.get('/users', handler)\n"),
+            ("app.py", "@app.post('/login')\ndef login():\n    pass\n"),
+        ])
+        .await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::RouteHandlers,
+            None,
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn sql_queries_find_execution_sites() {
+        let dir = index_repo(&[
+            (
+                "db.py",
+                "def load(cursor):\n    cursor.execute('SELECT * FROM users')\n",
+            ),
+            ("src/main.rs", "let query = sqlx::query(\"SELECT 1\");\n"),
+        ])
+        .await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::SqlQueries,
+            None,
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn implementations_find_trait_and_interface_impls() {
+        let dir = index_repo(&[
+            (
+                "src/main.rs",
+                "impl std::fmt::Display for User {\n    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { todo!() }\n}\n",
+            ),
+            (
+                "src/types.ts",
+                "interface Loader {}\nclass Repo implements Loader {\n    run() {}\n}\n",
+            ),
+        ])
+        .await;
+
+        let rust_results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::Implementations,
+            Some("Display"),
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+        assert_eq!(rust_results.len(), 1);
+
+        let ts_results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::Implementations,
+            Some("Loader"),
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+        assert_eq!(ts_results.len(), 1);
+    }
+}

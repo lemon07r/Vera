@@ -5,6 +5,8 @@
 //! - `get_stats` — retrieve index statistics
 //! - `get_overview` — architecture overview for agent onboarding
 //! - `regex_search` — regex search over indexed files
+//! - `structural_search` — agent-oriented structural search intents
+//! - `explain_path` — explain why a path is or is not indexed
 
 use std::sync::{Arc, Mutex};
 
@@ -198,18 +200,6 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "path": {
                         "type": "string",
                         "description": "Path to the project directory (default: current dir)"
-                    },
-                    "changed": {
-                        "type": "boolean",
-                        "description": "Restrict overview to modified, staged, and untracked files."
-                    },
-                    "since": {
-                        "type": "string",
-                        "description": "Restrict overview to files changed since the given revision."
-                    },
-                    "base": {
-                        "type": "string",
-                        "description": "Restrict overview to files changed since merge-base(HEAD, revision)."
                     }
                 }
             }),
@@ -227,6 +217,18 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "path": {
                         "type": "string",
                         "description": "Path to the project directory (default: current dir)"
+                    },
+                    "changed": {
+                        "type": "boolean",
+                        "description": "Restrict overview to modified, staged, and untracked files."
+                    },
+                    "since": {
+                        "type": "string",
+                        "description": "Restrict overview to files changed since the given revision."
+                    },
+                    "base": {
+                        "type": "string",
+                        "description": "Restrict overview to files changed since merge-base(HEAD, revision)."
                     }
                 }
             }),
@@ -290,6 +292,73 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             }),
         },
         ToolDefinition {
+            name: "structural_search".to_string(),
+            description: "Run agent-oriented structural search intents over indexed code.\n\
+                          \n\
+                          WHEN TO USE: symbol definitions, call sites, env var reads, \
+                          HTTP route handlers, SQL execution sites, or trait/interface \
+                          implementations.\n\
+                          WHEN NOT TO USE: conceptual behavior queries. Use search_code \
+                          for those."
+                .to_string(),
+            input_schema: serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": ["definitions", "calls", "env_reads", "route_handlers", "sql_queries", "implementations"],
+                        "description": "Structural intent to run."
+                    },
+                    "query": {
+                        "type": "string",
+                        "description": "Required for definitions, calls, and implementations. Optional for env_reads to narrow to one env var."
+                    },
+                    "lang": {
+                        "type": "string",
+                        "description": "Filter by programming language (e.g., rust, python)"
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Filter by file path glob (e.g., src/**/*.rs)"
+                    },
+                    "symbol_type": {
+                        "type": "string",
+                        "description": "Filter by enclosing symbol type (function, class, method, etc.)"
+                    },
+                    "scope": {
+                        "type": "string",
+                        "enum": ["source", "docs", "runtime", "all"],
+                        "description": "Coarse corpus scope. Defaults to source-first behavior."
+                    },
+                    "include_generated": {
+                        "type": "boolean",
+                        "description": "Include generated or minified files such as dist bundles."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of results (default: 20)"
+                    },
+                    "changed": {
+                        "type": "boolean",
+                        "description": "Restrict search to modified, staged, and untracked files."
+                    },
+                    "since": {
+                        "type": "string",
+                        "description": "Restrict search to files changed since the given revision."
+                    },
+                    "base": {
+                        "type": "string",
+                        "description": "Restrict search to files changed since merge-base(HEAD, revision)."
+                    },
+                    "compact": {
+                        "type": "boolean",
+                        "description": "Return only function/class signatures (omit bodies)."
+                    }
+                },
+                "required": ["kind"]
+            }),
+        },
+        ToolDefinition {
             name: "explain_path".to_string(),
             description: "Explain why a path is or is not indexed. Returns the decisive reason such as a default exclude, .veraignore, .gitignore, binary detection, size limit, or missing file."
                 .to_string(),
@@ -330,6 +399,7 @@ pub fn handle_tool_call(name: &str, arguments: &Value) -> ToolCallResult {
         "get_stats" => handle_get_stats(arguments),
         "get_overview" => handle_get_overview(arguments),
         "regex_search" => handle_regex_search(arguments),
+        "structural_search" => handle_structural_search(arguments),
         "explain_path" => handle_explain_path(arguments),
         _ => ToolCallResult::error(format!("Unknown tool: {name}")),
     }
@@ -447,7 +517,7 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         .map(|v| v as usize);
 
     let backend = vera_core::config::resolve_backend(None);
-    let mut config = vera_core::config::VeraConfig::default();
+    let mut config = crate::saved_config::load_saved_runtime_config();
     config.adjust_for_backend(backend);
     let result_limit = limit.unwrap_or(config.retrieval.default_limit);
 
@@ -463,37 +533,10 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
             }
         }
     }
-    let index_dir = vera_core::indexing::index_dir(&cwd);
-
-    if !index_dir.exists() {
-        // Auto-index on first search.
-        let (rt, provider, idx_config, model_name) = match create_runtime_and_provider() {
-            Ok(t) => t,
-            Err(e) => return e,
-        };
-        match rt.block_on(vera_core::indexing::index_repository(
-            &cwd,
-            &provider,
-            &idx_config,
-            &model_name,
-        )) {
-            Ok(_) => {}
-            Err(e) => return ToolCallResult::error(format!("Auto-indexing failed: {e}")),
-        }
-        // Start watcher after indexing.
-        if let Ok(handle) = crate::watcher::start_watching(&cwd) {
-            let mut guard = WATCHER.lock().unwrap();
-            *guard = Some(handle);
-        }
-    } else {
-        // Start watcher if not already running.
-        let mut guard = WATCHER.lock().unwrap();
-        if guard.is_none() {
-            if let Ok(handle) = crate::watcher::start_watching(&cwd) {
-                *guard = Some(handle);
-            }
-        }
-    }
+    let index_dir = match ensure_index_and_watcher(&cwd) {
+        Ok(index_dir) => index_dir,
+        Err(err) => return err,
+    };
 
     // Run each query, collect all results.
     let mut all_results: Vec<vera_core::types::SearchResult> = Vec::new();
@@ -538,6 +581,30 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
     }
 }
 
+fn ensure_index_and_watcher(cwd: &std::path::Path) -> Result<std::path::PathBuf, ToolCallResult> {
+    let index_dir = vera_core::indexing::index_dir(cwd);
+
+    if !index_dir.exists() {
+        let (rt, provider, idx_config, model_name) = create_runtime_and_provider()?;
+        rt.block_on(vera_core::indexing::index_repository(
+            cwd,
+            &provider,
+            &idx_config,
+            &model_name,
+        ))
+        .map_err(|e| ToolCallResult::error(format!("Auto-indexing failed: {e}")))?;
+    }
+
+    let mut guard = WATCHER.lock().unwrap();
+    if guard.is_none() {
+        if let Ok(handle) = crate::watcher::start_watching(cwd) {
+            *guard = Some(handle);
+        }
+    }
+
+    Ok(index_dir)
+}
+
 /// Create a tokio runtime, resolve backend config, and build an embedding provider.
 fn create_runtime_and_provider() -> Result<
     (
@@ -549,7 +616,7 @@ fn create_runtime_and_provider() -> Result<
     ToolCallResult,
 > {
     let backend = vera_core::config::resolve_backend(None);
-    let mut config = vera_core::config::VeraConfig::default();
+    let mut config = crate::saved_config::load_saved_runtime_config();
     config.adjust_for_backend(backend);
 
     let rt = tokio::runtime::Runtime::new()
@@ -699,6 +766,72 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
     }
 }
 
+fn handle_structural_search(args: &Value) -> ToolCallResult {
+    let kind = match args.get("kind").and_then(|v| v.as_str()) {
+        Some(value) => match value.parse::<vera_core::retrieval::StructuralSearchKind>() {
+            Ok(kind) => kind,
+            Err(()) => {
+                return ToolCallResult::error(format!("Invalid structural kind: {value}"));
+            }
+        },
+        None => return ToolCallResult::error("Missing required parameter: kind"),
+    };
+
+    let scope = match args.get("scope").and_then(|v| v.as_str()) {
+        Some(value) => match value.parse() {
+            Ok(scope) => Some(scope),
+            Err(()) => {
+                return ToolCallResult::error(format!("Invalid scope: {value}"));
+            }
+        },
+        None => None,
+    };
+    let limit = args
+        .get("limit")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize)
+        .unwrap_or(20);
+    let query = args.get("query").and_then(|v| v.as_str());
+
+    let cwd = match std::env::current_dir() {
+        Ok(d) => d,
+        Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
+    };
+
+    let mut filters = search_code_filters(args, scope);
+    let git_scope = match git_scope_from_args(args) {
+        Ok(scope) => scope,
+        Err(err) => return ToolCallResult::error(err),
+    };
+    if let Some(scope) = git_scope.as_ref() {
+        match vera_core::git_scope::resolve_scope(&cwd, scope) {
+            Ok(paths) => filters.exact_paths = Some(Arc::new(paths)),
+            Err(err) => {
+                return ToolCallResult::error(format!("Failed to resolve git scope: {err}"));
+            }
+        }
+    }
+
+    let index_dir = match ensure_index_and_watcher(&cwd) {
+        Ok(index_dir) => index_dir,
+        Err(err) => return err,
+    };
+
+    match vera_core::retrieval::search_structural(&index_dir, kind, query, limit, &filters) {
+        Ok(results) => {
+            let signatures_only = args
+                .get("compact")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            match compact_results_json(&results, MCP_OUTPUT_BUDGET, signatures_only) {
+                Ok(json) => ToolCallResult::success(json),
+                Err(e) => ToolCallResult::error(format!("Failed to serialize results: {e}")),
+            }
+        }
+        Err(e) => ToolCallResult::error(format!("Structural search failed: {e}")),
+    }
+}
+
 fn handle_explain_path(args: &Value) -> ToolCallResult {
     let path = match args.get("path").and_then(|v| v.as_str()) {
         Some(path) => path,
@@ -710,7 +843,7 @@ fn handle_explain_path(args: &Value) -> ToolCallResult {
         Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
     };
 
-    let mut config = vera_core::config::VeraConfig::default();
+    let mut config = crate::saved_config::load_saved_runtime_config();
     config.indexing.no_ignore = args
         .get("no_ignore")
         .and_then(|v| v.as_bool())
@@ -744,16 +877,37 @@ mod tests {
     use super::*;
 
     #[test]
-    fn tool_definitions_has_five_tools() {
+    fn tool_definitions_has_six_tools() {
         let tools = tool_definitions();
-        assert_eq!(tools.len(), 5);
+        assert_eq!(tools.len(), 6);
 
         let names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
         assert!(names.contains(&"search_code"));
         assert!(names.contains(&"get_stats"));
         assert!(names.contains(&"get_overview"));
         assert!(names.contains(&"regex_search"));
+        assert!(names.contains(&"structural_search"));
         assert!(names.contains(&"explain_path"));
+    }
+
+    #[test]
+    fn git_scope_schema_is_only_on_overview() {
+        let tools = tool_definitions();
+        let get_stats = tools.iter().find(|tool| tool.name == "get_stats").unwrap();
+        let get_overview = tools
+            .iter()
+            .find(|tool| tool.name == "get_overview")
+            .unwrap();
+
+        let stats_props = get_stats.input_schema["properties"].as_object().unwrap();
+        assert!(!stats_props.contains_key("changed"));
+        assert!(!stats_props.contains_key("since"));
+        assert!(!stats_props.contains_key("base"));
+
+        let overview_props = get_overview.input_schema["properties"].as_object().unwrap();
+        assert!(overview_props.contains_key("changed"));
+        assert!(overview_props.contains_key("since"));
+        assert!(overview_props.contains_key("base"));
     }
 
     #[test]
@@ -828,6 +982,22 @@ mod tests {
         assert!(!properties.contains_key("lang"));
         assert!(!properties.contains_key("path"));
         assert!(!properties.contains_key("symbol_type"));
+    }
+
+    #[test]
+    fn structural_search_schema_exposes_kind_and_git_scope() {
+        let tools = tool_definitions();
+        let structural = tools
+            .iter()
+            .find(|tool| tool.name == "structural_search")
+            .unwrap();
+        let properties = structural.input_schema["properties"].as_object().unwrap();
+
+        assert!(properties.contains_key("kind"));
+        assert!(properties.contains_key("query"));
+        assert!(properties.contains_key("changed"));
+        assert!(properties.contains_key("since"));
+        assert!(properties.contains_key("base"));
     }
 
     #[test]
