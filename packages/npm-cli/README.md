@@ -31,6 +31,7 @@ vera search "authentication logic"
 | Use a local NVIDIA backend | `vera setup --onnx-jina-cuda` |
 | Search semantically | `vera search "authentication middleware"` |
 | Search only changed files | `vera search "authentication middleware" --changed` |
+| Common structural tasks | `vera structural routes` / `vera structural env DATABASE_URL` |
 | Explain why a file is missing | `vera explain-path path/to/file` |
 | Structural AST search | `vera ast-query '(function_item name: (identifier) @fn)' --lang rust` |
 | Inspect index health | `vera stats --json` |

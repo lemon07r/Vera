@@ -30,15 +30,18 @@ pub mod dynamic_reranker;
 pub use dynamic_reranker::{DynamicReranker, create_dynamic_reranker};
 
 pub mod completion_client;
+pub(crate) mod file_scan;
 pub mod iterative_search;
 pub mod local_reranker;
 pub(crate) mod query_utils;
 pub mod rag_fusion;
 pub mod regex_search;
+pub mod structural;
 
 pub use ast_query::search_ast_query;
 pub use local_reranker::LocalReranker;
 pub use regex_search::search_regex;
+pub use structural::{StructuralSearchKind, search_structural};
 
 pub use vector::{VectorSearchError, search_vector, search_vector_with_stores};
 

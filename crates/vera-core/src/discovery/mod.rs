@@ -14,6 +14,7 @@
 //! - `.ignore` files
 //! - Custom override patterns
 
+use std::path::Component;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
@@ -323,22 +324,15 @@ pub fn explain_path(root: &Path, path: &Path, config: &IndexingConfig) -> Result
     let root = root
         .canonicalize()
         .with_context(|| format!("failed to resolve path: {}", root.display()))?;
-    let candidate = if path.is_absolute() {
-        path.to_path_buf()
-    } else {
-        root.join(path)
-    };
     let display_input = path.display().to_string();
-    let absolute_display = candidate.display().to_string();
-
-    let relative_path = candidate
-        .strip_prefix(&root)
-        .ok()
-        .map(|p| p.to_string_lossy().to_string());
-    if relative_path.is_none() {
+    let Some(relative) = normalized_relative_path(&root, path) else {
         return Ok(PathExplanation {
             input_path: display_input,
-            absolute_path: absolute_display,
+            absolute_path: if path.is_absolute() {
+                path.display().to_string()
+            } else {
+                root.join(path).display().to_string()
+            },
             relative_path: None,
             decision: PathDecision::OutsideRoot,
             reason: PathReason::OutsideRoot,
@@ -349,8 +343,10 @@ pub fn explain_path(root: &Path, path: &Path, config: &IndexingConfig) -> Result
                 root.display()
             )),
         });
-    }
-    let relative_path = relative_path.unwrap();
+    };
+    let candidate = root.join(&relative);
+    let absolute_display = candidate.display().to_string();
+    let relative_path = relative.to_string_lossy().to_string();
     let relative = Path::new(&relative_path);
 
     if !candidate.exists() {
@@ -533,6 +529,32 @@ pub fn explain_path(root: &Path, path: &Path, config: &IndexingConfig) -> Result
         pattern,
         details: details.or_else(|| Some("path would be indexed".to_string())),
     })
+}
+
+fn normalized_relative_path(root: &Path, path: &Path) -> Option<PathBuf> {
+    let relative = if path.is_absolute() {
+        path.strip_prefix(root).ok()?
+    } else {
+        path
+    };
+    normalize_relative_path(relative)
+}
+
+fn normalize_relative_path(path: &Path) -> Option<PathBuf> {
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::Normal(part) => normalized.push(part),
+            Component::ParentDir => {
+                if !normalized.pop() {
+                    return None;
+                }
+            }
+            Component::RootDir | Component::Prefix(_) => return None,
+        }
+    }
+    Some(normalized)
 }
 
 fn determine_ignore_strategy(root: &Path, config: &IndexingConfig) -> Result<IgnoreStrategy> {
@@ -1402,5 +1424,23 @@ mod tests {
                 .as_deref()
                 .is_some_and(|source| source.ends_with(".gitignore"))
         );
+    }
+
+    #[test]
+    fn explain_path_rejects_paths_that_escape_root() {
+        let dir = TempDir::new().unwrap();
+        let outside = dir.path().parent().unwrap().join("vera-outside-root.rs");
+        fs::write(&outside, "fn outside() {}\n").unwrap();
+
+        let explanation = explain_path(
+            dir.path(),
+            Path::new("../vera-outside-root.rs"),
+            &default_config(),
+        )
+        .unwrap();
+        assert_eq!(explanation.decision, PathDecision::OutsideRoot);
+        assert_eq!(explanation.reason, PathReason::OutsideRoot);
+
+        fs::remove_file(outside).unwrap();
     }
 }

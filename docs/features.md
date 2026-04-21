@@ -122,6 +122,19 @@ This makes parser regressions and partial indexing visible instead of silent.
 
 `vera references foo` finds all callers of a symbol. `vera references foo --callees` finds what a symbol calls. The call graph is built during indexing from tree-sitter AST analysis, so lookups are instant.
 
+### Agent-Oriented Structural Search
+
+`vera structural <intent> [query]` covers the common structural tasks agents hit repeatedly without forcing raw tree-sitter syntax.
+
+- `definitions <symbol>` finds symbol definitions by name
+- `calls <symbol>` finds call sites of a symbol
+- `env [NAME]` finds environment variable reads, optionally narrowed to one variable
+- `routes` finds common HTTP route registrations
+- `sql` finds common SQL execution sites
+- `impls <trait-or-interface>` finds trait or interface implementations
+
+Use this as the default structural workflow. Reach for `vera ast-query` only when you already know the tree-sitter shape you need.
+
 ### Dead Code Detection
 
 `vera dead-code` finds functions and methods with no callers. Excludes common entry points (`main`, `new`, `default`, etc.) to reduce noise. Useful for codebase cleanup and understanding which code is actually reachable.
@@ -209,6 +222,7 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 | `get_stats` | File count, chunk count, index size, language breakdown, and index health |
 | `get_overview` | Architecture overview with conventions detection and optional git-scoped filtering |
 | `regex_search` | Regex search with context lines, scope controls, and git-scoped filtering |
+| `structural_search` | Agent-oriented structural intents for definitions, calls, env reads, routes, SQL, and impls |
 | `explain_path` | Explain why a file is or is not indexed |
 
 Tool descriptions include explicit WHEN TO USE / WHEN NOT TO USE guidance so AI agents route queries to the right tool automatically.

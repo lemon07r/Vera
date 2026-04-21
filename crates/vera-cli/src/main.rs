@@ -7,6 +7,7 @@
 //! - `vera update <path>` — Incrementally update the index
 //! - `vera stats` — Show index statistics
 //! - `vera config` — Show or set configuration values
+//! - `vera structural ...` — Agent-oriented structural search intents
 
 mod commands;
 mod helpers;
@@ -343,6 +344,60 @@ enum Commands {
         /// Include generated or minified files such as dist bundles.
         #[arg(long)]
         include_generated: bool,
+        /// Show only function/class signatures (omit bodies).
+        #[arg(long)]
+        compact: bool,
+    },
+
+    /// Run agent-oriented structural search intents.
+    ///
+    /// Uses the existing index to answer common code-navigation questions
+    /// without requiring raw tree-sitter queries. Prefer this over
+    /// `vera ast-query` when you need definitions, call sites, env reads,
+    /// route handlers, SQL execution sites, or interface implementations.
+    #[command(long_about = "Run agent-oriented structural search intents.\n\n\
+                      Uses the existing index to answer common code-navigation \n\
+                      questions without requiring raw tree-sitter queries.\n\n\
+                      Intents:\n  \
+                      definitions   Find symbol definitions by name\n  \
+                      calls         Find call sites of a symbol\n  \
+                      env           Find environment variable reads\n  \
+                      routes        Find common HTTP route registrations\n  \
+                      sql           Find common SQL execution sites\n  \
+                      impls         Find trait or interface implementations\n\n\
+                      Examples:\n  \
+                      vera structural definitions parse_config\n  \
+                      vera structural calls parse_config --changed\n  \
+                      vera structural env DATABASE_URL\n  \
+                      vera structural routes --path \"src/**\"\n  \
+                      vera structural sql --lang python\n  \
+                      vera structural impls Display")]
+    Structural {
+        /// Structural intent to run.
+        #[arg(value_enum)]
+        intent: commands::structural::StructuralIntent,
+        /// Optional query term. Required for definitions, calls, and impls.
+        query: Option<String>,
+        /// Filter by programming language (case-insensitive).
+        #[arg(long)]
+        lang: Option<String>,
+        /// Filter by file path glob pattern (e.g., "src/**/*.rs").
+        #[arg(long)]
+        path: Option<String>,
+        /// Filter by symbol type.
+        #[arg(long, rename_all = "snake_case")]
+        r#type: Option<String>,
+        /// Maximum number of results (default: 20).
+        #[arg(long, short = 'n')]
+        limit: Option<usize>,
+        /// Restrict results to a coarse corpus scope.
+        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
+        scope: Option<String>,
+        /// Include generated or minified files such as dist bundles.
+        #[arg(long)]
+        include_generated: bool,
+        #[command(flatten)]
+        git_scope: helpers::GitScopeFlags,
         /// Show only function/class signatures (omit bodies).
         #[arg(long)]
         compact: bool,
@@ -873,6 +928,40 @@ fn main() {
                 compact,
             )
         }
+        Commands::Structural {
+            intent,
+            query,
+            lang,
+            path,
+            limit,
+            scope,
+            include_generated,
+            git_scope,
+            r#type,
+            compact,
+        } => {
+            let scope = scope.and_then(|s| s.parse().ok());
+            let filters = vera_core::types::SearchFilters {
+                language: lang,
+                path_glob: path,
+                exact_paths: None,
+                symbol_type: r#type,
+                scope,
+                include_generated: Some(include_generated),
+            };
+            tracing::info!("structural query");
+            commands::structural::run(
+                intent,
+                query.as_deref(),
+                limit,
+                &filters,
+                cli.json,
+                cli.raw,
+                cli.timing,
+                git_scope.resolve(),
+                compact,
+            )
+        }
         Commands::Update {
             path,
             backend,
@@ -1381,6 +1470,63 @@ mod tests {
         let cli = Cli::parse_from(["vera", "--raw", "grep", "TODO"]);
         assert!(matches!(cli.command, Commands::Grep { .. }));
         assert!(cli.raw);
+    }
+
+    #[test]
+    fn cli_parses_structural_definitions_command() {
+        let cli = Cli::parse_from(["vera", "structural", "definitions", "parse_config"]);
+        match cli.command {
+            Commands::Structural { intent, query, .. } => {
+                assert!(matches!(
+                    intent,
+                    commands::structural::StructuralIntent::Definitions
+                ));
+                assert_eq!(query.as_deref(), Some("parse_config"));
+            }
+            _ => panic!("expected structural command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_structural_filters_and_git_scope() {
+        let cli = Cli::parse_from([
+            "vera",
+            "structural",
+            "calls",
+            "parse_config",
+            "--lang",
+            "rust",
+            "--path",
+            "src/**/*.rs",
+            "--type",
+            "function",
+            "--changed",
+            "--compact",
+        ]);
+        match cli.command {
+            Commands::Structural {
+                intent,
+                query,
+                lang,
+                path,
+                r#type,
+                git_scope,
+                compact,
+                ..
+            } => {
+                assert!(matches!(
+                    intent,
+                    commands::structural::StructuralIntent::Calls
+                ));
+                assert_eq!(query.as_deref(), Some("parse_config"));
+                assert_eq!(lang, Some("rust".to_string()));
+                assert_eq!(path, Some("src/**/*.rs".to_string()));
+                assert_eq!(r#type, Some("function".to_string()));
+                assert!(git_scope.changed);
+                assert!(compact);
+            }
+            _ => panic!("expected structural command"),
+        }
     }
 
     #[test]

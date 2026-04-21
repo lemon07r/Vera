@@ -8,6 +8,7 @@ use tree_sitter::{Parser, Query, QueryCursor, StreamingIterator};
 
 use crate::corpus::{ContentClass, classify_content};
 use crate::parsing::languages;
+use crate::retrieval::file_scan::{allows_class, language_for_path};
 use crate::storage::metadata::MetadataStore;
 use crate::types::{Chunk, Language, SearchFilters, SearchResult, SymbolType};
 
@@ -80,10 +81,13 @@ pub fn search_ast_query(
             Err(_) => continue,
         };
 
-        if !allows_class(
-            filters,
-            classify_content(&file_rel, file_language, &content),
-        ) {
+        let class = classify_content(&file_rel, file_language, &content);
+        if !allows_class(filters, class) {
+            continue;
+        }
+        if matches!(filters.include_generated, Some(false))
+            && matches!(class, ContentClass::Generated)
+        {
             continue;
         }
 
@@ -183,29 +187,6 @@ fn match_span(captures: &[tree_sitter::QueryCapture<'_>]) -> Option<MatchSpan> {
     })
 }
 
-fn language_for_path(file_path: &str) -> Language {
-    Path::new(file_path)
-        .file_name()
-        .and_then(|name| name.to_str())
-        .and_then(Language::from_filename)
-        .unwrap_or_else(|| {
-            let ext = Path::new(file_path)
-                .extension()
-                .and_then(|ext| ext.to_str())
-                .unwrap_or("");
-            Language::from_extension(ext)
-        })
-}
-
-fn allows_class(filters: &SearchFilters, class: ContentClass) -> bool {
-    match filters.scope {
-        Some(scope) => {
-            crate::corpus::matches_scope(class, scope, filters.include_generated.unwrap_or(true))
-        }
-        None => true,
-    }
-}
-
 fn symbol_for_range(
     chunks: Option<&[Chunk]>,
     line_start: u32,
@@ -271,5 +252,39 @@ mod tests {
                 .any(|result| result.content.contains("alpha"))
         );
         assert!(results.iter().any(|result| result.content.contains("beta")));
+    }
+
+    #[tokio::test]
+    async fn ast_query_skips_generated_files_by_default() {
+        let dir = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(dir.path().join("src")).unwrap();
+        std::fs::write(dir.path().join("src").join("main.rs"), "fn alpha() {}\n").unwrap();
+        std::fs::write(
+            dir.path().join("src").join("generated.rs"),
+            "fn generated_fn() {}\n",
+        )
+        .unwrap();
+
+        let provider = MockProvider::new(8);
+        let config = VeraConfig::default();
+        index_repository(dir.path(), &provider, &config, "mock-model")
+            .await
+            .unwrap();
+
+        let index_dir = crate::indexing::index_dir(dir.path());
+        let results = search_ast_query(
+            &index_dir,
+            "(function_item name: (identifier) @fn)",
+            Language::Rust,
+            10,
+            &SearchFilters {
+                include_generated: Some(false),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].file_path, "src/main.rs");
     }
 }
