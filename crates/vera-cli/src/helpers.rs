@@ -1,11 +1,32 @@
 //! Shared helper functions for CLI command implementations.
 
+use std::io::Write;
+use std::path::Path;
+
 use clap::Args;
 use serde::Serialize;
 
 /// Load the effective runtime configuration.
 pub fn load_runtime_config() -> anyhow::Result<vera_core::config::VeraConfig> {
     crate::state::load_runtime_config()
+}
+
+pub fn warn_if_index_stale(repo_path: &Path, indexing_config: &vera_core::config::IndexingConfig) {
+    match vera_core::indexing::detect_staleness(repo_path, indexing_config) {
+        Ok(freshness) if freshness.is_stale() => {
+            let stderr = std::io::stderr();
+            let mut err = stderr.lock();
+            let _ = writeln!(
+                err,
+                "warning: index may be stale: {}. Search and grep only cover indexed files. Run `vera update .` or `vera watch .`.",
+                freshness.summary()
+            );
+        }
+        Ok(_) => {}
+        Err(err) => {
+            tracing::debug!(error = %err, "failed to check index freshness");
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, Args)]
@@ -410,5 +431,18 @@ pub fn print_human_summary(summary: &vera_core::indexing::IndexSummary, verbose:
     if summary.files_parsed == 0 && summary.chunks_created == 0 {
         println!();
         println!("  No source files found to index.");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn index_freshness_summary_formats_nonzero_counts() {
+        let freshness = vera_core::indexing::IndexFreshness {
+            files_added: 2,
+            files_modified: 1,
+            files_deleted: 3,
+        };
+        assert_eq!(freshness.summary(), "2 added, 1 modified, 3 deleted");
     }
 }

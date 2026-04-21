@@ -107,9 +107,27 @@ vera grep "TODO\(" -i
 vera grep "queryClient|invalidateQueries" --path "frontend/src/**"
 ```
 
+Vera uses Rust regex syntax. Use `|` for alternation. `\|` matches a literal pipe.
+
 Use `rg` when you need to count matches, search filenames, or scan files outside the index:
 
 ```bash
 rg "TODO\(" -n
 rg --files | rg "docker"
+```
+
+## Search misses new files or recent edits
+
+`vera search` and `vera grep` only read indexed files. If the index is behind the working tree, Vera warns on stderr and shows how many files were added, modified, or deleted since the last refresh.
+
+Refresh the index with:
+
+```bash
+vera update .
+```
+
+If you are editing continuously, keep the index current with:
+
+```bash
+vera watch .
 ```

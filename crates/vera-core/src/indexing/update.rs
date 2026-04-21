@@ -66,7 +66,7 @@ pub fn content_hash(content: &str) -> String {
     })
 }
 
-fn detect_language_for_path(file_path: &str) -> Language {
+pub(crate) fn detect_language_for_path(file_path: &str) -> Language {
     Path::new(file_path)
         .file_name()
         .and_then(|n| n.to_str())
@@ -80,7 +80,7 @@ fn detect_language_for_path(file_path: &str) -> Language {
         })
 }
 
-fn hash_for_indexing_source(
+pub(crate) fn hash_for_indexing_source(
     content: &str,
     rel_path: &str,
     language: Language,
@@ -481,6 +481,8 @@ pub async fn update_repository<P: EmbeddingProvider>(
                 .set_file_hash(rel_path, hash)
                 .context("failed to update file hash")?;
         }
+        super::freshness::record_index_snapshot(&metadata_store, &config.indexing)
+            .context("failed to update index freshness metadata")?;
 
         let summary = UpdateSummary {
             files_modified: modified.len(),
@@ -519,6 +521,8 @@ pub async fn update_repository<P: EmbeddingProvider>(
     let total_chunks = metadata_store
         .chunk_count()
         .context("failed to count chunks")?;
+    super::freshness::record_index_snapshot(&metadata_store, &config.indexing)
+        .context("failed to update index freshness metadata")?;
 
     let summary = UpdateSummary {
         files_modified: modified.len(),
