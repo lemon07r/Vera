@@ -527,6 +527,10 @@ fn store_index(
 
     // ── Vector store ─────────────────────────────────────────────
     let vector_path = idx_dir.join(VECTOR_DB);
+    if vector_path.exists() {
+        std::fs::remove_file(&vector_path)
+            .with_context(|| format!("failed to reset vector db: {}", vector_path.display()))?;
+    }
     let vector_store =
         VectorStore::open(&vector_path, dim).context("failed to open vector store")?;
     vector_store

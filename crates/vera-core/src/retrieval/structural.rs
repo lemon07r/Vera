@@ -5,8 +5,10 @@ use std::path::Path;
 
 use anyhow::{Result, bail};
 use regex::{Captures, Regex};
+use tree_sitter::Parser;
 
 use crate::corpus::{ContentClass, classify_content, classify_path};
+use crate::parsing::languages;
 use crate::retrieval::apply_filters;
 use crate::retrieval::file_scan::{
     allows_class, bounded_byte_snippet, file_scan_priority, language_for_path,
@@ -14,7 +16,7 @@ use crate::retrieval::file_scan::{
 };
 use crate::retrieval::query_utils::path_depth;
 use crate::storage::metadata::MetadataStore;
-use crate::types::{Chunk, Language, SearchFilters, SearchResult};
+use crate::types::{Chunk, Language, SearchFilters, SearchResult, SearchScope};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -59,28 +61,37 @@ pub fn search_structural(
     let repo_root = index_dir
         .parent()
         .ok_or_else(|| anyhow::anyhow!("Cannot determine project root from index dir"))?;
+    let filters = structural_filters(filters);
 
     match kind {
         StructuralSearchKind::Definitions => {
             let symbol = required_query(kind, query)?;
-            search_definitions(&store, symbol, limit, filters)
+            search_definitions(&store, symbol, limit, &filters)
         }
         StructuralSearchKind::Calls => {
             let symbol = required_query(kind, query)?;
-            search_calls(repo_root, &store, symbol, limit, filters)
+            search_calls(repo_root, &store, symbol, limit, &filters)
         }
         StructuralSearchKind::EnvReads => {
-            search_env_reads(repo_root, &store, query, limit, filters)
+            search_env_reads(repo_root, &store, query, limit, &filters)
         }
         StructuralSearchKind::RouteHandlers => {
-            search_route_handlers(repo_root, &store, limit, filters)
+            search_route_handlers(repo_root, &store, limit, &filters)
         }
-        StructuralSearchKind::SqlQueries => search_sql_queries(repo_root, &store, limit, filters),
+        StructuralSearchKind::SqlQueries => search_sql_queries(repo_root, &store, limit, &filters),
         StructuralSearchKind::Implementations => {
             let target = required_query(kind, query)?;
-            search_implementations(repo_root, &store, target, limit, filters)
+            search_implementations(repo_root, &store, target, limit, &filters)
         }
     }
+}
+
+fn structural_filters(filters: &SearchFilters) -> SearchFilters {
+    let mut filters = filters.clone();
+    if filters.scope.is_none() {
+        filters.scope = Some(SearchScope::Source);
+    }
+    filters
 }
 
 fn required_query(kind: StructuralSearchKind, query: Option<&str>) -> Result<&str> {
@@ -210,7 +221,7 @@ fn search_env_reads(
         store,
         limit,
         filters,
-        |file, language, content, chunks| {
+        |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
             };
@@ -228,15 +239,10 @@ fn search_env_reads(
                             continue;
                         }
                     }
-                    results.push(result_for_match(
-                        file,
-                        language,
-                        content,
-                        full.start(),
-                        full.end(),
-                        chunks,
-                        true,
-                    ));
+                    results.push(StructuralMatch {
+                        start_byte: full.start(),
+                        end_byte: full.end(),
+                    });
                 }
             }
             Ok(results)
@@ -256,23 +262,16 @@ fn search_route_handlers(
         store,
         limit,
         filters,
-        |file, language, content, chunks| {
+        |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
             };
             Ok(patterns
                 .iter()
                 .flat_map(|pattern| pattern.find_iter(content))
-                .map(|found| {
-                    result_for_match(
-                        file,
-                        language,
-                        content,
-                        found.start(),
-                        found.end(),
-                        chunks,
-                        true,
-                    )
+                .map(|found| StructuralMatch {
+                    start_byte: found.start(),
+                    end_byte: found.end(),
                 })
                 .collect())
         },
@@ -291,23 +290,16 @@ fn search_sql_queries(
         store,
         limit,
         filters,
-        |file, language, content, chunks| {
+        |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
             };
             Ok(patterns
                 .iter()
                 .flat_map(|pattern| pattern.find_iter(content))
-                .map(|found| {
-                    result_for_match(
-                        file,
-                        language,
-                        content,
-                        found.start(),
-                        found.end(),
-                        chunks,
-                        true,
-                    )
+                .map(|found| StructuralMatch {
+                    start_byte: found.start(),
+                    end_byte: found.end(),
                 })
                 .collect())
         },
@@ -328,7 +320,7 @@ fn search_implementations(
         store,
         limit,
         filters,
-        |file, language, content, chunks| {
+        |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
             };
@@ -344,15 +336,10 @@ fn search_implementations(
                     if !matches_implementation_target(captured, target) {
                         continue;
                     }
-                    results.push(result_for_match(
-                        file,
-                        language,
-                        content,
-                        full.start(),
-                        full.end(),
-                        chunks,
-                        true,
-                    ));
+                    results.push(StructuralMatch {
+                        start_byte: full.start(),
+                        end_byte: full.end(),
+                    });
                 }
             }
             Ok(results)
@@ -368,7 +355,7 @@ fn search_regex_intent<F>(
     mut collect: F,
 ) -> Result<Vec<SearchResult>>
 where
-    F: FnMut(&str, Language, &str, &[Chunk]) -> Result<Vec<SearchResult>>,
+    F: FnMut(&str, Language, &str, &[Chunk]) -> Result<Vec<StructuralMatch>>,
 {
     let mut files = store.indexed_files()?;
     files.sort_by(|left, right| {
@@ -414,10 +401,23 @@ where
         }
 
         let chunks = store.get_chunks_by_file(&file_rel)?;
-        for result in collect(&file_rel, language, &content, &chunks)? {
+        let syntax_filter = SyntaxFilter::new(language, &content);
+        for candidate in collect(&file_rel, language, &content, &chunks)? {
             if results.len() >= limit {
                 break;
             }
+            if !syntax_filter.allows(candidate.start_byte, candidate.end_byte) {
+                continue;
+            }
+            let result = result_for_match(
+                &file_rel,
+                language,
+                &content,
+                candidate.start_byte,
+                candidate.end_byte,
+                &chunks,
+                true,
+            );
             if !filters.matches_symbol_type(result.symbol_type) {
                 continue;
             }
@@ -485,6 +485,61 @@ fn first_capture<'a>(captures: &'a Captures<'a>) -> Option<&'a str> {
 }
 
 type PatternSets = Vec<(Vec<Language>, Vec<Regex>)>;
+
+#[derive(Debug, Clone, Copy)]
+struct StructuralMatch {
+    start_byte: usize,
+    end_byte: usize,
+}
+
+struct SyntaxFilter(Option<tree_sitter::Tree>);
+
+impl SyntaxFilter {
+    fn new(language: Language, content: &str) -> Self {
+        let tree = languages::tree_sitter_grammar(language).and_then(|grammar| {
+            let mut parser = Parser::new();
+            parser.set_language(&grammar).ok()?;
+            parser.parse(content, None)
+        });
+        Self(tree)
+    }
+
+    fn allows(&self, start_byte: usize, end_byte: usize) -> bool {
+        let Some(tree) = &self.0 else {
+            return true;
+        };
+        let Some(mut node) = tree
+            .root_node()
+            .descendant_for_byte_range(start_byte, end_byte.max(start_byte + 1))
+        else {
+            return true;
+        };
+        loop {
+            if is_ignorable_syntax_kind(node.kind()) {
+                return false;
+            }
+            let Some(parent) = node.parent() else {
+                return true;
+            };
+            node = parent;
+        }
+    }
+}
+
+fn is_ignorable_syntax_kind(kind: &str) -> bool {
+    kind.contains("comment")
+        || kind.contains("string")
+        || matches!(
+            kind,
+            "template_string"
+                | "template_substitution"
+                | "raw_string_literal"
+                | "interpreted_string_literal"
+                | "char_literal"
+                | "rune_literal"
+                | "heredoc_body"
+        )
+}
 
 fn patterns_for_language(pattern_sets: &PatternSets, language: Language) -> Option<&[Regex]> {
     pattern_sets
@@ -835,5 +890,91 @@ mod tests {
         )
         .unwrap();
         assert_eq!(ts_results.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn structural_defaults_to_source_scope() {
+        let dir = index_repo(&[
+            ("src/app.ts", "const db = process.env.DATABASE_URL;\n"),
+            (
+                "docs/guide.ts",
+                "export const example = process.env.DATABASE_URL;\n",
+            ),
+        ])
+        .await;
+
+        let default_results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::EnvReads,
+            Some("DATABASE_URL"),
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+        assert_eq!(default_results.len(), 1);
+        assert_eq!(default_results[0].file_path, "src/app.ts");
+
+        let docs_results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::EnvReads,
+            Some("DATABASE_URL"),
+            10,
+            &SearchFilters {
+                scope: Some(SearchScope::Docs),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(docs_results.len(), 1);
+        assert_eq!(docs_results[0].file_path, "docs/guide.ts");
+    }
+
+    #[tokio::test]
+    async fn sql_ignores_strings_and_comments() {
+        let dir = index_repo(&[(
+            "src/fixture.py",
+            r#"def fake():
+    # cursor.execute("SELECT * FROM users")
+    sample = "cursor.execute('SELECT * FROM users')"
+    return sample
+"#,
+        )])
+        .await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::SqlQueries,
+            None,
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+
+        assert!(results.is_empty(), "unexpected SQL matches: {results:?}");
+    }
+
+    #[tokio::test]
+    async fn routes_ignore_comment_examples() {
+        let dir = index_repo(&[(
+            "src/router.ts",
+            r#"export function explain() {
+    // router.get('/fake', handler)
+    const example = "router.get('/fake', handler)";
+    return example;
+}
+"#,
+        )])
+        .await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::RouteHandlers,
+            None,
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+
+        assert!(results.is_empty(), "unexpected route matches: {results:?}");
     }
 }

@@ -9,6 +9,7 @@
 use crate::config::VeraConfig;
 use crate::embedding::embed_chunks;
 use crate::embedding::test_helpers::MockProvider;
+use crate::indexing::index_repository;
 use crate::parsing;
 use crate::retrieval::apply_filters;
 use crate::retrieval::bm25::search_bm25_with_stores;
@@ -359,6 +360,24 @@ fn bm25_search(
     search_bm25_with_stores(bm25, metadata, query, limit).unwrap()
 }
 
+async fn setup_structural_repo() -> tempfile::TempDir {
+    let dir = tempfile::TempDir::new().unwrap();
+    for (file_path, source, _) in build_test_corpus() {
+        let abs = dir.path().join(&file_path);
+        if let Some(parent) = abs.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(abs, source).unwrap();
+    }
+
+    let provider = MockProvider::new(8);
+    let config = VeraConfig::default();
+    index_repository(dir.path(), &provider, &config, "mock-model")
+        .await
+        .unwrap();
+    dir
+}
+
 // ── 1. Exact symbol lookup tests (10+ queries) ─────────────────────
 
 #[tokio::test]
@@ -514,6 +533,49 @@ async fn symbol_lookup_find_by_username() {
     assert!(
         top3_have_content,
         "find_by_username should appear in content of top-3 results"
+    );
+}
+
+// ── Structural agent-task regressions ─────────────────────────────
+
+#[tokio::test]
+async fn structural_calls_find_authenticate_handler() {
+    let repo = setup_structural_repo().await;
+    let results = crate::retrieval::search_structural(
+        &crate::indexing::index_dir(repo.path()),
+        crate::retrieval::StructuralSearchKind::Calls,
+        Some("authenticate"),
+        10,
+        &SearchFilters::default(),
+    )
+    .unwrap();
+
+    assert!(
+        results
+            .iter()
+            .any(|result| result.file_path == "src/handler.rs"
+                && result.content.contains("authenticate(user, pass)")),
+        "expected authenticate callsite in handler.rs, got {results:?}"
+    );
+}
+
+#[tokio::test]
+async fn structural_sql_finds_database_execution_sites() {
+    let repo = setup_structural_repo().await;
+    let results = crate::retrieval::search_structural(
+        &crate::indexing::index_dir(repo.path()),
+        crate::retrieval::StructuralSearchKind::SqlQueries,
+        None,
+        10,
+        &SearchFilters::default(),
+    )
+    .unwrap();
+
+    assert!(
+        results
+            .iter()
+            .any(|result| result.file_path == "src/database.py"),
+        "expected SQL execution site in database.py, got {results:?}"
     );
 }
 
