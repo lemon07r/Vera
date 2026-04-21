@@ -105,6 +105,8 @@ Use `vera grep` when you want exact text or regex matches limited to indexed fil
 - `vera grep "TODO\(" -i`
 - `vera grep "queryClient|invalidateQueries" --path "frontend/src/**"`
 
+Vera uses Rust regex syntax. Use `|` for alternation. `\|` matches a literal pipe.
+
 Use `rg` when you need:
 
 - Counting occurrences
@@ -130,6 +132,14 @@ If a file is missing from search results and you need the exact reason, ask Vera
 ```bash
 vera explain-path path/to/file
 ```
+
+If `vera search` or `vera grep` warns that the index may be stale, refresh it:
+
+```bash
+vera update .
+```
+
+Use `vera watch .` when you want the index to stay current while you work.
 
 Use `vera stats --json` when you want the repo-wide health view for parse failures, tree-sitter errors, and Tier 0 fallback.
 

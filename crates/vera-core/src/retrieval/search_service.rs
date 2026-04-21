@@ -292,10 +292,80 @@ fn augment_exact_match_candidates(
             query, results, stage, filters,
         ));
     };
+    let supplemental = collect_exact_match_candidates(&store, query, 0)?;
+
+    if supplemental.is_empty() {
+        return Ok(apply_query_ranking_with_filters(
+            query, results, stage, filters,
+        ));
+    }
+
+    let merged = merge_exact_matches(supplemental, results);
+
+    Ok(apply_query_ranking_with_filters(
+        query, merged, stage, filters,
+    ))
+}
+
+/// Re-apply exact-match boosting after multi-query fusion.
+///
+/// Each subquery may have a different exact identifier or filename target.
+/// Adding those exact hits again after RRF keeps direct symbol lookups near the
+/// top instead of letting merged scores bury them behind broad contextual hits.
+pub fn augment_multi_query_exact_matches(
+    index_dir: &Path,
+    queries: &[String],
+    results: Vec<SearchResult>,
+    filters: &SearchFilters,
+    result_limit: usize,
+) -> Result<Vec<SearchResult>> {
+    if queries.is_empty() {
+        return Ok(apply_filters(results, filters, result_limit));
+    }
+
+    let metadata_path = index_dir.join("metadata.db");
+    let Ok(store) = crate::storage::metadata::MetadataStore::open(&metadata_path) else {
+        return Ok(apply_filters(results, filters, result_limit));
+    };
 
     let mut supplemental = Vec::new();
+    for (query_index, query) in queries.iter().enumerate() {
+        supplemental.extend(collect_exact_match_candidates(&store, query, query_index)?);
+    }
 
-    // Direct filename lookup for path-weighted queries (e.g. "Cargo.toml workspace config").
+    if supplemental.is_empty() {
+        return Ok(apply_filters(results, filters, result_limit));
+    }
+
+    Ok(apply_filters(
+        merge_exact_matches(supplemental, results),
+        filters,
+        result_limit,
+    ))
+}
+
+#[derive(Debug)]
+struct ExactMatchCandidate {
+    order: ExactMatchOrder,
+    result: SearchResult,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct ExactMatchOrder {
+    query_index: usize,
+    match_kind: u8,
+    exact_priority: (u8, u8, u8, u8),
+    path_depth: usize,
+    line_start: u32,
+}
+
+fn collect_exact_match_candidates(
+    store: &crate::storage::metadata::MetadataStore,
+    query: &str,
+    query_index: usize,
+) -> Result<Vec<SearchResult>> {
+    let mut candidates = Vec::new();
+
     if let Some(filename) = extract_exact_filename(query).filter(|_| is_path_weighted_query(query))
     {
         let mut matching_files: Vec<String> = store
@@ -306,16 +376,21 @@ fn augment_exact_match_candidates(
         matching_files.sort_by(|a, b| path_depth(a).cmp(&path_depth(b)).then(a.cmp(b)));
 
         for file_path in matching_files.into_iter().take(20) {
-            supplemental.extend(
-                store
-                    .get_chunks_by_file(&file_path)?
-                    .into_iter()
-                    .map(chunk_to_result),
-            );
+            for chunk in store.get_chunks_by_file(&file_path)? {
+                candidates.push(ExactMatchCandidate {
+                    order: ExactMatchOrder {
+                        query_index,
+                        match_kind: 0,
+                        exact_priority: (0, 0, 0, 0),
+                        path_depth: path_depth(&chunk.file_path),
+                        line_start: chunk.line_start,
+                    },
+                    result: chunk_to_result(chunk),
+                });
+            }
         }
     }
 
-    // Direct symbol lookup for identifier queries (e.g. "Config", "Blueprint class").
     if let Some(identifier_case) = extract_exact_identifier_case(query).as_deref() {
         let mut chunks = store.get_chunks_by_symbol_name_case_sensitive(identifier_case)?;
         let identifier = identifier_case.to_ascii_lowercase();
@@ -330,23 +405,37 @@ fn augment_exact_match_candidates(
             });
         }
         chunks.extend(fallback_chunks);
-        chunks.sort_by(|a, b| {
-            exact_match_priority(query, identifier_case, a)
-                .cmp(&exact_match_priority(query, identifier_case, b))
-                .then(path_depth(&a.file_path).cmp(&path_depth(&b.file_path)))
-                .then(a.file_path.cmp(&b.file_path))
-                .then(a.line_start.cmp(&b.line_start))
-        });
-        supplemental.extend(chunks.into_iter().map(chunk_to_result));
+        for chunk in chunks {
+            let order = ExactMatchOrder {
+                query_index,
+                match_kind: 1,
+                exact_priority: exact_match_priority(query, identifier_case, &chunk),
+                path_depth: path_depth(&chunk.file_path),
+                line_start: chunk.line_start,
+            };
+            candidates.push(ExactMatchCandidate {
+                order,
+                result: chunk_to_result(chunk),
+            });
+        }
     }
 
-    if supplemental.is_empty() {
-        return Ok(apply_query_ranking_with_filters(
-            query, results, stage, filters,
-        ));
-    }
+    candidates.sort_by(|left, right| {
+        left.order
+            .cmp(&right.order)
+            .then(left.result.file_path.cmp(&right.result.file_path))
+    });
 
-    // Merge: supplemental first (exact matches), then original results, deduped.
+    Ok(candidates
+        .into_iter()
+        .map(|candidate| candidate.result)
+        .collect())
+}
+
+fn merge_exact_matches(
+    supplemental: Vec<SearchResult>,
+    results: Vec<SearchResult>,
+) -> Vec<SearchResult> {
     let mut merged = Vec::with_capacity(supplemental.len() + results.len());
     let mut seen = HashSet::new();
 
@@ -356,9 +445,7 @@ fn augment_exact_match_candidates(
         }
     }
 
-    Ok(apply_query_ranking_with_filters(
-        query, merged, stage, filters,
-    ))
+    merged
 }
 
 fn extract_exact_filename(query: &str) -> Option<String> {
@@ -691,6 +778,102 @@ mod tests {
         assert_eq!(
             augmented[0].file_path,
             "crates/searcher/src/searcher/mod.rs"
+        );
+    }
+
+    #[test]
+    fn multi_query_exact_matches_are_promoted_after_fusion() {
+        let dir = tempdir().unwrap();
+        let metadata_path = dir.path().join("metadata.db");
+        let store = MetadataStore::open(&metadata_path).unwrap();
+        store
+            .insert_chunks(&[
+                Chunk {
+                    id: "kimi:0".to_string(),
+                    file_path: "backend/crates/omnigate-auth/src/kimi.rs".to_string(),
+                    line_start: 265,
+                    line_end: 275,
+                    content: "pub fn persist_kimi_auth_record() {}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Function),
+                    symbol_name: Some("persist_kimi_auth_record".to_string()),
+                },
+                Chunk {
+                    id: "factory:0".to_string(),
+                    file_path: "backend/crates/omnigate-auth/src/factory.rs".to_string(),
+                    line_start: 286,
+                    line_end: 296,
+                    content: "pub fn persist_factory_auth_record() {}".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Function),
+                    symbol_name: Some("persist_factory_auth_record".to_string()),
+                },
+                Chunk {
+                    id: "lib:0".to_string(),
+                    file_path: "backend/crates/omnigate-auth/src/lib.rs".to_string(),
+                    line_start: 10,
+                    line_end: 40,
+                    content: "pub use crate::kimi::persist_kimi_auth_record;".to_string(),
+                    language: Language::Rust,
+                    symbol_type: Some(SymbolType::Module),
+                    symbol_name: Some("omnigate_auth".to_string()),
+                },
+            ])
+            .unwrap();
+
+        let fused = vec![
+            SearchResult {
+                file_path: "backend/crates/omnigate-auth/src/lib.rs".to_string(),
+                line_start: 10,
+                line_end: 40,
+                content: "pub use crate::kimi::persist_kimi_auth_record;".to_string(),
+                language: Language::Rust,
+                score: 0.0,
+                symbol_name: Some("omnigate_auth".to_string()),
+                symbol_type: Some(SymbolType::Module),
+            },
+            SearchResult {
+                file_path: "backend/crates/omnigate-auth/src/factory.rs".to_string(),
+                line_start: 286,
+                line_end: 296,
+                content: "pub fn persist_factory_auth_record() {}".to_string(),
+                language: Language::Rust,
+                score: 0.0,
+                symbol_name: Some("persist_factory_auth_record".to_string()),
+                symbol_type: Some(SymbolType::Function),
+            },
+            SearchResult {
+                file_path: "backend/crates/omnigate-auth/src/kimi.rs".to_string(),
+                line_start: 265,
+                line_end: 275,
+                content: "pub fn persist_kimi_auth_record() {}".to_string(),
+                language: Language::Rust,
+                score: 0.0,
+                symbol_name: Some("persist_kimi_auth_record".to_string()),
+                symbol_type: Some(SymbolType::Function),
+            },
+        ];
+
+        let queries = vec![
+            "persist_kimi_auth_record".to_string(),
+            "persist_factory_auth_record".to_string(),
+        ];
+        let augmented = augment_multi_query_exact_matches(
+            dir.path(),
+            &queries,
+            fused,
+            &SearchFilters::default(),
+            5,
+        )
+        .unwrap();
+
+        assert_eq!(
+            augmented[0].symbol_name.as_deref(),
+            Some("persist_kimi_auth_record")
+        );
+        assert_eq!(
+            augmented[1].symbol_name.as_deref(),
+            Some("persist_factory_auth_record")
         );
     }
 }

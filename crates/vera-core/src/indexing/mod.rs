@@ -6,9 +6,11 @@
 //! - Building vector indexes via sqlite-vec
 //! - Incremental update logic (detect changed files, re-index only those)
 
+pub mod freshness;
 pub mod pipeline;
 pub mod update;
 
+pub use freshness::{IndexFreshness, detect_staleness};
 pub use pipeline::{
     FileError, IndexProgress, IndexSummary, index_dir, index_repository,
     index_repository_with_progress,

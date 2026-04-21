@@ -248,8 +248,11 @@ where
         &embeddings,
         &file_hashes,
         &all_refs,
-        &file_states,
-        model_name,
+        IndexBuildMetadata {
+            file_states: &file_states,
+            indexing_config: &config.indexing,
+            model_name,
+        },
     )
     .context("failed to write index artifacts")?;
 
@@ -460,14 +463,19 @@ fn parse_discovered_files_parallel(
 }
 
 /// Write chunks, embeddings, BM25 index, file hashes, and references to disk.
+struct IndexBuildMetadata<'a> {
+    file_states: &'a [FileIndexState],
+    indexing_config: &'a crate::config::IndexingConfig,
+    model_name: &'a str,
+}
+
 fn store_index(
     idx_dir: &Path,
     chunks: &[Chunk],
     embeddings: &[(String, Vec<f32>)],
     file_hashes: &[(String, String)],
     file_refs: &[(String, Vec<RawReference>)],
-    file_states: &[FileIndexState],
-    model_name: &str,
+    metadata: IndexBuildMetadata<'_>,
 ) -> Result<()> {
     // Ensure index directory exists.
     std::fs::create_dir_all(idx_dir)
@@ -496,7 +504,7 @@ fn store_index(
     }
 
     metadata_store
-        .insert_file_states(file_states)
+        .insert_file_states(metadata.file_states)
         .context("failed to store file index states")?;
 
     // Store call-site references for call graph analysis.
@@ -507,11 +515,13 @@ fn store_index(
     }
 
     metadata_store
-        .set_index_meta("model_name", model_name)
+        .set_index_meta("model_name", metadata.model_name)
         .context("failed to store model_name")?;
     metadata_store
         .set_index_meta("embedding_dim", &dim.to_string())
         .context("failed to store embedding_dim")?;
+    super::freshness::record_index_snapshot(&metadata_store, metadata.indexing_config)
+        .context("failed to store index freshness metadata")?;
 
     debug!(chunks = chunks.len(), "metadata stored");
 

@@ -9,7 +9,7 @@ use vera_core::config::InferenceBackend;
 use vera_core::retrieval::search_service::SearchTimings;
 use vera_core::types::SearchResult;
 
-use crate::helpers::{load_runtime_config, output_results};
+use crate::helpers::{load_runtime_config, output_results, warn_if_index_stale};
 
 /// Run the `vera search <query>` command.
 #[allow(clippy::too_many_arguments)]
@@ -52,6 +52,7 @@ pub fn run(
              Hint: run `vera index <path>` first to create an index."
         );
     }
+    warn_if_index_stale(&cwd, &config.indexing);
 
     let (results, timings) = if queries.len() == 1 {
         let effective_query = apply_intent(&queries[0], intent);
@@ -162,6 +163,13 @@ fn execute_multi_query_search(
         config.retrieval.rrf_k,
         result_limit,
     );
+    let fused = vera_core::retrieval::search_service::augment_multi_query_exact_matches(
+        index_dir,
+        queries,
+        fused,
+        filters,
+        result_limit,
+    )?;
     timings.total = Some(overall_start.elapsed());
     Ok((fused, timings))
 }
