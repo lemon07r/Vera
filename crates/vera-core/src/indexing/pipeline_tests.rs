@@ -145,6 +145,30 @@ async fn index_stores_correct_metadata() {
 }
 
 #[tokio::test]
+async fn reindex_with_different_embedding_dim_recreates_vector_store() {
+    let dir = TempDir::new().unwrap();
+    fs::write(dir.path().join("main.rs"), "fn main() {}").unwrap();
+
+    let config = default_config();
+
+    let first_provider = MockProvider::new(8);
+    index_repository(dir.path(), &first_provider, &config, "mock-model-8")
+        .await
+        .unwrap();
+
+    let second_provider = MockProvider::new(4);
+    let summary = index_repository(dir.path(), &second_provider, &config, "mock-model-4")
+        .await
+        .unwrap();
+
+    assert!(summary.embeddings_generated > 0);
+
+    let idx = index_dir(&dir.path().canonicalize().unwrap());
+    let vstore = VectorStore::open(&idx.join("vectors.db"), 4).unwrap();
+    assert_eq!(vstore.count().unwrap(), summary.embeddings_generated as u64);
+}
+
+#[tokio::test]
 async fn index_stores_bm25_index() {
     let dir = TempDir::new().unwrap();
     fs::write(

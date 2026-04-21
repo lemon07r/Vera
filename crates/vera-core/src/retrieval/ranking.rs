@@ -379,7 +379,12 @@ fn score_prior(
         bonus -= stage_weight * 0.24;
     }
     if !features.wants_docs_paths && matches!(role, ContentClass::Docs) {
-        bonus -= stage_weight * 0.55;
+        bonus -= stage_weight
+            * if prefers_source_over_docs(features) {
+                0.95
+            } else {
+                0.55
+            };
     }
     if !features.wants_example_paths && matches!(role, ContentClass::Example | ContentClass::Bench)
     {
@@ -427,6 +432,14 @@ fn score_prior(
     }
 
     bonus
+}
+
+fn prefers_source_over_docs(features: &QueryFeatures) -> bool {
+    features.query_type == QueryType::NaturalLanguage
+        && features.query_word_count >= 4
+        && !features.wants_config_paths
+        && !features.wants_runtime_paths
+        && !features.wants_archive_paths
 }
 
 fn requested_symbol_types(query: &str) -> Vec<SymbolType> {
@@ -894,6 +907,32 @@ mod tests {
         );
 
         assert_eq!(ranked[0].file_path, "src/flask/sessions.py");
+    }
+
+    #[test]
+    fn broad_code_queries_prefer_source_over_docs() {
+        let results = vec![
+            make_result(
+                "docs/Reference/Validation-and-Serialization.md",
+                None,
+                None,
+                "Validation and serialization documentation.",
+            ),
+            make_result(
+                "lib/validation.js",
+                Some("validate"),
+                Some(SymbolType::Function),
+                "function validateRequestSchema () {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking(
+            "request validation and schema enforcement",
+            results,
+            RankingStage::Initial,
+        );
+
+        assert_eq!(ranked[0].file_path, "lib/validation.js");
     }
 
     #[test]

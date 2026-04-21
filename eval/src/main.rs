@@ -12,6 +12,7 @@ mod metrics;
 mod output;
 mod runner;
 mod types;
+mod vera_adapter;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
@@ -42,8 +43,8 @@ enum Commands {
         #[arg(long, short)]
         output: Option<PathBuf>,
 
-        /// Tool adapter to use (currently: mock-perfect, mock-partial).
-        #[arg(long, default_value = "mock-perfect")]
+        /// Tool adapter to use (`vera-bm25`, `mock-perfect`, `mock-partial`).
+        #[arg(long, default_value = "vera-bm25")]
         tool: String,
 
         /// Suppress human-readable summary (JSON only).
@@ -104,22 +105,6 @@ fn cmd_run(
 
     eprintln!("Loaded {} benchmark tasks", tasks.len());
 
-    // Load corpus manifest for version info
-    let _corpus_shas = if corpus_path.exists() {
-        let manifest = loader::load_corpus(corpus_path)?;
-        manifest
-            .repos
-            .iter()
-            .map(|r| (r.name.clone(), r.commit.clone()))
-            .collect::<HashMap<_, _>>()
-    } else {
-        eprintln!(
-            "Warning: corpus manifest not found at {}",
-            corpus_path.display()
-        );
-        HashMap::new()
-    };
-
     // Select tool adapter
     let report = match tool_name {
         "mock-perfect" => {
@@ -130,10 +115,15 @@ fn cmd_run(
             let mock = runner::MockAdapter::partial(0.7);
             runner::run_benchmark_with_mock(&mock, &tasks)
         }
+        "vera-bm25" => {
+            let (repo_paths, corpus_shas) = load_verified_corpus(corpus_path)?;
+            ensure_task_repos_known(&tasks, &repo_paths)?;
+            let vera = vera_adapter::VeraBm25Adapter::new()?;
+            runner::run_benchmark(&vera, &tasks, &repo_paths, &corpus_shas)
+        }
         other => {
             anyhow::bail!(
-                "Unknown tool '{}'. Available: mock-perfect, mock-partial. \
-                 Real tool adapters will be added as competitors are integrated.",
+                "Unknown tool '{}'. Available: vera-bm25, mock-perfect, mock-partial.",
                 other
             );
         }
@@ -187,6 +177,59 @@ fn cmd_verify_corpus(corpus_path: &Path) -> Result<()> {
         }
         eprintln!("\nRun eval/setup-corpus.sh to fix.");
         std::process::exit(1);
+    }
+}
+
+fn load_verified_corpus(
+    corpus_path: &Path,
+) -> Result<(HashMap<String, String>, HashMap<String, String>)> {
+    if !corpus_path.exists() {
+        anyhow::bail!("Corpus manifest not found at {}", corpus_path.display());
+    }
+
+    let manifest = loader::load_corpus(corpus_path)?;
+    let repo_root = std::env::current_dir()?;
+    let issues = loader::verify_corpus(&manifest, &repo_root)?;
+    if !issues.is_empty() {
+        anyhow::bail!(
+            "Corpus verification failed:\n{}",
+            issues
+                .into_iter()
+                .map(|issue| format!("  - {issue}"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        );
+    }
+
+    let repo_paths = vera_adapter::repo_paths_from_manifest(&repo_root, &manifest);
+    let repo_shas = manifest
+        .repos
+        .iter()
+        .map(|repo| (repo.name.clone(), repo.commit.clone()))
+        .collect();
+
+    Ok((repo_paths, repo_shas))
+}
+
+fn ensure_task_repos_known(
+    tasks: &[types::BenchmarkTask],
+    repo_paths: &HashMap<String, String>,
+) -> Result<()> {
+    let mut missing = tasks
+        .iter()
+        .filter(|task| !repo_paths.contains_key(&task.repo))
+        .map(|task| task.repo.clone())
+        .collect::<Vec<_>>();
+    missing.sort();
+    missing.dedup();
+
+    if missing.is_empty() {
+        Ok(())
+    } else {
+        anyhow::bail!(
+            "Tasks reference repos missing from the corpus manifest: {}",
+            missing.join(", ")
+        )
     }
 }
 

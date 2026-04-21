@@ -1,0 +1,217 @@
+use std::collections::hash_map::DefaultHasher;
+use std::fs;
+use std::hash::{Hash, Hasher};
+use std::path::{Path, PathBuf};
+
+use tokio::runtime::Runtime;
+use vera_core::config::{InferenceBackend, VeraConfig};
+use vera_core::embedding::{EmbeddingError, EmbeddingProvider};
+use vera_core::indexing::{index_dir, index_repository};
+use vera_core::retrieval::search_service::execute_search;
+use vera_core::types::SearchFilters;
+
+use crate::runner::ToolAdapter;
+use crate::types::RetrievalResult;
+
+const EMBEDDING_DIM: usize = 64;
+const MODEL_NAME: &str = "eval-hash-bm25-v1";
+const RESULT_LIMIT: usize = 10;
+
+/// Deterministic Vera adapter for regression testing.
+///
+/// This indexes real corpora with a lightweight hash embedding so the eval
+/// harness can exercise Vera end-to-end without model downloads or API keys.
+/// Query-time search uses the normal BM25 fallback path from `execute_search`,
+/// which keeps the ranking and augmentation logic close to the CLI.
+pub struct VeraBm25Adapter {
+    runtime: Runtime,
+    config: VeraConfig,
+}
+
+impl VeraBm25Adapter {
+    pub fn new() -> anyhow::Result<Self> {
+        let mut config = VeraConfig::default();
+        config.retrieval.reranking_enabled = false;
+        config.embedding.max_stored_dim = EMBEDDING_DIM;
+        Ok(Self {
+            runtime: Runtime::new()?,
+            config,
+        })
+    }
+}
+
+impl ToolAdapter for VeraBm25Adapter {
+    fn name(&self) -> &str {
+        "vera-bm25"
+    }
+
+    fn version(&self) -> String {
+        format!("{MODEL_NAME}/{}", env!("CARGO_PKG_VERSION"))
+    }
+
+    fn search(&self, query: &str, repo_path: &str) -> Vec<RetrievalResult> {
+        let repo_path = Path::new(repo_path);
+        if repo_path.as_os_str().is_empty() {
+            return Vec::new();
+        }
+
+        match execute_search(
+            &index_dir(repo_path),
+            query,
+            &self.config,
+            &SearchFilters::default(),
+            RESULT_LIMIT,
+            InferenceBackend::Api,
+        ) {
+            Ok((results, _)) => results.into_iter().map(into_retrieval_result).collect(),
+            Err(err) => {
+                eprintln!(
+                    "warning: vera-bm25 search failed for {}: {err}",
+                    repo_path.display()
+                );
+                Vec::new()
+            }
+        }
+    }
+
+    fn index(&self, repo_path: &str) -> (f64, u64) {
+        let repo_path = Path::new(repo_path);
+        let provider = HashEmbeddingProvider;
+        let indexed = self.runtime.block_on(index_repository(
+            repo_path,
+            &provider,
+            &self.config,
+            MODEL_NAME,
+        ));
+
+        match indexed {
+            Ok(summary) => (summary.elapsed_secs, dir_size(&index_dir(repo_path))),
+            Err(err) => {
+                eprintln!(
+                    "warning: vera-bm25 index failed for {}: {err}",
+                    repo_path.display()
+                );
+                (0.0, 0)
+            }
+        }
+    }
+}
+
+struct HashEmbeddingProvider;
+
+impl EmbeddingProvider for HashEmbeddingProvider {
+    async fn embed_batch(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, EmbeddingError> {
+        Ok(texts.iter().map(|text| hash_embedding(text)).collect())
+    }
+
+    fn expected_dim(&self) -> Option<usize> {
+        Some(EMBEDDING_DIM)
+    }
+}
+
+fn hash_embedding(text: &str) -> Vec<f32> {
+    let mut vector = vec![0.0; EMBEDDING_DIM];
+
+    for token in tokenize(text) {
+        let mut hasher = DefaultHasher::new();
+        token.hash(&mut hasher);
+        let hash = hasher.finish();
+        let idx = (hash as usize) % EMBEDDING_DIM;
+        let sign = if hash & 1 == 0 { 1.0 } else { -1.0 };
+        vector[idx] += sign;
+    }
+
+    normalize(&mut vector);
+    vector
+}
+
+fn tokenize(text: &str) -> impl Iterator<Item = String> + '_ {
+    text.split(|c: char| !c.is_alphanumeric() && c != '_')
+        .filter(|token| token.len() >= 2)
+        .map(|token| token.to_ascii_lowercase())
+}
+
+fn normalize(vector: &mut [f32]) {
+    let norm = vector.iter().map(|value| value * value).sum::<f32>().sqrt();
+    if norm > 0.0 {
+        for value in vector {
+            *value /= norm;
+        }
+    }
+}
+
+fn into_retrieval_result(result: vera_core::types::SearchResult) -> RetrievalResult {
+    RetrievalResult {
+        file_path: result.file_path,
+        line_start: result.line_start as usize,
+        line_end: result.line_end as usize,
+        score: result.score,
+    }
+}
+
+fn dir_size(path: &Path) -> u64 {
+    match fs::metadata(path) {
+        Ok(metadata) if metadata.is_file() => metadata.len(),
+        Ok(metadata) if metadata.is_dir() => fs::read_dir(path)
+            .ok()
+            .into_iter()
+            .flat_map(|entries| entries.filter_map(Result::ok))
+            .map(|entry| dir_size(&entry.path()))
+            .sum(),
+        _ => 0,
+    }
+}
+
+pub fn repo_paths_from_manifest(
+    repo_root: &Path,
+    manifest: &crate::types::CorpusManifest,
+) -> std::collections::HashMap<String, String> {
+    let clone_root = resolve_clone_root(repo_root, &manifest.corpus.clone_root);
+    manifest
+        .repos
+        .iter()
+        .map(|repo| {
+            (
+                repo.name.clone(),
+                clone_root.join(&repo.name).display().to_string(),
+            )
+        })
+        .collect()
+}
+
+fn resolve_clone_root(repo_root: &Path, clone_root: &str) -> PathBuf {
+    let clone_root = PathBuf::from(clone_root);
+    if clone_root.is_absolute() {
+        clone_root
+    } else {
+        repo_root.join(clone_root)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use super::*;
+
+    #[test]
+    fn vera_bm25_indexes_and_searches_small_repo() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(
+            dir.path().join("auth.rs"),
+            "pub fn authenticate_token(token: &str) -> bool { !token.is_empty() }\n",
+        )
+        .unwrap();
+
+        let adapter = VeraBm25Adapter::new().unwrap();
+        let (index_time, size) = adapter.index(dir.path().to_str().unwrap());
+        assert!(index_time >= 0.0);
+        assert!(size > 0);
+
+        let results = adapter.search("authenticate token", dir.path().to_str().unwrap());
+        assert!(
+            results.iter().any(|result| result.file_path == "auth.rs"),
+            "expected auth.rs in results, got {results:?}"
+        );
+    }
+}
