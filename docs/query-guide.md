@@ -127,6 +127,7 @@ vera structural impls Loader
 ```
 
 This is the better default for agents.
+Use `vera structural impls <symbol>` for explicit inheritance or conformance declarations. It does not infer implicit interface satisfaction.
 
 Use `vera references` for exact caller/callee questions:
 
