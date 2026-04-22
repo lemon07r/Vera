@@ -111,5 +111,5 @@ vera structural definitions parse_config
 vera structural env DATABASE_URL
 vera structural routes --path "src/**"
 vera structural sql
-vera structural impls Display
+vera structural impls Loader
 ```

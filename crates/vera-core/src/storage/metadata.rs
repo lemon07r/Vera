@@ -6,6 +6,7 @@
 use anyhow::{Context, Result};
 use rusqlite::{Connection, params};
 
+use crate::parsing::type_relations::{RawTypeRelation, TypeRelationKind};
 use crate::types::{Chunk, Language, SymbolType};
 
 /// A call site where a symbol is called from.
@@ -31,6 +32,16 @@ pub struct DeadSymbol {
     pub file_path: String,
     pub line: u32,
     pub symbol_type: Option<String>,
+}
+
+/// An explicit type relation pointing at a target symbol.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct TypeRelationRef {
+    pub file_path: String,
+    pub line: u32,
+    pub owner: String,
+    pub target: String,
+    pub kind: TypeRelationKind,
 }
 
 /// Persisted file-level indexing state.
@@ -200,6 +211,24 @@ impl MetadataStore {
                     ON [references](file_path);",
             )
             .context("failed to create references table")?;
+
+        self.conn
+            .execute_batch(
+                "CREATE TABLE IF NOT EXISTS type_relations (
+                    file_path TEXT NOT NULL,
+                    line INTEGER NOT NULL,
+                    owner TEXT NOT NULL,
+                    target TEXT NOT NULL,
+                    kind TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_type_relations_target
+                    ON type_relations(target);
+                CREATE INDEX IF NOT EXISTS idx_type_relations_owner
+                    ON type_relations(owner);
+                CREATE INDEX IF NOT EXISTS idx_type_relations_file_path
+                    ON type_relations(file_path);",
+            )
+            .context("failed to create type_relations table")?;
 
         Ok(())
     }
@@ -392,7 +421,7 @@ impl MetadataStore {
     pub fn clear(&self) -> Result<()> {
         self.conn
             .execute_batch(
-                "DELETE FROM chunks; DELETE FROM file_hashes; DELETE FROM file_index_state; DELETE FROM index_metadata; DELETE FROM [references];",
+                "DELETE FROM chunks; DELETE FROM file_hashes; DELETE FROM file_index_state; DELETE FROM index_metadata; DELETE FROM [references]; DELETE FROM type_relations;",
             )
             .context("failed to clear metadata store")?;
         Ok(())
@@ -590,6 +619,40 @@ impl MetadataStore {
         Ok(())
     }
 
+    /// Insert a batch of explicit type relations for a single file.
+    pub fn insert_type_relations(
+        &self,
+        file_path: &str,
+        relations: &[RawTypeRelation],
+    ) -> Result<()> {
+        let tx = self
+            .conn
+            .unchecked_transaction()
+            .context("failed to begin type relation transaction")?;
+        {
+            let mut stmt = self
+                .conn
+                .prepare_cached(
+                    "INSERT INTO type_relations (file_path, line, owner, target, kind)
+                     VALUES (?1, ?2, ?3, ?4, ?5)",
+                )
+                .context("failed to prepare type relation insert")?;
+            for relation in relations {
+                stmt.execute(params![
+                    file_path,
+                    relation.line,
+                    relation.owner,
+                    relation.target,
+                    relation.kind.as_str(),
+                ])
+                .context("failed to insert type relation")?;
+            }
+        }
+        tx.commit()
+            .context("failed to commit type relation inserts")?;
+        Ok(())
+    }
+
     /// Delete all references for a given file.
     pub fn delete_references_by_file(&self, file_path: &str) -> Result<()> {
         self.conn
@@ -598,6 +661,17 @@ impl MetadataStore {
                 params![file_path],
             )
             .context("failed to delete references by file")?;
+        Ok(())
+    }
+
+    /// Delete all explicit type relations for a given file.
+    pub fn delete_type_relations_by_file(&self, file_path: &str) -> Result<()> {
+        self.conn
+            .execute(
+                "DELETE FROM type_relations WHERE file_path = ?1",
+                params![file_path],
+            )
+            .context("failed to delete type relations by file")?;
         Ok(())
     }
 
@@ -623,6 +697,41 @@ impl MetadataStore {
         let mut results = Vec::new();
         for row in rows {
             results.push(row.context("failed to read caller row")?);
+        }
+        Ok(results)
+    }
+
+    /// Find explicit type relations that point at a given target symbol.
+    pub fn find_type_relations(&self, symbol_name: &str) -> Result<Vec<TypeRelationRef>> {
+        let mut stmt = self
+            .conn
+            .prepare_cached(
+                "SELECT file_path, line, owner, target, kind
+                 FROM type_relations
+                 WHERE lower(target) = lower(?1)
+                 ORDER BY file_path, line, owner",
+            )
+            .context("failed to prepare type relation query")?;
+        let rows = stmt
+            .query_map(params![symbol_name], |row| {
+                Ok(TypeRelationRef {
+                    file_path: row.get(0)?,
+                    line: row.get(1)?,
+                    owner: row.get(2)?,
+                    target: row.get(3)?,
+                    kind: TypeRelationKind::parse(&row.get::<_, String>(4)?).ok_or_else(|| {
+                        rusqlite::Error::InvalidColumnType(
+                            4,
+                            "kind".to_string(),
+                            rusqlite::types::Type::Text,
+                        )
+                    })?,
+                })
+            })
+            .context("failed to query type relations")?;
+        let mut results = Vec::new();
+        for row in rows {
+            results.push(row.context("failed to read type relation row")?);
         }
         Ok(results)
     }
@@ -1202,6 +1311,32 @@ mod tests {
         // Rust has 2, Python has 1
         assert_eq!(stats[0], ("rust".to_string(), 2));
         assert_eq!(stats[1], ("python".to_string(), 1));
+    }
+
+    #[test]
+    fn type_relation_operations() {
+        let store = MetadataStore::open_in_memory().unwrap();
+
+        store
+            .insert_type_relations(
+                "src/types.ts",
+                &[RawTypeRelation {
+                    owner: "Repo".to_string(),
+                    target: "Loader".to_string(),
+                    line: 2,
+                    kind: TypeRelationKind::Conforms,
+                }],
+            )
+            .unwrap();
+
+        let relations = store.find_type_relations("loader").unwrap();
+        assert_eq!(relations.len(), 1);
+        assert_eq!(relations[0].owner, "Repo");
+        assert_eq!(relations[0].target, "Loader");
+        assert_eq!(relations[0].kind, TypeRelationKind::Conforms);
+
+        store.delete_type_relations_by_file("src/types.ts").unwrap();
+        assert!(store.find_type_relations("Loader").unwrap().is_empty());
     }
 
     #[test]

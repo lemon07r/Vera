@@ -130,7 +130,7 @@ This makes parser regressions and partial indexing visible instead of silent.
 - `env [NAME]` finds environment variable reads, optionally narrowed to one variable
 - `routes` finds common HTTP route registrations
 - `sql` finds common SQL execution sites
-- `impls <trait>` finds Rust trait implementations
+- `impls <symbol>` finds explicit implementations, conformances, and inheritance declarations
 
 Use this as the default structural workflow. Use `vera references` for exact caller/callee questions.
 
@@ -217,7 +217,7 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 | `get_stats` | File count, chunk count, index size, language breakdown, and index health |
 | `get_overview` | Architecture overview with conventions detection and optional git-scoped filtering |
 | `regex_search` | Regex search with context lines, scope controls, and git-scoped filtering |
-| `structural_search` | Agent-oriented structural intents for definitions, env reads, routes, SQL, and Rust trait impls |
+| `structural_search` | Agent-oriented structural intents for definitions, env reads, routes, SQL, and explicit implementation lookups |
 | `find_references` | Exact callers or callees from the persisted call graph, with optional git-scoped filtering |
 | `explain_path` | Explain why a file is or is not indexed |
 

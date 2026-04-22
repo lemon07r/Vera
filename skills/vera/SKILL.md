@@ -46,7 +46,7 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
     vera structural env DATABASE_URL
     vera structural routes --path "src/**"
     vera structural sql
-    vera structural impls Display
+    vera structural impls Loader
     vera references parse_config --changed
    ```
 10. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
@@ -71,7 +71,7 @@ The info string contains `file_path:line_start-line_end` and optional `symbol_ty
 |------|------|
 | Concepts, behavior, "how does X work" | `vera search` |
 | Exact strings, regex, imports, TODOs within indexed files | `vera grep` |
-| Definitions, env reads, routes, SQL, Rust trait implementations | `vera structural` |
+| Definitions, env reads, routes, SQL, explicit implementation lookups | `vera structural` |
 | Exact callers or callees | `vera references` |
 | Explain why a file is or is not indexed | `vera explain-path` |
 | Bulk find-and-replace, file names, files outside index | `rg` |
