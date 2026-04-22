@@ -8,11 +8,11 @@
 //! - Post-retrieval filtering by language, path glob, and symbol type
 //! - Graceful degradation when services are unavailable
 
-pub mod ast_query;
 pub mod bm25;
 pub mod hybrid;
 pub mod query_classifier;
 pub mod ranking;
+pub mod references;
 pub mod reranker;
 pub mod search_service;
 pub mod vector;
@@ -38,8 +38,8 @@ pub mod rag_fusion;
 pub mod regex_search;
 pub mod structural;
 
-pub use ast_query::search_ast_query;
 pub use local_reranker::LocalReranker;
+pub use references::search_callers;
 pub use regex_search::search_regex;
 pub use structural::{StructuralSearchKind, search_structural};
 

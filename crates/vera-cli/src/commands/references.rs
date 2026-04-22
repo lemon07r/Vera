@@ -2,12 +2,29 @@
 
 use anyhow::Result;
 
+use crate::helpers::{apply_git_scope, load_runtime_config, output_results, prepare_indexed_repo};
+
 /// Run the `vera references <symbol>` command.
-pub fn run(symbol: &str, callees: bool, json: bool) -> Result<()> {
-    let cwd = std::env::current_dir()?;
+pub fn run(
+    symbol: &str,
+    callees: bool,
+    limit: Option<usize>,
+    git_scope: Option<vera_core::git_scope::GitScope>,
+    json: bool,
+    raw: bool,
+    compact: bool,
+) -> Result<()> {
+    let config = load_runtime_config()?;
+    let result_limit = limit.unwrap_or(20);
+    let (cwd, index_dir) = prepare_indexed_repo(&config.indexing)?;
 
     if callees {
-        let results = vera_core::stats::find_callees(&cwd, symbol)?;
+        let mut results = vera_core::stats::find_callees(&cwd, symbol)?;
+        if let Some(scope) = git_scope.as_ref() {
+            let exact_paths = vera_core::git_scope::resolve_scope(&cwd, scope)?;
+            results.retain(|result| exact_paths.contains(&result.file_path));
+        }
+        results.truncate(result_limit);
         if json {
             println!("{}", serde_json::to_string(&results)?);
         } else if results.is_empty() {
@@ -22,17 +39,27 @@ pub fn run(symbol: &str, callees: bool, json: bool) -> Result<()> {
             }
         }
     } else {
-        let results = vera_core::stats::find_callers(&cwd, symbol)?;
-        if json {
-            println!("{}", serde_json::to_string(&results)?);
-        } else if results.is_empty() {
+        let filters = apply_git_scope(
+            &cwd,
+            &vera_core::types::SearchFilters {
+                scope: Some(vera_core::types::SearchScope::Source),
+                include_generated: Some(false),
+                ..Default::default()
+            },
+            git_scope.as_ref(),
+        )?;
+        let results =
+            vera_core::retrieval::search_callers(&index_dir, symbol, result_limit, &filters)?;
+        if results.is_empty() && !json && !raw {
             println!("No callers found for '{symbol}'.");
         } else {
-            println!("Callers of '{symbol}' ({} results):\n", results.len());
-            for r in &results {
-                let caller = r.caller.as_deref().unwrap_or("<top-level>");
-                println!("  {}:{} in {}", r.file_path, r.line, caller);
-            }
+            output_results(
+                &results,
+                json,
+                raw,
+                compact,
+                config.retrieval.max_output_chars,
+            );
         }
     }
     Ok(())
@@ -40,7 +67,8 @@ pub fn run(symbol: &str, callees: bool, json: bool) -> Result<()> {
 
 /// Run the `vera dead-code` command.
 pub fn run_dead_code(json: bool) -> Result<()> {
-    let cwd = std::env::current_dir()?;
+    let config = load_runtime_config()?;
+    let (cwd, _) = prepare_indexed_repo(&config.indexing)?;
     let results = vera_core::stats::find_dead_symbols(&cwd)?;
 
     if json {

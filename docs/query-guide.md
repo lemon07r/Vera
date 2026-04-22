@@ -120,7 +120,6 @@ Use `vera structural` for the common structural cases where you want an intent, 
 
 ```bash
 vera structural definitions parse_config
-vera structural calls parse_config --changed
 vera structural env DATABASE_URL
 vera structural routes --path "src/**"
 vera structural sql
@@ -129,14 +128,13 @@ vera structural impls Display
 
 This is the better default for agents.
 
-Use `vera ast-query` when you know the AST shape you need and regex would be too blunt:
+Use `vera references` for exact caller/callee questions:
 
 ```bash
-vera ast-query '(function_item name: (identifier) @fn)' --lang rust
-vera ast-query '(function_definition name: (identifier) @fn)' --lang python --path "src/**"
+vera references parse_config
+vera references parse_config --callees
+vera references parse_config --changed
 ```
-
-This is raw tree-sitter query syntax, not a Semgrep-style rule DSL.
 
 ## Missing Files Or Surprising Exclusions
 
@@ -158,7 +156,7 @@ Use `vera stats --json` when you want the repo-wide health view for parse failur
 
 ## Output Format
 
-See [features: output formats](features.md#multiple-output-formats) for all options (`--json`, `--raw`, `--timing`). `--raw` and `--timing` work with `vera search` and `vera grep`, and can appear before or after the subcommand. `vera search --timing` prints per-stage timings; `vera grep --timing` prints total regex-search time.
+See [features: output formats](features.md#multiple-output-formats) for all options (`--json`, `--raw`, `--timing`). `--raw` works with `vera search`, `vera grep`, and `vera references`; `--timing` works with `vera search` and `vera grep`. They can appear before or after the subcommand. `vera search --timing` prints per-stage timings; `vera grep --timing` prints total regex-search time.
 
 ## Keeping Results Fresh
 

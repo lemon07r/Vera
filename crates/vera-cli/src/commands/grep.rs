@@ -1,11 +1,9 @@
 //! `vera grep <pattern>` — Regex search over indexed files.
 
-use anyhow::bail;
 use std::io::Write;
-use std::sync::Arc;
 use std::time::Instant;
 
-use crate::helpers::{load_runtime_config, output_results, warn_if_index_stale};
+use crate::helpers::{load_runtime_config, output_results, prepare_indexed_search};
 
 /// Run the `vera grep <pattern>` command.
 #[allow(clippy::too_many_arguments)]
@@ -22,21 +20,8 @@ pub fn run(
     compact: bool,
 ) -> anyhow::Result<()> {
     let config = load_runtime_config()?;
-    let cwd = std::env::current_dir()
-        .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
-    let mut filters = filters.clone();
-    if let Some(scope) = git_scope.as_ref() {
-        filters.exact_paths = Some(Arc::new(vera_core::git_scope::resolve_scope(&cwd, scope)?));
-    }
-    let index_dir = vera_core::indexing::index_dir(&cwd);
-
-    if !index_dir.exists() {
-        bail!(
-            "no index found in current directory.\n\
-             Hint: run `vera index <path>` first to create an index."
-        );
-    }
-    warn_if_index_stale(&cwd, &config.indexing);
+    let (index_dir, filters) =
+        prepare_indexed_search(&config.indexing, filters, git_scope.as_ref())?;
 
     let result_limit = limit.unwrap_or(20);
     let started_at = Instant::now();

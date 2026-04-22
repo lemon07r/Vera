@@ -104,11 +104,12 @@ Use this when the raw query is too short or ambiguous to capture what you actual
 
 ## Structural Search
 
-Use `vera ast-query` when you know the AST shape you need and regex would be too blunt:
+Use `vera structural` for the common structural tasks agents hit repeatedly:
 
 ```sh
-vera ast-query '(function_item name: (identifier) @fn)' --lang rust
-vera ast-query '(function_definition name: (identifier) @fn)' --lang python --path "src/**"
+vera structural definitions parse_config
+vera structural env DATABASE_URL
+vera structural routes --path "src/**"
+vera structural sql
+vera structural impls Display
 ```
-
-This is expert-oriented raw tree-sitter syntax, not a Semgrep-style rule DSL.

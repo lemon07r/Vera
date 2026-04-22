@@ -12,7 +12,7 @@ use crate::parsing::languages;
 use crate::retrieval::apply_filters;
 use crate::retrieval::file_scan::{
     allows_class, bounded_byte_snippet, file_scan_priority, language_for_path,
-    line_context_snippet, smallest_symbol_chunk_for_line, symbol_for_line,
+    smallest_symbol_chunk_for_line, symbol_for_line,
 };
 use crate::retrieval::query_utils::path_depth;
 use crate::storage::metadata::MetadataStore;
@@ -22,7 +22,6 @@ use crate::types::{Chunk, Language, SearchFilters, SearchResult, SearchScope};
 #[serde(rename_all = "snake_case")]
 pub enum StructuralSearchKind {
     Definitions,
-    Calls,
     EnvReads,
     RouteHandlers,
     SqlQueries,
@@ -35,7 +34,6 @@ impl std::str::FromStr for StructuralSearchKind {
     fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
         match value {
             "definitions" | "defs" => Ok(Self::Definitions),
-            "calls" | "callers" => Ok(Self::Calls),
             "env" | "env_reads" => Ok(Self::EnvReads),
             "routes" | "route_handlers" => Ok(Self::RouteHandlers),
             "sql" | "sql_queries" => Ok(Self::SqlQueries),
@@ -67,10 +65,6 @@ pub fn search_structural(
         StructuralSearchKind::Definitions => {
             let symbol = required_query(kind, query)?;
             search_definitions(&store, symbol, limit, &filters)
-        }
-        StructuralSearchKind::Calls => {
-            let symbol = required_query(kind, query)?;
-            search_calls(repo_root, &store, symbol, limit, &filters)
         }
         StructuralSearchKind::EnvReads => {
             search_env_reads(repo_root, &store, query, limit, &filters)
@@ -104,7 +98,6 @@ fn required_query(kind: StructuralSearchKind, query: Option<&str>) -> Result<&st
 fn kind_label(kind: StructuralSearchKind) -> &'static str {
     match kind {
         StructuralSearchKind::Definitions => "definitions",
-        StructuralSearchKind::Calls => "calls",
         StructuralSearchKind::EnvReads => "env reads",
         StructuralSearchKind::RouteHandlers => "route handlers",
         StructuralSearchKind::SqlQueries => "SQL queries",
@@ -142,69 +135,6 @@ fn search_definitions(
         .collect();
 
     Ok(apply_filters(results, filters, limit))
-}
-
-fn search_calls(
-    repo_root: &Path,
-    store: &MetadataStore,
-    symbol: &str,
-    limit: usize,
-    filters: &SearchFilters,
-) -> Result<Vec<SearchResult>> {
-    let callers = store.find_callers(symbol)?;
-    let mut results = Vec::new();
-    let mut seen = HashSet::new();
-
-    for caller in callers {
-        if results.len() >= limit {
-            break;
-        }
-
-        let language = language_for_path(&caller.file_path);
-        if !filters.matches_file(&caller.file_path, language) {
-            continue;
-        }
-
-        let file_abs = repo_root.join(&caller.file_path);
-        let content = match std::fs::read_to_string(&file_abs) {
-            Ok(content) => content,
-            Err(_) => continue,
-        };
-        let class = classify_content(&caller.file_path, language, &content);
-        if !allows_class(filters, class) {
-            continue;
-        }
-        if matches!(filters.include_generated, Some(false))
-            && matches!(class, ContentClass::Generated)
-        {
-            continue;
-        }
-
-        let chunks = store.get_chunks_by_file(&caller.file_path)?;
-        let (snippet, line_start, line_end) = line_context_snippet(&content, caller.line, 2);
-        let (symbol_name, symbol_type) = symbol_for_line(Some(&chunks), caller.line);
-        if !filters.matches_symbol_type(symbol_type) {
-            continue;
-        }
-
-        let key = format!("{}:{}:{}", caller.file_path, line_start, line_end);
-        if !seen.insert(key) {
-            continue;
-        }
-
-        results.push(SearchResult {
-            file_path: caller.file_path,
-            line_start,
-            line_end,
-            content: snippet,
-            language,
-            score: 1.0,
-            symbol_name,
-            symbol_type,
-        });
-    }
-
-    Ok(results)
 }
 
 fn search_env_reads(
@@ -766,28 +696,6 @@ mod tests {
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].symbol_name.as_deref(), Some("parse_config"));
-    }
-
-    #[tokio::test]
-    async fn calls_find_callsites() {
-        let dir = index_repo(&[(
-            "src/main.rs",
-            "fn target() {}\nfn caller() {\n    target();\n}\n",
-        )])
-        .await;
-
-        let results = search_structural(
-            &crate::indexing::index_dir(dir.path()),
-            StructuralSearchKind::Calls,
-            Some("target"),
-            10,
-            &SearchFilters::default(),
-        )
-        .unwrap();
-
-        assert_eq!(results.len(), 1);
-        assert!(results[0].content.contains("target();"));
-        assert_eq!(results[0].symbol_name.as_deref(), Some("caller"));
     }
 
     #[tokio::test]

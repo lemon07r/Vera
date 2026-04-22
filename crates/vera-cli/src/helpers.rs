@@ -1,7 +1,8 @@
 //! Shared helper functions for CLI command implementations.
 
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use clap::Args;
 use serde::Serialize;
@@ -25,6 +26,38 @@ pub fn warn_if_index_stale(repo_path: &Path, indexing_config: &vera_core::config
         Ok(_) => {}
         Err(err) => {
             tracing::debug!(error = %err, "failed to check index freshness");
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Args)]
+pub struct SearchFilterArgs {
+    /// Filter by programming language (case-insensitive).
+    #[arg(long)]
+    pub lang: Option<String>,
+    /// Filter by file path glob pattern (e.g., "src/**/*.rs").
+    #[arg(long)]
+    pub path: Option<String>,
+    /// Filter by symbol type.
+    #[arg(long, rename_all = "snake_case")]
+    pub r#type: Option<String>,
+    /// Restrict results to a coarse corpus scope.
+    #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
+    pub scope: Option<String>,
+    /// Include generated or minified files such as dist bundles.
+    #[arg(long)]
+    pub include_generated: bool,
+}
+
+impl SearchFilterArgs {
+    pub fn to_filters(&self) -> vera_core::types::SearchFilters {
+        vera_core::types::SearchFilters {
+            language: self.lang.clone(),
+            path_glob: self.path.clone(),
+            exact_paths: None,
+            symbol_type: self.r#type.clone(),
+            scope: self.scope.as_deref().and_then(|value| value.parse().ok()),
+            include_generated: Some(self.include_generated),
         }
     }
 }
@@ -79,6 +112,44 @@ impl GitScopeFlags {
                 .map(|rev| vera_core::git_scope::GitScope::Base(rev.clone()))
         }
     }
+}
+
+pub fn prepare_indexed_repo(
+    indexing_config: &vera_core::config::IndexingConfig,
+) -> anyhow::Result<(PathBuf, PathBuf)> {
+    let cwd = std::env::current_dir()
+        .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
+    let index_dir = vera_core::indexing::index_dir(&cwd);
+    if !index_dir.exists() {
+        anyhow::bail!(
+            "no index found in current directory.\n\
+             Hint: run `vera index <path>` first to create an index."
+        );
+    }
+    warn_if_index_stale(&cwd, indexing_config);
+    Ok((cwd, index_dir))
+}
+
+pub fn apply_git_scope(
+    cwd: &Path,
+    filters: &vera_core::types::SearchFilters,
+    git_scope: Option<&vera_core::git_scope::GitScope>,
+) -> anyhow::Result<vera_core::types::SearchFilters> {
+    let mut filters = filters.clone();
+    if let Some(scope) = git_scope {
+        filters.exact_paths = Some(Arc::new(vera_core::git_scope::resolve_scope(cwd, scope)?));
+    }
+    Ok(filters)
+}
+
+pub fn prepare_indexed_search(
+    indexing_config: &vera_core::config::IndexingConfig,
+    filters: &vera_core::types::SearchFilters,
+    git_scope: Option<&vera_core::git_scope::GitScope>,
+) -> anyhow::Result<(PathBuf, vera_core::types::SearchFilters)> {
+    let (cwd, index_dir) = prepare_indexed_repo(indexing_config)?;
+    let filters = apply_git_scope(&cwd, filters, git_scope)?;
+    Ok((index_dir, filters))
 }
 
 impl LocalBackendFlags {

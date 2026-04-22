@@ -120,20 +120,19 @@ This makes parser regressions and partial indexing visible instead of silent.
 
 ### Call Graph and Reference Finding
 
-`vera references foo` finds all callers of a symbol. `vera references foo --callees` finds what a symbol calls. The call graph is built during indexing from tree-sitter AST analysis, so lookups are instant.
+`vera references foo` finds all callers of a symbol as search-style snippets. `vera references foo --callees` finds what a symbol calls. Add `--changed`, `--since`, or `--base` when you want exact call relationships limited to a diff. The call graph is built during indexing from tree-sitter AST analysis, so lookups are instant.
 
 ### Agent-Oriented Structural Search
 
 `vera structural <intent> [query]` covers the common structural tasks agents hit repeatedly without forcing raw tree-sitter syntax.
 
 - `definitions <symbol>` finds symbol definitions by name
-- `calls <symbol>` finds call sites of a symbol
 - `env [NAME]` finds environment variable reads, optionally narrowed to one variable
 - `routes` finds common HTTP route registrations
 - `sql` finds common SQL execution sites
 - `impls <trait-or-interface>` finds trait or interface implementations
 
-Use this as the default structural workflow. Reach for `vera ast-query` only when you already know the tree-sitter shape you need.
+Use this as the default structural workflow. Use `vera references` for exact caller/callee questions.
 
 ### Dead Code Detection
 
@@ -146,10 +145,6 @@ Use this as the default structural workflow. Reach for `vera ast-query` only whe
 ### Regex Search
 
 `vera grep "pattern"` runs regex search over indexed files with configurable context lines, case sensitivity, and the same corpus filters as `vera search` (`--lang`, `--path`, `--type`, `--scope`). It complements semantic search for exact string matching, import statements, TODOs, and known identifiers.
-
-### Structural Search
-
-`vera ast-query '<query>' --lang <lang>` runs a raw tree-sitter query against indexed files in one language and returns matched source spans. This is an expert-oriented structural search mode for cases where regex is too blunt and you already know the AST shape you need.
 
 ## Model Backend
 
@@ -209,7 +204,7 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 |------|--------|
 | *(default)* | Markdown codeblocks with file path, line range, and symbol metadata |
 | `--json` | Compact single-line JSON |
-| `--raw` | Verbose human-readable search/grep output. Works before or after the subcommand. |
+| `--raw` | Verbose human-readable output for `search`, `grep`, and `references`. Works before or after the subcommand. |
 | `--timing` | Timing info to stderr (`search`: per-stage, `grep`: total). Works before or after the subcommand. |
 
 ## MCP Server
@@ -222,7 +217,8 @@ Large chunks are automatically truncated at 8K characters with a `[...truncated]
 | `get_stats` | File count, chunk count, index size, language breakdown, and index health |
 | `get_overview` | Architecture overview with conventions detection and optional git-scoped filtering |
 | `regex_search` | Regex search with context lines, scope controls, and git-scoped filtering |
-| `structural_search` | Agent-oriented structural intents for definitions, calls, env reads, routes, SQL, and impls |
+| `structural_search` | Agent-oriented structural intents for definitions, env reads, routes, SQL, and impls |
+| `find_references` | Exact callers or callees from the persisted call graph, with optional git-scoped filtering |
 | `explain_path` | Explain why a file is or is not indexed |
 
 Tool descriptions include explicit WHEN TO USE / WHEN NOT TO USE guidance so AI agents route queries to the right tool automatically.

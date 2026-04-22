@@ -539,12 +539,11 @@ async fn symbol_lookup_find_by_username() {
 // ── Structural agent-task regressions ─────────────────────────────
 
 #[tokio::test]
-async fn structural_calls_find_authenticate_handler() {
+async fn references_search_finds_authenticate_handler() {
     let repo = setup_structural_repo().await;
-    let results = crate::retrieval::search_structural(
+    let results = crate::retrieval::search_callers(
         &crate::indexing::index_dir(repo.path()),
-        crate::retrieval::StructuralSearchKind::Calls,
-        Some("authenticate"),
+        "authenticate",
         10,
         &SearchFilters::default(),
     )

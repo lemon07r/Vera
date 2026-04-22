@@ -32,8 +32,8 @@ vera-ai search "authentication logic"
 | Search semantically | `vera-ai search "authentication middleware"` |
 | Search only changed files | `vera-ai search "authentication middleware" --changed` |
 | Common structural tasks | `vera-ai structural routes` / `vera-ai structural env DATABASE_URL` |
+| Find callers or callees | `vera-ai references foo` / `vera-ai references foo --callees` |
 | Explain why a file is missing | `vera-ai explain-path path/to/file` |
-| Structural AST search | `vera-ai ast-query '(function_item name: (identifier) @fn)' --lang rust` |
 | Inspect index health | `vera-ai stats --json` |
 | Keep the index up to date | `vera-ai update .` |
 | Watch for file changes | `vera-ai watch .` |
@@ -51,6 +51,6 @@ For the full backend matrix, model options, Docker setup, and troubleshooting, s
 - **Hybrid search**: BM25 keyword + vector similarity, fused with Reciprocal Rank Fusion
 - **Cross-encoder reranking** for precision
 - **Git-aware scopes and index debugging**: `--changed` / `--since` / `--base`, `explain-path`, and index health in `vera-ai stats`
-- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` and `--timing` work with `vera-ai search` and `vera-ai grep`, before or after the subcommand)
+- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` works with `vera-ai search`, `vera-ai grep`, and `vera-ai references`; `--timing` works with `vera-ai search` and `vera-ai grep`, before or after the subcommand)
 
 For full documentation, including custom local ONNX embedding models and manual install steps, see the [GitHub repo](https://github.com/lemon07r/Vera).
