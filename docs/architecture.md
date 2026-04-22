@@ -39,7 +39,7 @@ Deep search (`--deep`): `rag_fusion.rs` runs a cheap BM25 pre-filter to collect 
 
 Structural search:
 - `references.rs`: exact caller lookups from the persisted call graph, returned as search-style snippets
-- `structural.rs`: agent-oriented structural intents for definitions, env reads, routes, SQL, and impls
+- `structural.rs`: agent-oriented structural intents for definitions, env reads, routes, SQL, and Rust trait impls
 
 ### `storage/`: Persistent storage
 
