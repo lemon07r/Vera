@@ -32,8 +32,8 @@ vera search "authentication logic"
 | Search semantically | `vera search "authentication middleware"` |
 | Search only changed files | `vera search "authentication middleware" --changed` |
 | Common structural tasks | `vera structural routes` / `vera structural env DATABASE_URL` |
+| Find callers or callees | `vera references foo` / `vera references foo --callees` |
 | Explain why a file is missing | `vera explain-path path/to/file` |
-| Structural AST search | `vera ast-query '(function_item name: (identifier) @fn)' --lang rust` |
 | Inspect index health | `vera stats --json` |
 | Keep the index up to date | `vera update .` |
 | Watch for file changes | `vera watch .` |
@@ -51,6 +51,6 @@ For the full backend matrix, model options, Docker setup, and troubleshooting, s
 - **Hybrid search**: BM25 keyword + vector similarity, fused with Reciprocal Rank Fusion
 - **Cross-encoder reranking** for precision
 - **Git-aware scopes and index debugging**: `--changed` / `--since` / `--base`, `explain-path`, and index health in `vera stats`
-- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` and `--timing` work with `vera search` and `vera grep`, before or after the subcommand)
+- **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` works with `vera search`, `vera grep`, and `vera references`; `--timing` works with `vera search` and `vera grep`, before or after the subcommand)
 
 For full documentation, including custom local ONNX embedding models and manual install steps, see the [GitHub repo](https://github.com/lemon07r/Vera).

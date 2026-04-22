@@ -1,6 +1,6 @@
 ---
 name: vera
-description: Semantic code search, regex pattern search, structural tree-sitter query search, and symbol lookup across a local repository. Returns ranked markdown codeblocks with file path, line range, content, and optional symbol info. Use `vera search` for conceptual/behavioral queries, `vera grep` for exact text, `vera ast-query` for raw tree-sitter structural matches, `vera references` for callers/callees, and `vera explain-path` to debug indexing decisions. Use rg only for bulk find-and-replace or files outside the index.
+description: Semantic code search, exact regex search, structural intent search, and symbol reference lookup across a local repository. Returns ranked markdown codeblocks with file path, line range, content, and optional symbol info. Use `vera search` for conceptual/behavioral queries, `vera grep` for exact text, `vera structural` for common structural tasks, `vera references` for callers/callees, and `vera explain-path` to debug indexing decisions. Use rg only for bulk find-and-replace or files outside the index.
 ---
 
 # Vera
@@ -40,10 +40,14 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
      vera grep "use std::collections" --context 0  # no surrounding lines
      vera grep "handler" --compact           # signatures only
    ```
-9. Structural search when regex is too blunt and you already know the AST shape:
+9. Structural search for common agent tasks:
    ```sh
-    vera ast-query '(function_item name: (identifier) @fn)' --lang rust
-    vera ast-query '(function_definition name: (identifier) @fn)' --lang python --path "src/**"
+    vera structural definitions parse_config
+    vera structural env DATABASE_URL
+    vera structural routes --path "src/**"
+    vera structural sql
+    vera structural impls Display
+    vera references parse_config --changed
    ```
 10. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
 
@@ -59,7 +63,7 @@ pub async fn search_hybrid(...) -> Result<Vec<SearchResult>> { ... }
 ```
 ````
 
-The info string contains `file_path:line_start-line_end` and optional `symbol_type:symbol_name`. Use `--json` for compact single-line JSON (programmatic consumption). `--raw` and `--timing` work with `vera search` and `vera grep`, and can appear before or after the subcommand.
+The info string contains `file_path:line_start-line_end` and optional `symbol_type:symbol_name`. Use `--json` for compact single-line JSON (programmatic consumption). `--raw` works with `vera search`, `vera grep`, and `vera references`; `--timing` works with `vera search` and `vera grep`. Both can appear before or after the subcommand.
 
 ## Choosing the Right Tool
 
@@ -67,11 +71,12 @@ The info string contains `file_path:line_start-line_end` and optional `symbol_ty
 |------|------|
 | Concepts, behavior, "how does X work" | `vera search` |
 | Exact strings, regex, imports, TODOs within indexed files | `vera grep` |
-| Raw tree-sitter structural query | `vera ast-query` |
+| Definitions, env reads, routes, SQL, interface implementations | `vera structural` |
+| Exact callers or callees | `vera references` |
 | Explain why a file is or is not indexed | `vera explain-path` |
 | Bulk find-and-replace, file names, files outside index | `rg` |
 
-`vera search` understands synonyms and related concepts. `vera grep` matches literal patterns. `vera ast-query` is the expert option when you can express the exact AST shape.
+`vera search` understands synonyms and related concepts. `vera grep` matches literal patterns. `vera structural` is the high-signal structural layer for agents, and `vera references` is the exact call-graph tool.
 
 ## Search Scopes
 

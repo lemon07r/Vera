@@ -3,13 +3,12 @@
 use anyhow::bail;
 use std::io::Write;
 use std::path::Path;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 use vera_core::config::InferenceBackend;
 use vera_core::retrieval::search_service::SearchTimings;
 use vera_core::types::SearchResult;
 
-use crate::helpers::{load_runtime_config, output_results, warn_if_index_stale};
+use crate::helpers::{load_runtime_config, output_results, prepare_indexed_search};
 
 /// Run the `vera search <query>` command.
 #[allow(clippy::too_many_arguments)]
@@ -38,21 +37,8 @@ pub fn run(
         );
     }
 
-    let cwd = std::env::current_dir()
-        .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
-    let mut filters = filters.clone();
-    if let Some(scope) = git_scope.as_ref() {
-        filters.exact_paths = Some(Arc::new(vera_core::git_scope::resolve_scope(&cwd, scope)?));
-    }
-    let index_dir = vera_core::indexing::index_dir(&cwd);
-
-    if !index_dir.exists() {
-        bail!(
-            "no index found in current directory.\n\
-             Hint: run `vera index <path>` first to create an index."
-        );
-    }
-    warn_if_index_stale(&cwd, &config.indexing);
+    let (index_dir, filters) =
+        prepare_indexed_search(&config.indexing, filters, git_scope.as_ref())?;
 
     let (results, timings) = if queries.len() == 1 {
         let effective_query = apply_intent(&queries[0], intent);

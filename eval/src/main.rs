@@ -43,7 +43,7 @@ enum Commands {
         #[arg(long, short)]
         output: Option<PathBuf>,
 
-        /// Tool adapter to use (`vera-bm25`, `mock-perfect`, `mock-partial`).
+        /// Tool adapter to use. `vera-bm25` is the real regression lane; mock tools are for harness self-tests.
         #[arg(long, default_value = "vera-bm25")]
         tool: String,
 
@@ -62,6 +62,14 @@ enum Commands {
         /// Path to the tasks directory.
         #[arg(long, default_value = "eval/tasks")]
         tasks_dir: PathBuf,
+
+        /// Path to the corpus manifest (used by real adapters).
+        #[arg(long, default_value = "eval/corpus.toml")]
+        corpus: PathBuf,
+
+        /// Tool adapter to use. `vera-bm25` is the real stability lane; mock tools are for harness self-tests.
+        #[arg(long, default_value = "vera-bm25")]
+        tool: String,
 
         /// Maximum allowed relative difference for retrieval metrics (default: 0.02 = 2%).
         #[arg(long, default_value = "0.02")]
@@ -83,8 +91,10 @@ fn main() -> Result<()> {
         Commands::VerifyCorpus { corpus } => cmd_verify_corpus(&corpus),
         Commands::Stability {
             tasks_dir,
+            corpus,
+            tool,
             tolerance,
-        } => cmd_stability(&tasks_dir, tolerance),
+        } => cmd_stability(&tasks_dir, &corpus, &tool, tolerance),
     }
 }
 
@@ -105,29 +115,7 @@ fn cmd_run(
 
     eprintln!("Loaded {} benchmark tasks", tasks.len());
 
-    // Select tool adapter
-    let report = match tool_name {
-        "mock-perfect" => {
-            let mock = runner::MockAdapter::perfect();
-            runner::run_benchmark_with_mock(&mock, &tasks)
-        }
-        "mock-partial" => {
-            let mock = runner::MockAdapter::partial(0.7);
-            runner::run_benchmark_with_mock(&mock, &tasks)
-        }
-        "vera-bm25" => {
-            let (repo_paths, corpus_shas) = load_verified_corpus(corpus_path)?;
-            ensure_task_repos_known(&tasks, &repo_paths)?;
-            let vera = vera_adapter::VeraBm25Adapter::new()?;
-            runner::run_benchmark(&vera, &tasks, &repo_paths, &corpus_shas)
-        }
-        other => {
-            anyhow::bail!(
-                "Unknown tool '{}'. Available: vera-bm25, mock-perfect, mock-partial.",
-                other
-            );
-        }
-    };
+    let report = run_report(&tasks, corpus_path, tool_name)?;
 
     // Output JSON
     if let Some(path) = output_path {
@@ -233,29 +221,69 @@ fn ensure_task_repos_known(
     }
 }
 
-fn cmd_stability(tasks_dir: &Path, tolerance: f64) -> Result<()> {
+fn run_report(
+    tasks: &[types::BenchmarkTask],
+    corpus_path: &Path,
+    tool_name: &str,
+) -> Result<types::EvalReport> {
+    Ok(match tool_name {
+        "mock-perfect" => {
+            let mock = runner::MockAdapter::perfect();
+            runner::run_benchmark_with_mock(&mock, tasks)
+        }
+        "mock-partial" => {
+            let mock = runner::MockAdapter::partial(0.7);
+            runner::run_benchmark_with_mock(&mock, tasks)
+        }
+        "vera-bm25" => {
+            let (repo_paths, corpus_shas) = load_verified_corpus(corpus_path)?;
+            ensure_task_repos_known(tasks, &repo_paths)?;
+            let vera = vera_adapter::VeraBm25Adapter::new()?;
+            runner::run_benchmark(&vera, tasks, &repo_paths, &corpus_shas)
+        }
+        other => {
+            anyhow::bail!(
+                "Unknown tool '{}'. Available: vera-bm25, mock-perfect, mock-partial.",
+                other
+            );
+        }
+    })
+}
+
+fn print_retrieval_summary(label: &str, metrics: &types::RetrievalMetrics) {
+    println!(
+        "  {label}: R@1 {:.4}, R@5 {:.4}, R@10 {:.4}, MRR {:.4}, nDCG {:.4}",
+        metrics.recall_at_1, metrics.recall_at_5, metrics.recall_at_10, metrics.mrr, metrics.ndcg
+    );
+}
+
+fn cmd_stability(
+    tasks_dir: &Path,
+    corpus_path: &Path,
+    tool_name: &str,
+    tolerance: f64,
+) -> Result<()> {
     let tasks = loader::load_tasks(tasks_dir)?;
     if tasks.is_empty() {
         anyhow::bail!("No benchmark tasks found");
     }
 
     eprintln!(
-        "Running stability check with {} tasks, tolerance ±{:.1}%",
+        "Running stability check with {} tasks via {}, tolerance ±{:.1}%",
         tasks.len(),
+        tool_name,
         tolerance * 100.0
     );
 
-    let mock = runner::MockAdapter::perfect();
-
     // Run 1
-    let report1 = runner::run_benchmark_with_mock(&mock, &tasks);
+    let report1 = run_report(&tasks, corpus_path, tool_name)?;
     eprintln!(
         "  Run 1 complete: {} tasks evaluated",
         report1.per_task.len()
     );
 
     // Run 2
-    let report2 = runner::run_benchmark_with_mock(&mock, &tasks);
+    let report2 = run_report(&tasks, corpus_path, tool_name)?;
     eprintln!(
         "  Run 2 complete: {} tasks evaluated",
         report2.per_task.len()
@@ -326,14 +354,8 @@ fn cmd_stability(tasks_dir: &Path, tolerance: f64) -> Result<()> {
             report1.per_task.len(),
             tolerance * 100.0
         );
-
-        // Print both reports as JSON for evidence
-        let json1 = output::report_to_json(&report1)?;
-        let json2 = output::report_to_json(&report2)?;
-        println!("\n--- Run 1 ---");
-        println!("{json1}");
-        println!("\n--- Run 2 ---");
-        println!("{json2}");
+        print_retrieval_summary("Run 1 aggregate", &report1.aggregate.retrieval);
+        print_retrieval_summary("Run 2 aggregate", &report2.aggregate.retrieval);
 
         Ok(())
     } else {

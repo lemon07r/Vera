@@ -317,57 +317,22 @@ enum Commands {
         low_vram: bool,
     },
 
-    /// Search indexed files with a raw tree-sitter query.
-    #[command(long_about = "Search indexed files with a raw tree-sitter query.\n\n\
-                      This is an expert-oriented structural search mode. Provide a valid \n\
-                      tree-sitter query and a required language, and Vera will run the query \n\
-                      against indexed files in that language, returning matched source spans.\n\n\
-                      Examples:\n  \
-                      vera ast-query '(function_item name: (identifier) @fn)' --lang rust\n  \
-                      vera ast-query '(function_definition name: (identifier) @fn)' --lang python --path 'src/**'\n  \
-                      vera ast-query '(class_declaration name: (type_identifier) @name)' --lang typescript --compact")]
-    AstQuery {
-        /// Raw tree-sitter query string.
-        query: String,
-        /// Language to compile the query against.
-        #[arg(long)]
-        lang: String,
-        /// Filter by file path glob pattern (e.g., "src/**/*.rs").
-        #[arg(long)]
-        path: Option<String>,
-        /// Maximum number of results (default: 20).
-        #[arg(long, short = 'n')]
-        limit: Option<usize>,
-        /// Restrict results to a coarse corpus scope.
-        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
-        scope: Option<String>,
-        /// Include generated or minified files such as dist bundles.
-        #[arg(long)]
-        include_generated: bool,
-        /// Show only function/class signatures (omit bodies).
-        #[arg(long)]
-        compact: bool,
-    },
-
     /// Run agent-oriented structural search intents.
     ///
     /// Uses the existing index to answer common code-navigation questions
-    /// without requiring raw tree-sitter queries. Prefer this over
-    /// `vera ast-query` when you need definitions, call sites, env reads,
-    /// route handlers, SQL execution sites, or interface implementations.
+    /// without regex authoring or raw tree-sitter syntax. Use `vera references`
+    /// for exact caller/callee questions.
     #[command(long_about = "Run agent-oriented structural search intents.\n\n\
                       Uses the existing index to answer common code-navigation \n\
-                      questions without requiring raw tree-sitter queries.\n\n\
+                      questions without regex authoring or raw tree-sitter queries.\n\n\
                       Intents:\n  \
                       definitions   Find symbol definitions by name\n  \
-                      calls         Find call sites of a symbol\n  \
                       env           Find environment variable reads\n  \
                       routes        Find common HTTP route registrations\n  \
                       sql           Find common SQL execution sites\n  \
                       impls         Find trait or interface implementations\n\n\
                       Examples:\n  \
                       vera structural definitions parse_config\n  \
-                      vera structural calls parse_config --changed\n  \
                       vera structural env DATABASE_URL\n  \
                       vera structural routes --path \"src/**\"\n  \
                       vera structural sql --lang python\n  \
@@ -376,26 +341,13 @@ enum Commands {
         /// Structural intent to run.
         #[arg(value_enum)]
         intent: commands::structural::StructuralIntent,
-        /// Optional query term. Required for definitions, calls, and impls.
+        /// Optional query term. Required for definitions and impls.
         query: Option<String>,
-        /// Filter by programming language (case-insensitive).
-        #[arg(long)]
-        lang: Option<String>,
-        /// Filter by file path glob pattern (e.g., "src/**/*.rs").
-        #[arg(long)]
-        path: Option<String>,
-        /// Filter by symbol type.
-        #[arg(long, rename_all = "snake_case")]
-        r#type: Option<String>,
+        #[command(flatten)]
+        filters: helpers::SearchFilterArgs,
         /// Maximum number of results (default: 20).
         #[arg(long, short = 'n')]
         limit: Option<usize>,
-        /// Restrict results to a coarse corpus scope.
-        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
-        scope: Option<String>,
-        /// Include generated or minified files such as dist bundles.
-        #[arg(long)]
-        include_generated: bool,
         #[command(flatten)]
         git_scope: helpers::GitScopeFlags,
         /// Show only function/class signatures (omit bodies).
@@ -448,37 +400,11 @@ enum Commands {
         #[arg(long)]
         intent: Option<String>,
 
-        /// Filter by programming language (case-insensitive).
-        ///
-        /// Restricts results to the specified language.
-        /// Supported: rust, typescript, python, go, java, c, cpp, etc.
-        #[arg(long)]
-        lang: Option<String>,
-
-        /// Filter by file path glob pattern (e.g., "src/**/*.rs").
-        ///
-        /// Supports * (any within segment) and ** (any depth).
-        #[arg(long)]
-        path: Option<String>,
-
         /// Maximum number of results to return (default: 5).
         #[arg(long, short = 'n')]
         limit: Option<usize>,
-
-        /// Filter by symbol type.
-        ///
-        /// Options: function, method, class, struct, enum, trait,
-        /// interface, type_alias, constant, variable, module, block.
-        #[arg(long, rename_all = "snake_case")]
-        r#type: Option<String>,
-
-        /// Restrict results to a coarse corpus scope.
-        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
-        scope: Option<String>,
-
-        /// Include generated or minified files such as dist bundles.
-        #[arg(long)]
-        include_generated: bool,
+        #[command(flatten)]
+        filters: helpers::SearchFilterArgs,
 
         /// Deep search: RAG-fusion query expansion + merged ranking when a completion
         /// endpoint is configured, otherwise iterative symbol-following search.
@@ -582,11 +508,13 @@ enum Commands {
     /// Find callers or callees of a symbol.
     ///
     /// Queries the call graph built during indexing to find where a symbol
-    /// is called from (callers) or what it calls (callees).
+    /// is called from (callers) or what it calls (callees). Caller lookups
+    /// return code snippets by default and support git-scoped filtering.
     ///
     /// Examples:
     ///   vera references parse_and_chunk
     ///   vera references parse_and_chunk --callees
+    ///   vera references parse_and_chunk --changed
     ///   vera references parse_and_chunk --json
     References {
         /// Symbol name to look up.
@@ -594,6 +522,14 @@ enum Commands {
         /// Show what this symbol calls instead of what calls it.
         #[arg(long)]
         callees: bool,
+        /// Maximum number of results to return (default: 20).
+        #[arg(long, short = 'n')]
+        limit: Option<usize>,
+        #[command(flatten)]
+        git_scope: helpers::GitScopeFlags,
+        /// Show only caller signatures (omit bodies).
+        #[arg(long)]
+        compact: bool,
     },
 
     /// Regex pattern search over indexed files.
@@ -621,18 +557,8 @@ enum Commands {
     Grep {
         /// Regex pattern to search for.
         pattern: String,
-
-        /// Filter by programming language (case-insensitive).
-        #[arg(long)]
-        lang: Option<String>,
-
-        /// Filter by file path glob pattern (e.g., "src/**/*.rs").
-        #[arg(long)]
-        path: Option<String>,
-
-        /// Filter by symbol type.
-        #[arg(long, rename_all = "snake_case")]
-        r#type: Option<String>,
+        #[command(flatten)]
+        filters: helpers::SearchFilterArgs,
 
         /// Maximum number of results (default: 20).
         #[arg(long, short = 'n')]
@@ -645,14 +571,6 @@ enum Commands {
         /// Number of context lines before and after each match (default: 2).
         #[arg(long, default_value = "2")]
         context: usize,
-
-        /// Restrict results to a coarse corpus scope.
-        #[arg(long, value_parser = ["source", "docs", "runtime", "all"])]
-        scope: Option<String>,
-
-        /// Include generated or minified files such as dist bundles.
-        #[arg(long)]
-        include_generated: bool,
 
         #[command(flatten)]
         git_scope: helpers::GitScopeFlags,
@@ -871,31 +789,19 @@ fn main() {
         Commands::Search {
             queries,
             intent,
-            lang,
-            path,
+            filters,
             limit,
-            r#type,
-            scope,
-            include_generated,
             deep,
             git_scope,
             compact,
             backend,
         } => {
             tracing::info!(queries = ?queries, deep, "searching");
-            let filters = vera_core::types::SearchFilters {
-                language: lang,
-                path_glob: path,
-                exact_paths: None,
-                symbol_type: r#type,
-                scope: scope.and_then(|value| value.parse().ok()),
-                include_generated: Some(include_generated),
-            };
             commands::search::run(
                 &queries,
                 intent.as_deref(),
                 limit,
-                &filters,
+                &filters.to_filters(),
                 cli.json,
                 cli.raw,
                 cli.timing,
@@ -905,56 +811,20 @@ fn main() {
                 backend.resolve(),
             )
         }
-        Commands::AstQuery {
-            query,
-            lang,
-            path,
-            limit,
-            scope,
-            include_generated,
-            compact,
-        } => {
-            tracing::info!(language = %lang, "ast query");
-            commands::ast_query::run(
-                &query,
-                &lang,
-                path,
-                limit,
-                scope,
-                include_generated,
-                cli.json,
-                cli.raw,
-                cli.timing,
-                compact,
-            )
-        }
         Commands::Structural {
             intent,
             query,
-            lang,
-            path,
+            filters,
             limit,
-            scope,
-            include_generated,
             git_scope,
-            r#type,
             compact,
         } => {
-            let scope = scope.and_then(|s| s.parse().ok());
-            let filters = vera_core::types::SearchFilters {
-                language: lang,
-                path_glob: path,
-                exact_paths: None,
-                symbol_type: r#type,
-                scope,
-                include_generated: Some(include_generated),
-            };
             tracing::info!("structural query");
             commands::structural::run(
                 intent,
                 query.as_deref(),
                 limit,
-                &filters,
+                &filters.to_filters(),
                 cli.json,
                 cli.raw,
                 cli.timing,
@@ -992,38 +862,40 @@ fn main() {
             tracing::info!(path = %path, "explaining path");
             commands::explain_path::run(&path, cli.json, exclude, no_ignore, no_default_excludes)
         }
-        Commands::References { symbol, callees } => {
+        Commands::References {
+            symbol,
+            callees,
+            limit,
+            git_scope,
+            compact,
+        } => {
             tracing::info!(symbol = %symbol, callees, "references query");
-            commands::references::run(&symbol, callees, cli.json)
+            commands::references::run(
+                &symbol,
+                callees,
+                limit,
+                git_scope.resolve(),
+                cli.json,
+                cli.raw,
+                compact,
+            )
         }
         Commands::Grep {
             pattern,
-            lang,
-            path,
-            r#type,
+            filters,
             limit,
             ignore_case,
             context,
-            scope,
-            include_generated,
             git_scope,
             compact,
         } => {
             tracing::info!(pattern = %pattern, "grep");
-            let filters = vera_core::types::SearchFilters {
-                language: lang,
-                path_glob: path,
-                exact_paths: None,
-                symbol_type: r#type,
-                scope: scope.and_then(|value| value.parse().ok()),
-                include_generated: Some(include_generated),
-            };
             commands::grep::run(
                 &pattern,
                 limit,
                 ignore_case,
                 context,
-                &filters,
+                &filters.to_filters(),
                 cli.json,
                 cli.raw,
                 cli.timing,
@@ -1208,12 +1080,12 @@ mod tests {
         match cli.command {
             Commands::Search {
                 queries,
-                lang,
+                filters,
                 limit,
                 ..
             } => {
                 assert_eq!(queries, vec!["find auth".to_string()]);
-                assert_eq!(lang, Some("rust".to_string()));
+                assert_eq!(filters.lang, Some("rust".to_string()));
                 assert_eq!(limit, Some(5));
             }
             _ => panic!("expected Search command"),
@@ -1225,10 +1097,10 @@ mod tests {
         let cli = Cli::parse_from(["vera", "search", "find auth", "--type", "function"]);
         match cli.command {
             Commands::Search {
-                queries, r#type, ..
+                queries, filters, ..
             } => {
                 assert_eq!(queries, vec!["find auth".to_string()]);
-                assert_eq!(r#type, Some("function".to_string()));
+                assert_eq!(filters.r#type, Some("function".to_string()));
             }
             _ => panic!("expected Search command"),
         }
@@ -1238,9 +1110,11 @@ mod tests {
     fn cli_parses_search_with_path_filter() {
         let cli = Cli::parse_from(["vera", "search", "config", "--path", "src/**/*.rs"]);
         match cli.command {
-            Commands::Search { queries, path, .. } => {
+            Commands::Search {
+                queries, filters, ..
+            } => {
                 assert_eq!(queries, vec!["config".to_string()]);
-                assert_eq!(path, Some("src/**/*.rs".to_string()));
+                assert_eq!(filters.path, Some("src/**/*.rs".to_string()));
             }
             _ => panic!("expected Search command"),
         }
@@ -1264,16 +1138,14 @@ mod tests {
         match cli.command {
             Commands::Search {
                 queries,
-                lang,
-                path,
+                filters,
                 limit,
-                r#type,
                 ..
             } => {
                 assert_eq!(queries, vec!["handle request".to_string()]);
-                assert_eq!(lang, Some("typescript".to_string()));
-                assert_eq!(path, Some("src/**/*.ts".to_string()));
-                assert_eq!(r#type, Some("function".to_string()));
+                assert_eq!(filters.lang, Some("typescript".to_string()));
+                assert_eq!(filters.path, Some("src/**/*.ts".to_string()));
+                assert_eq!(filters.r#type, Some("function".to_string()));
                 assert_eq!(limit, Some(3));
             }
             _ => panic!("expected Search command"),
@@ -1351,13 +1223,9 @@ mod tests {
             "--include-generated",
         ]);
         match cli.command {
-            Commands::Search {
-                scope,
-                include_generated,
-                ..
-            } => {
-                assert_eq!(scope, Some("runtime".to_string()));
-                assert!(include_generated);
+            Commands::Search { filters, .. } => {
+                assert_eq!(filters.scope, Some("runtime".to_string()));
+                assert!(filters.include_generated);
             }
             _ => panic!("expected Search command"),
         }
@@ -1380,13 +1248,9 @@ mod tests {
             "--include-generated",
         ]);
         match cli.command {
-            Commands::Grep {
-                scope,
-                include_generated,
-                ..
-            } => {
-                assert_eq!(scope, Some("docs".to_string()));
-                assert!(include_generated);
+            Commands::Grep { filters, .. } => {
+                assert_eq!(filters.scope, Some("docs".to_string()));
+                assert!(filters.include_generated);
             }
             _ => panic!("expected Grep command"),
         }
@@ -1402,9 +1266,11 @@ mod tests {
             "frontend/src/**",
         ]);
         match cli.command {
-            Commands::Grep { pattern, path, .. } => {
+            Commands::Grep {
+                pattern, filters, ..
+            } => {
                 assert_eq!(pattern, "queryClient|invalidateQueries");
-                assert_eq!(path, Some("frontend/src/**".to_string()));
+                assert_eq!(filters.path, Some("frontend/src/**".to_string()));
             }
             _ => panic!("expected Grep command"),
         }
@@ -1427,18 +1293,13 @@ mod tests {
         ]);
         match cli.command {
             Commands::Grep {
-                pattern,
-                lang,
-                path,
-                r#type,
-                scope,
-                ..
+                pattern, filters, ..
             } => {
                 assert_eq!(pattern, "Authorization");
-                assert_eq!(lang, Some("rust".to_string()));
-                assert_eq!(path, Some("src/**/*.rs".to_string()));
-                assert_eq!(r#type, Some("function".to_string()));
-                assert_eq!(scope, Some("source".to_string()));
+                assert_eq!(filters.lang, Some("rust".to_string()));
+                assert_eq!(filters.path, Some("src/**/*.rs".to_string()));
+                assert_eq!(filters.r#type, Some("function".to_string()));
+                assert_eq!(filters.scope, Some("source".to_string()));
             }
             _ => panic!("expected Grep command"),
         }
@@ -1492,8 +1353,8 @@ mod tests {
         let cli = Cli::parse_from([
             "vera",
             "structural",
-            "calls",
-            "parse_config",
+            "env",
+            "DATABASE_URL",
             "--lang",
             "rust",
             "--path",
@@ -1507,25 +1368,51 @@ mod tests {
             Commands::Structural {
                 intent,
                 query,
-                lang,
-                path,
-                r#type,
+                filters,
                 git_scope,
                 compact,
                 ..
             } => {
                 assert!(matches!(
                     intent,
-                    commands::structural::StructuralIntent::Calls
+                    commands::structural::StructuralIntent::Env
                 ));
-                assert_eq!(query.as_deref(), Some("parse_config"));
-                assert_eq!(lang, Some("rust".to_string()));
-                assert_eq!(path, Some("src/**/*.rs".to_string()));
-                assert_eq!(r#type, Some("function".to_string()));
+                assert_eq!(query.as_deref(), Some("DATABASE_URL"));
+                assert_eq!(filters.lang, Some("rust".to_string()));
+                assert_eq!(filters.path, Some("src/**/*.rs".to_string()));
+                assert_eq!(filters.r#type, Some("function".to_string()));
                 assert!(git_scope.changed);
                 assert!(compact);
             }
             _ => panic!("expected structural command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_references_limit_git_scope_and_compact() {
+        let cli = Cli::parse_from([
+            "vera",
+            "references",
+            "parse_config",
+            "--limit",
+            "7",
+            "--changed",
+            "--compact",
+        ]);
+        match cli.command {
+            Commands::References {
+                symbol,
+                limit,
+                git_scope,
+                compact,
+                ..
+            } => {
+                assert_eq!(symbol, "parse_config");
+                assert_eq!(limit, Some(7));
+                assert!(git_scope.changed);
+                assert!(compact);
+            }
+            _ => panic!("expected references command"),
         }
     }
 

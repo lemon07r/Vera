@@ -1,19 +1,16 @@
 //! `vera structural` — agent-oriented structural search intents.
 
 use std::io::Write;
-use std::sync::Arc;
 use std::time::Instant;
 
-use anyhow::bail;
 use clap::ValueEnum;
 
-use crate::helpers::{load_runtime_config, output_results, warn_if_index_stale};
+use crate::helpers::{load_runtime_config, output_results, prepare_indexed_search};
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum StructuralIntent {
     #[value(alias = "defs")]
     Definitions,
-    Calls,
     Env,
     Routes,
     Sql,
@@ -34,28 +31,14 @@ pub fn run(
     compact: bool,
 ) -> anyhow::Result<()> {
     let config = load_runtime_config()?;
-    let cwd = std::env::current_dir()
-        .map_err(|e| anyhow::anyhow!("failed to get current directory: {e}"))?;
-    let mut filters = filters.clone();
-    if let Some(scope) = git_scope.as_ref() {
-        filters.exact_paths = Some(Arc::new(vera_core::git_scope::resolve_scope(&cwd, scope)?));
-    }
-    let index_dir = vera_core::indexing::index_dir(&cwd);
-
-    if !index_dir.exists() {
-        bail!(
-            "no index found in current directory.\n\
-             Hint: run `vera index <path>` first to create an index."
-        );
-    }
-    warn_if_index_stale(&cwd, &config.indexing);
+    let (index_dir, filters) =
+        prepare_indexed_search(&config.indexing, filters, git_scope.as_ref())?;
 
     let (kind, query) = match intent {
         StructuralIntent::Definitions => (
             vera_core::retrieval::StructuralSearchKind::Definitions,
             query,
         ),
-        StructuralIntent::Calls => (vera_core::retrieval::StructuralSearchKind::Calls, query),
         StructuralIntent::Env => (vera_core::retrieval::StructuralSearchKind::EnvReads, query),
         StructuralIntent::Routes => (
             vera_core::retrieval::StructuralSearchKind::RouteHandlers,

@@ -96,7 +96,7 @@ For step-by-step instructions, API provider options, Docker, building from sourc
 ```bash
 vera mcp   # or: bunx @vera-ai/cli mcp / uvx vera-ai mcp
 ```
-Exposes `search_code`, `get_stats`, `get_overview`, `regex_search`, `structural_search`, and `explain_path` tools. `search_code` and `structural_search` auto-index and start a file watcher on first use if no index exists.
+Exposes `search_code`, `get_stats`, `get_overview`, `regex_search`, `structural_search`, `find_references`, and `explain_path`. `search_code`, `structural_search`, and `find_references` auto-index and start a file watcher on first use if no index exists.
 The MCP surface stays intentionally small; use the CLI skill path when you need the full command set.
 
 </details>
@@ -126,7 +126,7 @@ vera search "config loading" --base origin/main
 vera structural definitions parse_config
 vera structural env DATABASE_URL
 vera structural routes --path "src/**/*.ts"
-vera ast-query '(function_item name: (identifier) @fn)' --lang rust
+vera references parse_config --changed
 ```
 
 ### Common Tasks
@@ -136,9 +136,8 @@ vera ast-query '(function_item name: (identifier) @fn)' --lang rust
 | Regex or exact text | `vera grep "fn\s+main"` |
 | Common structural tasks | `vera structural routes` / `vera structural env DATABASE_URL` |
 | Explain why a file is missing from the index | `vera explain-path path/to/file` |
-| Structural AST search | `vera ast-query '(function_item name: (identifier) @fn)' --lang rust` |
 | Inspect index health | `vera stats --json` |
-| Find callers | `vera references foo` or `vera structural calls foo` |
+| Find callers | `vera references foo` |
 | Find callees | `vera references foo --callees` |
 | Find dead code | `vera dead-code` |
 | Get a project overview | `vera overview` |
@@ -160,7 +159,7 @@ pub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }
 ```
 ````
 
-Use `--json` for compact JSON. `--raw` and `--timing` work with `vera search` and `vera grep`, and you can place them before or after the subcommand (for example, `vera --timing search "auth"` or `vera grep "TODO" --raw`).
+Use `--json` for compact JSON. `--raw` works with `vera search`, `vera grep`, and `vera references`; `--timing` works with `vera search` and `vera grep`. You can place them before or after the subcommand (for example, `vera --timing search "auth"` or `vera references parse_config --raw`).
 
 ### Excluding Files
 

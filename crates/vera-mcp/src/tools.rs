@@ -6,6 +6,7 @@
 //! - `get_overview` — architecture overview for agent onboarding
 //! - `regex_search` — regex search over indexed files
 //! - `structural_search` — agent-oriented structural search intents
+//! - `find_references` — exact callers or callees from the persisted call graph
 //! - `explain_path` — explain why a path is or is not indexed
 
 use std::sync::{Arc, Mutex};
@@ -295,23 +296,23 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             name: "structural_search".to_string(),
             description: "Run agent-oriented structural search intents over indexed code.\n\
                           \n\
-                          WHEN TO USE: symbol definitions, call sites, env var reads, \
+                          WHEN TO USE: symbol definitions, env var reads, \
                           HTTP route handlers, SQL execution sites, or trait/interface \
                           implementations.\n\
-                          WHEN NOT TO USE: conceptual behavior queries. Use search_code \
-                          for those."
+                          WHEN NOT TO USE: conceptual behavior queries or exact caller/callee \
+                          lookups. Use search_code or find_references for those."
                 .to_string(),
             input_schema: serde_json::json!({
                 "type": "object",
                 "properties": {
                     "kind": {
                         "type": "string",
-                        "enum": ["definitions", "calls", "env_reads", "route_handlers", "sql_queries", "implementations"],
+                        "enum": ["definitions", "env_reads", "route_handlers", "sql_queries", "implementations"],
                         "description": "Structural intent to run."
                     },
                     "query": {
                         "type": "string",
-                        "description": "Required for definitions, calls, and implementations. Optional for env_reads to narrow to one env var."
+                        "description": "Required for definitions and implementations. Optional for env_reads to narrow to one env var."
                     },
                     "lang": {
                         "type": "string",
@@ -359,6 +360,50 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             }),
         },
         ToolDefinition {
+            name: "find_references".to_string(),
+            description: "Find exact callers or callees of a symbol using Vera's persisted call graph.\n\
+                          \n\
+                          WHEN TO USE: who calls a symbol, what a symbol calls, or when \
+                          narrowing exact call relationships to a diff.\n\
+                          WHEN NOT TO USE: conceptual behavior queries or heuristic structural \
+                          scans. Use search_code or structural_search for those."
+                .to_string(),
+            input_schema: serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "symbol": {
+                        "type": "string",
+                        "description": "Symbol name to look up."
+                    },
+                    "callees": {
+                        "type": "boolean",
+                        "description": "Return what the symbol calls instead of who calls it."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of results (default: 20)"
+                    },
+                    "changed": {
+                        "type": "boolean",
+                        "description": "Restrict references to modified, staged, and untracked files."
+                    },
+                    "since": {
+                        "type": "string",
+                        "description": "Restrict references to files changed since the given revision."
+                    },
+                    "base": {
+                        "type": "string",
+                        "description": "Restrict references to files changed since merge-base(HEAD, revision)."
+                    },
+                    "compact": {
+                        "type": "boolean",
+                        "description": "For caller lookups, return only function/class signatures."
+                    }
+                },
+                "required": ["symbol"]
+            }),
+        },
+        ToolDefinition {
             name: "explain_path".to_string(),
             description: "Explain why a path is or is not indexed. Returns the decisive reason such as a default exclude, .veraignore, .gitignore, binary detection, size limit, or missing file."
                 .to_string(),
@@ -400,6 +445,7 @@ pub fn handle_tool_call(name: &str, arguments: &Value) -> ToolCallResult {
         "get_overview" => handle_get_overview(arguments),
         "regex_search" => handle_regex_search(arguments),
         "structural_search" => handle_structural_search(arguments),
+        "find_references" => handle_find_references(arguments),
         "explain_path" => handle_explain_path(arguments),
         _ => ToolCallResult::error(format!("Unknown tool: {name}")),
     }
@@ -431,6 +477,54 @@ fn git_scope_from_args(args: &Value) -> Result<Option<vera_core::git_scope::GitS
     } else {
         base.map(vera_core::git_scope::GitScope::Base)
     })
+}
+
+fn scope_from_args(args: &Value) -> Result<Option<vera_core::types::SearchScope>, ToolCallResult> {
+    match args.get("scope").and_then(|v| v.as_str()) {
+        Some(value) => value
+            .parse()
+            .map(Some)
+            .map_err(|()| ToolCallResult::error(format!("Invalid scope: {value}"))),
+        None => Ok(None),
+    }
+}
+
+fn current_working_dir() -> Result<std::path::PathBuf, ToolCallResult> {
+    std::env::current_dir()
+        .map_err(|e| ToolCallResult::error(format!("Failed to get working directory: {e}")))
+}
+
+fn exact_paths_from_args(
+    args: &Value,
+    cwd: &std::path::Path,
+) -> Result<Option<Arc<std::collections::HashSet<String>>>, ToolCallResult> {
+    match git_scope_from_args(args) {
+        Ok(Some(scope)) => vera_core::git_scope::resolve_scope(cwd, &scope)
+            .map(|paths| Some(Arc::new(paths)))
+            .map_err(|err| ToolCallResult::error(format!("Failed to resolve git scope: {err}"))),
+        Ok(None) => Ok(None),
+        Err(err) => Err(ToolCallResult::error(err)),
+    }
+}
+
+fn apply_git_scope_filters(
+    args: &Value,
+    cwd: &std::path::Path,
+    filters: &mut vera_core::types::SearchFilters,
+) -> Result<(), ToolCallResult> {
+    filters.exact_paths = exact_paths_from_args(args, cwd)?;
+    Ok(())
+}
+
+fn existing_index_dir(cwd: &std::path::Path) -> Result<std::path::PathBuf, ToolCallResult> {
+    let index_dir = vera_core::indexing::index_dir(cwd);
+    if !index_dir.exists() {
+        Err(ToolCallResult::error(
+            "No index found in current directory. Run search_code first to auto-index.",
+        ))
+    } else {
+        Ok(index_dir)
+    }
 }
 
 fn search_code_filters(
@@ -495,21 +589,12 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
 
     let intent = args.get("intent").and_then(|v| v.as_str());
 
-    let scope = match args.get("scope").and_then(|v| v.as_str()) {
-        Some(value) => match value.parse() {
-            Ok(scope) => Some(scope),
-            Err(()) => {
-                return ToolCallResult::error(format!("Invalid scope: {value}"));
-            }
-        },
-        None => None,
+    let scope = match scope_from_args(args) {
+        Ok(scope) => scope,
+        Err(err) => return err,
     };
 
     let mut filters = search_code_filters(args, scope);
-    let git_scope = match git_scope_from_args(args) {
-        Ok(scope) => scope,
-        Err(err) => return ToolCallResult::error(err),
-    };
 
     let limit = args
         .get("limit")
@@ -521,17 +606,12 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
     config.adjust_for_backend(backend);
     let result_limit = limit.unwrap_or(config.retrieval.default_limit);
 
-    let cwd = match std::env::current_dir() {
-        Ok(d) => d,
-        Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
+    let cwd = match current_working_dir() {
+        Ok(cwd) => cwd,
+        Err(err) => return err,
     };
-    if let Some(scope) = git_scope.as_ref() {
-        match vera_core::git_scope::resolve_scope(&cwd, scope) {
-            Ok(paths) => filters.exact_paths = Some(Arc::new(paths)),
-            Err(err) => {
-                return ToolCallResult::error(format!("Failed to resolve git scope: {err}"));
-            }
-        }
+    if let Err(err) = apply_git_scope_filters(args, &cwd, &mut filters) {
+        return err;
     }
     let index_dir = match ensure_index_and_watcher(&cwd) {
         Ok(index_dir) => index_dir,
@@ -635,8 +715,7 @@ fn create_runtime_and_provider() -> Result<
 fn resolve_repo_path(args: &Value) -> Result<std::path::PathBuf, ToolCallResult> {
     let repo_path = match args.get("path").and_then(|v| v.as_str()) {
         Some(p) => std::path::PathBuf::from(p),
-        None => std::env::current_dir()
-            .map_err(|e| ToolCallResult::error(format!("Failed to get working directory: {e}")))?,
+        None => current_working_dir()?,
     };
     if !repo_path.exists() {
         return Err(ToolCallResult::error(format!(
@@ -693,14 +772,9 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
         Some(p) => p,
         None => return ToolCallResult::error("Missing required parameter: pattern"),
     };
-    let scope = match args.get("scope").and_then(|v| v.as_str()) {
-        Some(value) => match value.parse() {
-            Ok(scope) => Some(scope),
-            Err(()) => {
-                return ToolCallResult::error(format!("Invalid scope: {value}"));
-            }
-        },
-        None => None,
+    let scope = match scope_from_args(args) {
+        Ok(scope) => scope,
+        Err(err) => return err,
     };
 
     let limit = args
@@ -718,30 +792,18 @@ fn handle_regex_search(args: &Value) -> ToolCallResult {
         .map(|v| v as usize)
         .unwrap_or(2);
 
-    let cwd = match std::env::current_dir() {
-        Ok(d) => d,
-        Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
+    let cwd = match current_working_dir() {
+        Ok(cwd) => cwd,
+        Err(err) => return err,
     };
-    let index_dir = vera_core::indexing::index_dir(&cwd);
-
-    if !index_dir.exists() {
-        return ToolCallResult::error(
-            "No index found in current directory. Run search_code first to auto-index.",
-        );
-    }
+    let index_dir = match existing_index_dir(&cwd) {
+        Ok(index_dir) => index_dir,
+        Err(err) => return err,
+    };
 
     let mut filters = regex_search_filters(args, scope);
-    let git_scope = match git_scope_from_args(args) {
-        Ok(scope) => scope,
-        Err(err) => return ToolCallResult::error(err),
-    };
-    if let Some(scope) = git_scope.as_ref() {
-        match vera_core::git_scope::resolve_scope(&cwd, scope) {
-            Ok(paths) => filters.exact_paths = Some(Arc::new(paths)),
-            Err(err) => {
-                return ToolCallResult::error(format!("Failed to resolve git scope: {err}"));
-            }
-        }
+    if let Err(err) = apply_git_scope_filters(args, &cwd, &mut filters) {
+        return err;
     }
 
     match vera_core::retrieval::search_regex(
@@ -777,14 +839,9 @@ fn handle_structural_search(args: &Value) -> ToolCallResult {
         None => return ToolCallResult::error("Missing required parameter: kind"),
     };
 
-    let scope = match args.get("scope").and_then(|v| v.as_str()) {
-        Some(value) => match value.parse() {
-            Ok(scope) => Some(scope),
-            Err(()) => {
-                return ToolCallResult::error(format!("Invalid scope: {value}"));
-            }
-        },
-        None => None,
+    let scope = match scope_from_args(args) {
+        Ok(scope) => scope,
+        Err(err) => return err,
     };
     let limit = args
         .get("limit")
@@ -793,23 +850,14 @@ fn handle_structural_search(args: &Value) -> ToolCallResult {
         .unwrap_or(20);
     let query = args.get("query").and_then(|v| v.as_str());
 
-    let cwd = match std::env::current_dir() {
-        Ok(d) => d,
-        Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
+    let cwd = match current_working_dir() {
+        Ok(cwd) => cwd,
+        Err(err) => return err,
     };
 
     let mut filters = search_code_filters(args, scope);
-    let git_scope = match git_scope_from_args(args) {
-        Ok(scope) => scope,
-        Err(err) => return ToolCallResult::error(err),
-    };
-    if let Some(scope) = git_scope.as_ref() {
-        match vera_core::git_scope::resolve_scope(&cwd, scope) {
-            Ok(paths) => filters.exact_paths = Some(Arc::new(paths)),
-            Err(err) => {
-                return ToolCallResult::error(format!("Failed to resolve git scope: {err}"));
-            }
-        }
+    if let Err(err) = apply_git_scope_filters(args, &cwd, &mut filters) {
+        return err;
     }
 
     let index_dir = match ensure_index_and_watcher(&cwd) {
@@ -832,15 +880,86 @@ fn handle_structural_search(args: &Value) -> ToolCallResult {
     }
 }
 
+fn handle_find_references(args: &Value) -> ToolCallResult {
+    let symbol = match args.get("symbol").and_then(|v| v.as_str()) {
+        Some(symbol) if !symbol.trim().is_empty() => symbol.trim(),
+        Some(_) => return ToolCallResult::error("Parameter 'symbol' must not be empty"),
+        None => return ToolCallResult::error("Missing required parameter: symbol"),
+    };
+    let callees = args
+        .get("callees")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let limit = args
+        .get("limit")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize)
+        .unwrap_or(20);
+
+    let cwd = match current_working_dir() {
+        Ok(cwd) => cwd,
+        Err(err) => return err,
+    };
+
+    let exact_paths = match exact_paths_from_args(args, &cwd) {
+        Ok(paths) => paths,
+        Err(err) => return err,
+    };
+    let index_dir = match ensure_index_and_watcher(&cwd) {
+        Ok(index_dir) => index_dir,
+        Err(err) => return err,
+    };
+
+    if callees {
+        match vera_core::stats::find_callees(&cwd, symbol) {
+            Ok(mut results) => {
+                if let Some(paths) = exact_paths.as_ref() {
+                    results.retain(|result| paths.contains(&result.file_path));
+                }
+                results.truncate(limit);
+                match serde_json::to_string(&results) {
+                    Ok(json) => ToolCallResult::success(json),
+                    Err(err) => {
+                        ToolCallResult::error(format!("Failed to serialize references: {err}"))
+                    }
+                }
+            }
+            Err(err) => ToolCallResult::error(format!("Reference lookup failed: {err}")),
+        }
+    } else {
+        let filters = vera_core::types::SearchFilters {
+            scope: Some(vera_core::types::SearchScope::Source),
+            exact_paths,
+            include_generated: Some(false),
+            ..Default::default()
+        };
+        match vera_core::retrieval::search_callers(&index_dir, symbol, limit, &filters) {
+            Ok(results) => {
+                let signatures_only = args
+                    .get("compact")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false);
+                match compact_results_json(&results, MCP_OUTPUT_BUDGET, signatures_only) {
+                    Ok(json) => ToolCallResult::success(json),
+                    Err(err) => {
+                        ToolCallResult::error(format!("Failed to serialize references: {err}"))
+                    }
+                }
+            }
+            Err(err) => ToolCallResult::error(format!("Reference lookup failed: {err}")),
+        }
+    }
+}
+
 fn handle_explain_path(args: &Value) -> ToolCallResult {
     let path = match args.get("path").and_then(|v| v.as_str()) {
         Some(path) => path,
         None => return ToolCallResult::error("Missing required parameter: path"),
     };
 
-    let cwd = match std::env::current_dir() {
-        Ok(d) => d,
-        Err(e) => return ToolCallResult::error(format!("Failed to get working directory: {e}")),
+    let cwd = match current_working_dir() {
+        Ok(cwd) => cwd,
+        Err(err) => return err,
     };
 
     let mut config = crate::saved_config::load_saved_runtime_config();
@@ -877,9 +996,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn tool_definitions_has_six_tools() {
+    fn tool_definitions_has_seven_tools() {
         let tools = tool_definitions();
-        assert_eq!(tools.len(), 6);
+        assert_eq!(tools.len(), 7);
 
         let names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
         assert!(names.contains(&"search_code"));
@@ -887,6 +1006,7 @@ mod tests {
         assert!(names.contains(&"get_overview"));
         assert!(names.contains(&"regex_search"));
         assert!(names.contains(&"structural_search"));
+        assert!(names.contains(&"find_references"));
         assert!(names.contains(&"explain_path"));
     }
 
@@ -998,6 +1118,31 @@ mod tests {
         assert!(properties.contains_key("changed"));
         assert!(properties.contains_key("since"));
         assert!(properties.contains_key("base"));
+        assert!(
+            !properties
+                .get("kind")
+                .and_then(|kind| kind.get("enum"))
+                .and_then(|value| value.as_array())
+                .unwrap()
+                .iter()
+                .any(|value| value == "calls")
+        );
+    }
+
+    #[test]
+    fn references_schema_exposes_symbol_and_git_scope() {
+        let tools = tool_definitions();
+        let refs = tools
+            .iter()
+            .find(|tool| tool.name == "find_references")
+            .unwrap();
+        let properties = refs.input_schema["properties"].as_object().unwrap();
+
+        assert!(properties.contains_key("symbol"));
+        assert!(properties.contains_key("callees"));
+        assert!(properties.contains_key("changed"));
+        assert!(properties.contains_key("since"));
+        assert!(properties.contains_key("base"));
     }
 
     #[test]
@@ -1021,7 +1166,6 @@ mod tests {
             "index_project",
             "update_project",
             "watch_project",
-            "find_references",
             "find_dead_code",
         ] {
             let result = handle_tool_call(tool, &serde_json::json!({}));

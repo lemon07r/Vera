@@ -733,7 +733,7 @@ async fn embed_batch_resilient<P: EmbeddingProvider>(
                 completed.extend(
                     batch
                         .into_iter()
-                        .zip(vectors.into_iter())
+                        .zip(vectors)
                         .map(|(item, vector)| (item.original_index, item.chunk_id, vector)),
                 );
             }
