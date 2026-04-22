@@ -151,6 +151,7 @@ fn search_env_reads(
         store,
         limit,
         filters,
+        true,
         |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
@@ -192,6 +193,7 @@ fn search_route_handlers(
         store,
         limit,
         filters,
+        true,
         |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
@@ -220,6 +222,7 @@ fn search_sql_queries(
         store,
         limit,
         filters,
+        true,
         |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
@@ -245,11 +248,12 @@ fn search_implementations(
 ) -> Result<Vec<SearchResult>> {
     let target = target.trim();
     let patterns = implementation_patterns();
-    search_regex_intent(
+    let mut results = search_regex_intent(
         repo_root,
         store,
         limit,
         filters,
+        false,
         |_, language, content, _| {
             let Some(patterns) = patterns_for_language(&patterns, language) else {
                 return Ok(Vec::new());
@@ -274,7 +278,12 @@ fn search_implementations(
             }
             Ok(results)
         },
-    )
+    )?;
+    for result in &mut results {
+        result.symbol_name = None;
+        result.symbol_type = None;
+    }
+    Ok(results)
 }
 
 fn search_regex_intent<F>(
@@ -282,6 +291,7 @@ fn search_regex_intent<F>(
     store: &MetadataStore,
     limit: usize,
     filters: &SearchFilters,
+    prefer_chunk: bool,
     mut collect: F,
 ) -> Result<Vec<SearchResult>>
 where
@@ -346,7 +356,7 @@ where
                 candidate.start_byte,
                 candidate.end_byte,
                 &chunks,
-                true,
+                prefer_chunk,
             );
             if !filters.matches_symbol_type(result.symbol_type) {
                 continue;
@@ -606,24 +616,12 @@ fn sql_patterns() -> PatternSets {
 }
 
 fn implementation_patterns() -> PatternSets {
-    vec![
-        (
-            vec![Language::Rust],
-            compile_patterns(&[
-                r#"impl(?:<[^>]+>)?\s+([A-Za-z_][A-Za-z0-9_:<>]*)\s+for\s+[A-Za-z_][A-Za-z0-9_:<>]*"#,
-            ]),
-        ),
-        (
-            vec![Language::TypeScript, Language::JavaScript, Language::Java],
-            compile_patterns(&[
-                r#"(?s)class\s+[A-Za-z_][A-Za-z0-9_<>]*.*?\bimplements\s+([^{]+)\{"#,
-            ]),
-        ),
-        (
-            vec![Language::CSharp],
-            compile_patterns(&[r#"(?s)class\s+[A-Za-z_][A-Za-z0-9_<>]*\s*:\s*([^{]+)\{"#]),
-        ),
-    ]
+    vec![(
+        vec![Language::Rust],
+        compile_patterns(&[
+            r#"impl(?:<[^>]+>)?\s+([A-Za-z_][A-Za-z0-9_:<>]*)\s+for\s+[A-Za-z_][A-Za-z0-9_:<>]*"#,
+        ]),
+    )]
 }
 
 fn compile_patterns(patterns: &[&str]) -> Vec<Regex> {
@@ -766,20 +764,16 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn implementations_find_trait_and_interface_impls() {
+    async fn implementations_find_rust_trait_impls() {
         let dir = index_repo(&[
             (
                 "src/main.rs",
                 "impl std::fmt::Display for User {\n    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { todo!() }\n}\n",
             ),
-            (
-                "src/types.ts",
-                "interface Loader {}\nclass Repo implements Loader {\n    run() {}\n}\n",
-            ),
         ])
         .await;
 
-        let rust_results = search_structural(
+        let results = search_structural(
             &crate::indexing::index_dir(dir.path()),
             StructuralSearchKind::Implementations,
             Some("Display"),
@@ -787,9 +781,25 @@ mod tests {
             &SearchFilters::default(),
         )
         .unwrap();
-        assert_eq!(rust_results.len(), 1);
+        assert_eq!(results.len(), 1);
+        assert!(
+            results[0]
+                .content
+                .contains("impl std::fmt::Display for User")
+        );
+        assert!(results[0].symbol_name.is_none());
+        assert!(results[0].symbol_type.is_none());
+    }
 
-        let ts_results = search_structural(
+    #[tokio::test]
+    async fn implementations_ignore_typescript_classes() {
+        let dir = index_repo(&[(
+            "src/types.ts",
+            "interface Loader {}\nclass Repo implements Loader {\n    run() {}\n}\n",
+        )])
+        .await;
+
+        let results = search_structural(
             &crate::indexing::index_dir(dir.path()),
             StructuralSearchKind::Implementations,
             Some("Loader"),
@@ -797,7 +807,10 @@ mod tests {
             &SearchFilters::default(),
         )
         .unwrap();
-        assert_eq!(ts_results.len(), 1);
+        assert!(
+            results.is_empty(),
+            "unexpected TypeScript impl matches: {results:?}"
+        );
     }
 
     #[tokio::test]

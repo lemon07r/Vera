@@ -330,7 +330,7 @@ enum Commands {
                       env           Find environment variable reads\n  \
                       routes        Find common HTTP route registrations\n  \
                       sql           Find common SQL execution sites\n  \
-                      impls         Find trait or interface implementations\n\n\
+                      impls         Find Rust trait implementations\n\n\
                       Examples:\n  \
                       vera structural definitions parse_config\n  \
                       vera structural env DATABASE_URL\n  \

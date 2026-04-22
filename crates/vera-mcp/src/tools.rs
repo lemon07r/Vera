@@ -297,7 +297,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             description: "Run agent-oriented structural search intents over indexed code.\n\
                           \n\
                           WHEN TO USE: symbol definitions, env var reads, \
-                          HTTP route handlers, SQL execution sites, or trait/interface \
+                          HTTP route handlers, SQL execution sites, or Rust trait \
                           implementations.\n\
                           WHEN NOT TO USE: conceptual behavior queries or exact caller/callee \
                           lookups. Use search_code or find_references for those."
@@ -312,7 +312,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     },
                     "query": {
                         "type": "string",
-                        "description": "Required for definitions and implementations. Optional for env_reads to narrow to one env var."
+                        "description": "Required for definitions and Rust trait implementations. Optional for env_reads to narrow to one env var."
                     },
                     "lang": {
                         "type": "string",
