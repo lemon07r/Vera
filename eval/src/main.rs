@@ -128,11 +128,6 @@ fn cmd_run(
 
     // Print human-readable summary
     if !json_only {
-        if output_path.is_some() {
-            // Also print JSON to stdout when writing file
-            let json = output::report_to_json(&report)?;
-            println!("{json}");
-        }
         output::print_summary(&report, &mut std::io::stderr())?;
     }
 
