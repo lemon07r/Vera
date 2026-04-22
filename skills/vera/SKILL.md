@@ -49,6 +49,7 @@ Semantic code search CLI. Combines BM25 keyword matching with vector similarity 
     vera structural impls Loader
     vera references parse_config --changed
    ```
+   Use `vera structural impls <symbol>` for explicit inheritance or conformance declarations only. It does not infer implicit interface satisfaction.
 10. Use the first results (they are ranked by relevance). Output is markdown codeblocks by default.
 
 ## Example Output

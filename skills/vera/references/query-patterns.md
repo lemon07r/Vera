@@ -113,3 +113,5 @@ vera structural routes --path "src/**"
 vera structural sql
 vera structural impls Loader
 ```
+
+Use `vera structural impls <symbol>` for explicit inheritance or conformance declarations only. It does not infer implicit interface satisfaction.

@@ -126,6 +126,7 @@ vera search "config loading" --base origin/main
 vera structural definitions parse_config
 vera structural env DATABASE_URL
 vera structural routes --path "src/**/*.ts"
+vera structural impls Loader
 vera references parse_config --changed
 ```
 
@@ -134,7 +135,7 @@ vera references parse_config --changed
 | Task | Command |
 |------|---------|
 | Regex or exact text | `vera grep "fn\s+main"` |
-| Common structural tasks | `vera structural routes` / `vera structural env DATABASE_URL` |
+| Common structural tasks | `vera structural routes` / `vera structural env DATABASE_URL` / `vera structural impls Loader` |
 | Explain why a file is missing from the index | `vera explain-path path/to/file` |
 | Inspect index health | `vera stats --json` |
 | Find callers | `vera references foo` |

@@ -31,7 +31,7 @@ vera search "authentication logic"
 | Use a local NVIDIA backend | `vera setup --onnx-jina-cuda` |
 | Search semantically | `vera search "authentication middleware"` |
 | Search only changed files | `vera search "authentication middleware" --changed` |
-| Common structural tasks | `vera structural routes` / `vera structural env DATABASE_URL` |
+| Common structural tasks | `vera structural routes` / `vera structural env DATABASE_URL` / `vera structural impls Loader` |
 | Find callers or callees | `vera references foo` / `vera references foo --callees` |
 | Explain why a file is missing | `vera explain-path path/to/file` |
 | Inspect index health | `vera stats --json` |
