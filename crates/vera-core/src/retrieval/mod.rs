@@ -15,6 +15,7 @@ pub mod ranking;
 pub mod references;
 pub mod reranker;
 pub mod search_service;
+pub mod type_relations;
 pub mod vector;
 
 pub use bm25::{search_bm25, search_bm25_with_stores};

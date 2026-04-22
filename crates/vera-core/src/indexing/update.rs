@@ -409,7 +409,20 @@ pub async fn update_repository<P: EmbeddingProvider>(
                     .context("failed to store references")?;
             }
 
-            debug!(file = %rel_path, chunks = chunks.len(), refs = refs.len(), "parsed file");
+            let type_relations = parsing::type_relations::extract_type_relations(&chunks);
+            if !type_relations.is_empty() {
+                metadata_store
+                    .insert_type_relations(rel_path, &type_relations)
+                    .context("failed to store type relations")?;
+            }
+
+            debug!(
+                file = %rel_path,
+                chunks = chunks.len(),
+                refs = refs.len(),
+                type_relations = type_relations.len(),
+                "parsed file"
+            );
             all_chunks.extend(chunks);
         }
 
@@ -559,6 +572,9 @@ fn remove_file_from_index(
     metadata_store
         .delete_references_by_file(file_path)
         .context("failed to delete references for file")?;
+    metadata_store
+        .delete_type_relations_by_file(file_path)
+        .context("failed to delete type relations for file")?;
     // Get chunk IDs for this file (needed for vector/BM25 deletion).
     let chunks = metadata_store
         .get_chunks_by_file(file_path)

@@ -75,7 +75,7 @@ pub fn search_structural(
         StructuralSearchKind::SqlQueries => search_sql_queries(repo_root, &store, limit, &filters),
         StructuralSearchKind::Implementations => {
             let target = required_query(kind, query)?;
-            search_implementations(repo_root, &store, target, limit, &filters)
+            search_implementations(index_dir, target, limit, &filters)
         }
     }
 }
@@ -240,50 +240,12 @@ fn search_sql_queries(
 }
 
 fn search_implementations(
-    repo_root: &Path,
-    store: &MetadataStore,
+    index_dir: &Path,
     target: &str,
     limit: usize,
     filters: &SearchFilters,
 ) -> Result<Vec<SearchResult>> {
-    let target = target.trim();
-    let patterns = implementation_patterns();
-    let mut results = search_regex_intent(
-        repo_root,
-        store,
-        limit,
-        filters,
-        false,
-        |_, language, content, _| {
-            let Some(patterns) = patterns_for_language(&patterns, language) else {
-                return Ok(Vec::new());
-            };
-            let mut results = Vec::new();
-            for pattern in patterns {
-                for captures in pattern.captures_iter(content) {
-                    let Some(full) = captures.get(0) else {
-                        continue;
-                    };
-                    let Some(captured) = first_capture(&captures) else {
-                        continue;
-                    };
-                    if !matches_implementation_target(captured, target) {
-                        continue;
-                    }
-                    results.push(StructuralMatch {
-                        start_byte: full.start(),
-                        end_byte: full.end(),
-                    });
-                }
-            }
-            Ok(results)
-        },
-    )?;
-    for result in &mut results {
-        result.symbol_name = None;
-        result.symbol_type = None;
-    }
-    Ok(results)
+    super::type_relations::search_explicit_implementations(index_dir, target, limit, filters)
 }
 
 fn search_regex_intent<F>(
@@ -615,15 +577,6 @@ fn sql_patterns() -> PatternSets {
     ]
 }
 
-fn implementation_patterns() -> PatternSets {
-    vec![(
-        vec![Language::Rust],
-        compile_patterns(&[
-            r#"impl(?:<[^>]+>)?\s+([A-Za-z_][A-Za-z0-9_:<>]*)\s+for\s+[A-Za-z_][A-Za-z0-9_:<>]*"#,
-        ]),
-    )]
-}
-
 fn compile_patterns(patterns: &[&str]) -> Vec<Regex> {
     patterns
         .iter()
@@ -631,14 +584,7 @@ fn compile_patterns(patterns: &[&str]) -> Vec<Regex> {
         .collect()
 }
 
-fn matches_implementation_target(captured: &str, target: &str) -> bool {
-    captured
-        .split(',')
-        .map(normalize_impl_target)
-        .any(|candidate| candidate == normalize_impl_target(target))
-}
-
-fn normalize_impl_target(value: &str) -> String {
+pub(crate) fn normalize_impl_target(value: &str) -> String {
     value
         .trim()
         .trim_start_matches('&')
@@ -787,15 +733,67 @@ mod tests {
                 .content
                 .contains("impl std::fmt::Display for User")
         );
-        assert!(results[0].symbol_name.is_none());
+        assert_eq!(results[0].symbol_name.as_deref(), Some("User"));
         assert!(results[0].symbol_type.is_none());
     }
 
     #[tokio::test]
-    async fn implementations_ignore_typescript_classes() {
+    async fn implementations_find_explicit_relations_across_languages() {
+        let dir = index_repo(&[
+            (
+                "src/types.ts",
+                "interface Loader {}\nclass Repo extends BaseRepo implements Loader {\n    run() {}\n}\n",
+            ),
+            (
+                "src/Worker.java",
+                "interface Loader {}\nfinal class Worker implements Loader {\n}\n",
+            ),
+            (
+                "src/runner.cs",
+                "public interface ILoader {}\npublic class Runner : BackgroundService, ILoader {\n}\n",
+            ),
+        ])
+        .await;
+
+        let results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::Implementations,
+            Some("Loader"),
+            20,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+        assert_eq!(results.len(), 2, "unexpected Loader matches: {results:?}");
+        assert!(
+            results
+                .iter()
+                .any(|result| result.file_path == "src/types.ts")
+        );
+        assert!(
+            results
+                .iter()
+                .any(|result| result.file_path == "src/Worker.java")
+        );
+        assert!(results.iter().all(|result| result.symbol_name.is_some()));
+
+        let runner_results = search_structural(
+            &crate::indexing::index_dir(dir.path()),
+            StructuralSearchKind::Implementations,
+            Some("ILoader"),
+            10,
+            &SearchFilters::default(),
+        )
+        .unwrap();
+        assert_eq!(runner_results.len(), 1);
+        assert_eq!(runner_results[0].symbol_name.as_deref(), Some("Runner"));
+        assert!(runner_results[0].content.contains("class Runner"));
+    }
+
+    #[tokio::test]
+    async fn implementations_ignore_implicit_languages() {
         let dir = index_repo(&[(
-            "src/types.ts",
-            "interface Loader {}\nclass Repo implements Loader {\n    run() {}\n}\n",
+            "src/repo.go",
+            "type Loader interface {\n    Load() error\n}\n\ntype Repo struct {}\n\nfunc (Repo) Load() error { return nil }\n",
         )])
         .await;
 
@@ -809,7 +807,7 @@ mod tests {
         .unwrap();
         assert!(
             results.is_empty(),
-            "unexpected TypeScript impl matches: {results:?}"
+            "unexpected implicit impl matches: {results:?}"
         );
     }
 

@@ -330,13 +330,13 @@ enum Commands {
                       env           Find environment variable reads\n  \
                       routes        Find common HTTP route registrations\n  \
                       sql           Find common SQL execution sites\n  \
-                      impls         Find Rust trait implementations\n\n\
+                      impls         Find explicit implementations, conformances, and inheritance\n\n\
                       Examples:\n  \
                       vera structural definitions parse_config\n  \
                       vera structural env DATABASE_URL\n  \
                       vera structural routes --path \"src/**\"\n  \
                       vera structural sql --lang python\n  \
-                      vera structural impls Display")]
+                      vera structural impls Loader")]
     Structural {
         /// Structural intent to run.
         #[arg(value_enum)]

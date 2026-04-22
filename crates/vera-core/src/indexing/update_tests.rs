@@ -238,6 +238,40 @@ async fn update_added_file() {
     assert!(files.contains(&"utils.py".to_string()));
 }
 
+#[tokio::test]
+async fn update_replaces_type_relations_for_modified_file() {
+    let dir = TempDir::new().unwrap();
+    fs::write(
+        dir.path().join("types.ts"),
+        "interface Loader {}\nclass Repo implements Loader {\n}\n",
+    )
+    .unwrap();
+
+    let provider = MockProvider::new(8);
+    let config = default_config();
+
+    index_repository(dir.path(), &provider, &config, "mock-model")
+        .await
+        .unwrap();
+
+    fs::write(
+        dir.path().join("types.ts"),
+        "interface Saver {}\nclass Repo implements Saver {\n}\n",
+    )
+    .unwrap();
+
+    update_repository(dir.path(), &provider, &config, "mock-model")
+        .await
+        .unwrap();
+
+    let idx = index_dir(&dir.path().canonicalize().unwrap());
+    let store = MetadataStore::open(&idx.join("metadata.db")).unwrap();
+    assert!(store.find_type_relations("Loader").unwrap().is_empty());
+    let saver = store.find_type_relations("Saver").unwrap();
+    assert_eq!(saver.len(), 1);
+    assert_eq!(saver[0].owner, "Repo");
+}
+
 // ── Update: file deleted ────────────────────────────────────────────
 
 #[tokio::test]

@@ -18,6 +18,7 @@ pub mod languages;
 pub mod references;
 pub mod signatures;
 pub mod sphinx;
+pub mod type_relations;
 
 use anyhow::{Context, Result};
 use tree_sitter::Parser;

@@ -145,6 +145,29 @@ async fn index_stores_correct_metadata() {
 }
 
 #[tokio::test]
+async fn index_stores_type_relations() {
+    let dir = TempDir::new().unwrap();
+    fs::write(
+        dir.path().join("types.ts"),
+        "interface Loader {}\nclass Repo implements Loader {\n  run() {}\n}\n",
+    )
+    .unwrap();
+
+    let provider = MockProvider::new(8);
+    let config = default_config();
+    index_repository(dir.path(), &provider, &config, "mock-model")
+        .await
+        .unwrap();
+
+    let idx = index_dir(&dir.path().canonicalize().unwrap());
+    let store = MetadataStore::open(&idx.join("metadata.db")).unwrap();
+    let relations = store.find_type_relations("Loader").unwrap();
+    assert_eq!(relations.len(), 1);
+    assert_eq!(relations[0].owner, "Repo");
+    assert_eq!(relations[0].file_path, "types.ts");
+}
+
+#[tokio::test]
 async fn reindex_with_different_embedding_dim_recreates_vector_store() {
     let dir = TempDir::new().unwrap();
     fs::write(dir.path().join("main.rs"), "fn main() {}").unwrap();

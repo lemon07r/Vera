@@ -18,6 +18,7 @@ use crate::embedding::{EmbeddingProvider, embed_chunks_concurrent_with_progress}
 use crate::indexing::update::content_hash;
 use crate::parsing;
 use crate::parsing::references::RawReference;
+use crate::parsing::type_relations::RawTypeRelation;
 use crate::storage::bm25::{Bm25Document, Bm25Index};
 use crate::storage::metadata::{FileIndexState, FileIndexStatus, MetadataStore};
 use crate::storage::vector::VectorStore;
@@ -183,7 +184,7 @@ where
     });
 
     // ── 3. Parse and chunk each file (parallelized with rayon) ──
-    let (all_chunks, parse_errors, file_hashes, all_refs, file_states) =
+    let (all_chunks, parse_errors, file_hashes, all_refs, all_type_relations, file_states) =
         parse_discovered_files_parallel(&discovery, &repo_root, config);
 
     info!(
@@ -248,6 +249,7 @@ where
         &embeddings,
         &file_hashes,
         &all_refs,
+        &all_type_relations,
         IndexBuildMetadata {
             file_states: &file_states,
             indexing_config: &config.indexing,
@@ -294,6 +296,7 @@ fn parse_discovered_files_parallel(
     Vec<FileError>,
     Vec<(String, String)>,
     Vec<(String, Vec<RawReference>)>,
+    Vec<(String, Vec<RawTypeRelation>)>,
     Vec<FileIndexState>,
 ) {
     let config = Arc::new(config.clone());
@@ -304,6 +307,7 @@ fn parse_discovered_files_parallel(
         parse_error: Option<FileError>,
         file_hash: Option<(String, String)>,
         refs: Option<(String, Vec<RawReference>)>,
+        type_relations: Option<(String, Vec<RawTypeRelation>)>,
         file_state: Option<FileIndexState>,
     }
 
@@ -327,6 +331,7 @@ fn parse_discovered_files_parallel(
                         }),
                         file_hash: None,
                         refs: None,
+                        type_relations: None,
                         file_state: None,
                     };
                 }
@@ -388,10 +393,12 @@ fn parse_discovered_files_parallel(
             match parsed {
                 Ok((chunks, refs, hash, diagnostics)) => {
                     let chunk_count = chunks.len() as u64;
+                    let type_relations = parsing::type_relations::extract_type_relations(&chunks);
                     debug!(
                         file = %file.relative_path,
                         chunks = chunk_count,
                         refs = refs.len(),
+                        type_relations = type_relations.len(),
                         "parsed file"
                     );
                     ParsedFileResult {
@@ -399,6 +406,8 @@ fn parse_discovered_files_parallel(
                         parse_error: None,
                         file_hash: Some((file.relative_path.clone(), hash)),
                         refs: (!refs.is_empty()).then_some((file.relative_path.clone(), refs)),
+                        type_relations: (!type_relations.is_empty())
+                            .then_some((file.relative_path.clone(), type_relations)),
                         file_state: Some(FileIndexState {
                             file_path: file.relative_path.clone(),
                             language: language.to_string(),
@@ -423,6 +432,7 @@ fn parse_discovered_files_parallel(
                         }),
                         file_hash: Some((file.relative_path.clone(), content_hash(&source))),
                         refs: None,
+                        type_relations: None,
                         file_state: Some(FileIndexState {
                             file_path: file.relative_path.clone(),
                             language: language.to_string(),
@@ -442,6 +452,7 @@ fn parse_discovered_files_parallel(
     let mut parse_errors = Vec::new();
     let mut file_hashes = Vec::new();
     let mut all_refs = Vec::new();
+    let mut all_type_relations = Vec::new();
     let mut file_states = Vec::new();
     for result in results {
         all_chunks.extend(result.chunks);
@@ -454,12 +465,22 @@ fn parse_discovered_files_parallel(
         if let Some(file_refs) = result.refs {
             all_refs.push(file_refs);
         }
+        if let Some(type_relations) = result.type_relations {
+            all_type_relations.push(type_relations);
+        }
         if let Some(file_state) = result.file_state {
             file_states.push(file_state);
         }
     }
 
-    (all_chunks, parse_errors, file_hashes, all_refs, file_states)
+    (
+        all_chunks,
+        parse_errors,
+        file_hashes,
+        all_refs,
+        all_type_relations,
+        file_states,
+    )
 }
 
 /// Write chunks, embeddings, BM25 index, file hashes, and references to disk.
@@ -475,6 +496,7 @@ fn store_index(
     embeddings: &[(String, Vec<f32>)],
     file_hashes: &[(String, String)],
     file_refs: &[(String, Vec<RawReference>)],
+    file_type_relations: &[(String, Vec<RawTypeRelation>)],
     metadata: IndexBuildMetadata<'_>,
 ) -> Result<()> {
     // Ensure index directory exists.
@@ -512,6 +534,12 @@ fn store_index(
         metadata_store
             .insert_references(file_path, refs)
             .context("failed to store references")?;
+    }
+
+    for (file_path, relations) in file_type_relations {
+        metadata_store
+            .insert_type_relations(file_path, relations)
+            .context("failed to store type relations")?;
     }
 
     metadata_store
