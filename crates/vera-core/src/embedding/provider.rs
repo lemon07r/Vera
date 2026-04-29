@@ -545,10 +545,17 @@ fn provider_batch_limit(config: &EmbeddingProviderConfig) -> Option<usize> {
         || (base_url.contains("googleapis.com") && model_id.contains("gemini"))
         || model_id.contains("gemini")
     {
-        Some(100)
-    } else {
-        None
+        return Some(100);
     }
+
+    // Voyage AI enforces both a per-batch input count cap (128) and a
+    // per-batch token cap (120k for voyage-code-3). The token cap is handled
+    // adaptively via context_size_info; this caps input count as a safety net.
+    if base_url.contains("api.voyageai.com") || model_id.starts_with("voyage-") {
+        return Some(128);
+    }
+
+    None
 }
 
 fn effective_batch_size<P: EmbeddingProvider>(provider: &P, configured_batch_size: usize) -> usize {
@@ -596,6 +603,7 @@ fn context_size_info(error: &EmbeddingError) -> Option<ContextSizeInfo> {
         && !lower.contains("exceed_context_size_error")
         && !lower.contains("\"n_ctx\"")
         && !lower.contains("too large to process")
+        && !lower.contains("max allowed tokens per submitted batch")
     {
         return None;
     }
@@ -605,6 +613,8 @@ fn context_size_info(error: &EmbeddingError) -> Option<ContextSizeInfo> {
     static BATCH_SIZE_RE: OnceLock<Regex> = OnceLock::new();
     static INPUT_TOKENS_RE: OnceLock<Regex> = OnceLock::new();
     static N_PROMPT_RE: OnceLock<Regex> = OnceLock::new();
+    static MAX_BATCH_TOKENS_RE: OnceLock<Regex> = OnceLock::new();
+    static BATCH_TOKENS_RE: OnceLock<Regex> = OnceLock::new();
     let n_ctx_re = N_CTX_RE.get_or_init(|| Regex::new(r#""n_ctx"\s*:\s*(\d+)"#).unwrap());
     let max_context_re =
         MAX_CONTEXT_RE.get_or_init(|| Regex::new(r"max context size \((\d+)").unwrap());
@@ -613,12 +623,21 @@ fn context_size_info(error: &EmbeddingError) -> Option<ContextSizeInfo> {
         INPUT_TOKENS_RE.get_or_init(|| Regex::new(r"input \((\d+) tokens?\)").unwrap());
     let n_prompt_re =
         N_PROMPT_RE.get_or_init(|| Regex::new(r#""n_prompt_tokens"\s*:\s*(\d+)"#).unwrap());
+    let max_batch_tokens_re = MAX_BATCH_TOKENS_RE
+        .get_or_init(|| Regex::new(r"max allowed tokens per submitted batch is (\d+)").unwrap());
+    let batch_tokens_re =
+        BATCH_TOKENS_RE.get_or_init(|| Regex::new(r"your batch has (\d+) tokens?").unwrap());
 
     let max_tokens = n_ctx_re
         .captures(&lower)
         .and_then(|caps| caps.get(1))
         .or_else(|| max_context_re.captures(&lower).and_then(|caps| caps.get(1)))
         .or_else(|| batch_size_re.captures(&lower).and_then(|caps| caps.get(1)))
+        .or_else(|| {
+            max_batch_tokens_re
+                .captures(&lower)
+                .and_then(|caps| caps.get(1))
+        })
         .and_then(|capture| capture.as_str().parse::<usize>().ok())
         .or(Some(8192))?;
 
@@ -627,6 +646,11 @@ fn context_size_info(error: &EmbeddingError) -> Option<ContextSizeInfo> {
         .and_then(|caps| caps.get(1))
         .or_else(|| {
             input_tokens_re
+                .captures(&lower)
+                .and_then(|caps| caps.get(1))
+        })
+        .or_else(|| {
+            batch_tokens_re
                 .captures(&lower)
                 .and_then(|caps| caps.get(1))
         })
@@ -1205,5 +1229,39 @@ mod tests {
         );
         let provider = OpenAiProvider::new(config).unwrap();
         assert_eq!(provider.max_batch_size(), None);
+    }
+
+    #[test]
+    fn detect_voyage_batch_limit_from_base_url() {
+        let config = EmbeddingProviderConfig::new(
+            "https://api.voyageai.com/v1".into(),
+            "voyage-code-3".into(),
+            "k".into(),
+        );
+        let provider = OpenAiProvider::new(config).unwrap();
+        assert_eq!(provider.max_batch_size(), Some(128));
+    }
+
+    #[test]
+    fn detect_voyage_batch_limit_from_model_id() {
+        let config = EmbeddingProviderConfig::new(
+            "http://localhost:4000/v1".into(),
+            "voyage-code-3".into(),
+            "k".into(),
+        );
+        let provider = OpenAiProvider::new(config).unwrap();
+        assert_eq!(provider.max_batch_size(), Some(128));
+    }
+
+    #[test]
+    fn context_size_info_parses_voyage_batch_token_error() {
+        let err = EmbeddingError::ApiError {
+            status: 400,
+            message: "{\"detail\":\"Request to model 'voyage-code-3' failed. The max allowed tokens per submitted batch is 120000. Your batch has 124417 tokens after truncation. Please lower the number of tokens in the batch.\"}".to_string(),
+        };
+        let info = context_size_info(&err).expect("should recognize voyage batch token error");
+        assert_eq!(info.max_tokens, 120000);
+        assert_eq!(info.input_tokens, Some(124417));
+        assert!(is_context_size_error(&err));
     }
 }
