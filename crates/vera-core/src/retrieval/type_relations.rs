@@ -47,7 +47,10 @@ pub fn search_explicit_implementations(
         let file_abs = repo_root.join(&relation.file_path);
         let content = match std::fs::read_to_string(&file_abs) {
             Ok(content) => content,
-            Err(_) => continue,
+            Err(e) => {
+                tracing::debug!("skipping {}: {e}", relation.file_path);
+                continue;
+            }
         };
         let class = classify_content(&relation.file_path, language, &content);
         if !allows_class(filters, class) {

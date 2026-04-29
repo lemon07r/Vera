@@ -503,6 +503,10 @@ fn top_level_char_index(text: &str, target: char) -> Option<usize> {
     let mut bracket = 0i32;
     let mut brace = 0i32;
     for (idx, ch) in text.char_indices() {
+        // Check before updating depth so openers like '<' are found at depth 0.
+        if ch == target && angle == 0 && paren == 0 && bracket == 0 && brace == 0 {
+            return Some(idx);
+        }
         match ch {
             '<' => angle += 1,
             '>' => angle = (angle - 1).max(0),
@@ -513,9 +517,6 @@ fn top_level_char_index(text: &str, target: char) -> Option<usize> {
             '{' => brace += 1,
             '}' => brace = (brace - 1).max(0),
             _ => {}
-        }
-        if ch == target && angle == 0 && paren == 0 && bracket == 0 && brace == 0 {
-            return Some(idx);
         }
     }
     None
@@ -550,8 +551,15 @@ fn simple_name(text: &str) -> Option<String> {
         return None;
     }
 
+    // Strip generic parameters (e.g. "IComparable<Foo>" -> "IComparable")
+    // before extracting the identifier to avoid returning the type argument.
+    let base = match top_level_char_index(cleaned, '<') {
+        Some(idx) => cleaned[..idx].trim_end(),
+        None => cleaned,
+    };
+
     let mut end = None;
-    for (idx, ch) in cleaned.char_indices().rev() {
+    for (idx, ch) in base.char_indices().rev() {
         if ch.is_ascii_alphanumeric() || ch == '_' {
             end = Some(idx + ch.len_utf8());
             break;
@@ -560,7 +568,7 @@ fn simple_name(text: &str) -> Option<String> {
     let end = end?;
 
     let mut start = end;
-    for (idx, ch) in cleaned[..end].char_indices().rev() {
+    for (idx, ch) in base[..end].char_indices().rev() {
         if ch.is_ascii_alphanumeric() || ch == '_' {
             start = idx;
         } else {
@@ -568,7 +576,7 @@ fn simple_name(text: &str) -> Option<String> {
         }
     }
 
-    let name = cleaned[start..end].trim();
+    let name = base[start..end].trim();
     (!name.is_empty()).then_some(name.to_string())
 }
 
@@ -701,5 +709,29 @@ mod tests {
         };
 
         assert!(extract_type_relations(&[chunk]).is_empty());
+    }
+
+    #[test]
+    fn generic_type_targets_resolve_correctly() {
+        let chunk = class_chunk(
+            Language::CSharp,
+            "Foo",
+            "public class Foo : IComparable<Foo>, IDisposable {\n}\n",
+        );
+
+        let relations = extract_type_relations(&[chunk]);
+        assert_eq!(relations.len(), 2);
+        assert!(
+            relations
+                .iter()
+                .any(|r| r.target == "IComparable" && r.kind == TypeRelationKind::Extends)
+        );
+        assert!(
+            relations
+                .iter()
+                .any(|r| r.target == "IDisposable" && r.kind == TypeRelationKind::Conforms)
+        );
+        // Must NOT produce a self-referential Foo->Foo relation
+        assert!(relations.iter().all(|r| r.target != "Foo"));
     }
 }

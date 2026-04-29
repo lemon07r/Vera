@@ -165,14 +165,14 @@ enum IgnoreDecision {
 const BINARY_EXTENSIONS: &[&str] = &[
     "o", "obj", "a", "lib", "so", "dylib", "dll", "exe", "com",
     "zip", "tar", "gz", "bz2", "xz", "7z", "rar", "zst",
-    "png", "jpg", "jpeg", "gif", "bmp", "ico", "svg", "webp", "tiff", "tif",
+    "png", "jpg", "jpeg", "gif", "bmp", "ico", "webp", "tiff", "tif",
     "mp3", "mp4", "avi", "mov", "wav", "flac", "ogg", "webm", "mkv",
     "ttf", "otf", "woff", "woff2", "eot",
     "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
     "db", "sqlite", "sqlite3",
     "class", "jar", "war", "ear",
     "pdb", "nupkg",
-    "lock",
+    "lockb",
     "pyc", "pyo",
     "wasm",
     "bin", "dat", "pak",
@@ -798,7 +798,14 @@ fn path_ancestors_from_child(path: &Path) -> Vec<PathBuf> {
         ancestors.push(parent.to_path_buf());
         current = parent.parent();
     }
-    ancestors.push(PathBuf::new());
+    // The loop already produces an empty PathBuf for the root when
+    // `parent()` returns "" on a relative path. Only push if missing.
+    if ancestors
+        .last()
+        .is_none_or(|last| !last.as_os_str().is_empty())
+    {
+        ancestors.push(PathBuf::new());
+    }
     ancestors
 }
 

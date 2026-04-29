@@ -2,6 +2,7 @@
 
 use std::collections::HashSet;
 use std::path::Path;
+use std::sync::LazyLock;
 
 use anyhow::{Result, bail};
 use regex::{Captures, Regex};
@@ -145,7 +146,6 @@ fn search_env_reads(
     filters: &SearchFilters,
 ) -> Result<Vec<SearchResult>> {
     let target = query.map(str::trim).filter(|value| !value.is_empty());
-    let patterns = env_patterns();
     search_regex_intent(
         repo_root,
         store,
@@ -153,7 +153,7 @@ fn search_env_reads(
         filters,
         true,
         |_, language, content, _| {
-            let Some(patterns) = patterns_for_language(&patterns, language) else {
+            let Some(patterns) = patterns_for_language(&ENV_PATTERNS, language) else {
                 return Ok(Vec::new());
             };
             let mut results = Vec::new();
@@ -187,7 +187,6 @@ fn search_route_handlers(
     limit: usize,
     filters: &SearchFilters,
 ) -> Result<Vec<SearchResult>> {
-    let patterns = route_patterns();
     search_regex_intent(
         repo_root,
         store,
@@ -195,7 +194,7 @@ fn search_route_handlers(
         filters,
         true,
         |_, language, content, _| {
-            let Some(patterns) = patterns_for_language(&patterns, language) else {
+            let Some(patterns) = patterns_for_language(&ROUTE_PATTERNS, language) else {
                 return Ok(Vec::new());
             };
             Ok(patterns
@@ -216,7 +215,6 @@ fn search_sql_queries(
     limit: usize,
     filters: &SearchFilters,
 ) -> Result<Vec<SearchResult>> {
-    let patterns = sql_patterns();
     search_regex_intent(
         repo_root,
         store,
@@ -224,7 +222,7 @@ fn search_sql_queries(
         filters,
         true,
         |_, language, content, _| {
-            let Some(patterns) = patterns_for_language(&patterns, language) else {
+            let Some(patterns) = patterns_for_language(&SQL_PATTERNS, language) else {
                 return Ok(Vec::new());
             };
             Ok(patterns
@@ -290,7 +288,10 @@ where
         let file_abs = repo_root.join(&file_rel);
         let content = match std::fs::read_to_string(&file_abs) {
             Ok(content) => content,
-            Err(_) => continue,
+            Err(e) => {
+                tracing::debug!("skipping {}: {e}", file_rel);
+                continue;
+            }
         };
         let class = classify_content(&file_rel, language, &content);
         if !allows_class(filters, class) {
@@ -434,7 +435,6 @@ fn is_ignorable_syntax_kind(kind: &str) -> bool {
         || matches!(
             kind,
             "template_string"
-                | "template_substitution"
                 | "raw_string_literal"
                 | "interpreted_string_literal"
                 | "char_literal"
@@ -450,7 +450,7 @@ fn patterns_for_language(pattern_sets: &PatternSets, language: Language) -> Opti
         .map(|(_, patterns)| patterns.as_slice())
 }
 
-fn env_patterns() -> PatternSets {
+static ENV_PATTERNS: LazyLock<PatternSets> = LazyLock::new(|| {
     vec![
         (
             vec![Language::JavaScript, Language::TypeScript],
@@ -486,9 +486,9 @@ fn env_patterns() -> PatternSets {
             compile_patterns(&[r#"Environment\.GetEnvironmentVariable\(\s*"([^"\\]+)""#]),
         ),
     ]
-}
+});
 
-fn route_patterns() -> PatternSets {
+static ROUTE_PATTERNS: LazyLock<PatternSets> = LazyLock::new(|| {
     vec![
         (
             vec![Language::JavaScript, Language::TypeScript],
@@ -532,9 +532,9 @@ fn route_patterns() -> PatternSets {
             ]),
         ),
     ]
-}
+});
 
-fn sql_patterns() -> PatternSets {
+static SQL_PATTERNS: LazyLock<PatternSets> = LazyLock::new(|| {
     vec![
         (
             vec![Language::JavaScript, Language::TypeScript],
@@ -575,7 +575,7 @@ fn sql_patterns() -> PatternSets {
             ]),
         ),
     ]
-}
+});
 
 fn compile_patterns(patterns: &[&str]) -> Vec<Regex> {
     patterns

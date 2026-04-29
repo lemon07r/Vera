@@ -187,7 +187,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                         "description": "Return only function/class signatures (omit bodies). Use for broad exploration; fits more results in fewer tokens."
                     }
                 },
-                "required": []
+                "required": ["query"]
             }),
         },
         ToolDefinition {
@@ -675,10 +675,11 @@ fn ensure_index_and_watcher(cwd: &std::path::Path) -> Result<std::path::PathBuf,
         .map_err(|e| ToolCallResult::error(format!("Auto-indexing failed: {e}")))?;
     }
 
-    let mut guard = WATCHER.lock().unwrap();
+    let mut guard = WATCHER.lock().unwrap_or_else(|e| e.into_inner());
     if guard.is_none() {
-        if let Ok(handle) = crate::watcher::start_watching(cwd) {
-            *guard = Some(handle);
+        match crate::watcher::start_watching(cwd) {
+            Ok(handle) => *guard = Some(handle),
+            Err(e) => tracing::warn!("failed to start file watcher: {e}"),
         }
     }
 
