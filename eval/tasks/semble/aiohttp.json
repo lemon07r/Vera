@@ -1,0 +1,371 @@
+[
+  {
+    "id": "semble-aiohttp-cro-001",
+    "query": "how the async HTTP client session works",
+    "category": "cross_file",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/client.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the async HTTP client session works"
+  },
+  {
+    "id": "semble-aiohttp-int-002",
+    "query": "connection pooling and TCP connector",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/connector.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] connection pooling and TCP connector"
+  },
+  {
+    "id": "semble-aiohttp-int-003",
+    "query": "WebSocket client implementation",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/client_ws.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/_websocket/reader.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] WebSocket client implementation"
+  },
+  {
+    "id": "semble-aiohttp-int-004",
+    "query": "request and response object internals",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/client_reqrep.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request and response object internals"
+  },
+  {
+    "id": "semble-aiohttp-int-005",
+    "query": "URL routing and resource dispatching",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/web_urldispatcher.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] URL routing and resource dispatching"
+  },
+  {
+    "id": "semble-aiohttp-int-006",
+    "query": "server-side middleware execution",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/web_middlewares.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/web_app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] server-side middleware execution"
+  },
+  {
+    "id": "semble-aiohttp-int-007",
+    "query": "multipart and form data handling",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/multipart.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/formdata.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] multipart and form data handling"
+  },
+  {
+    "id": "semble-aiohttp-int-008",
+    "query": "response streaming and payload",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/streams.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/payload.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] response streaming and payload"
+  },
+  {
+    "id": "semble-aiohttp-int-009",
+    "query": "HTTP exception types and error responses",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/web_exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/client_exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] HTTP exception types and error responses"
+  },
+  {
+    "id": "semble-aiohttp-int-010",
+    "query": "request tracing and observability hooks",
+    "category": "intent",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/tracing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request tracing and observability hooks"
+  },
+  {
+    "id": "semble-aiohttp-cro-011",
+    "query": "how chunked transfer encoding is parsed",
+    "category": "cross_file",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/http_parser.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how chunked transfer encoding is parsed"
+  },
+  {
+    "id": "semble-aiohttp-cro-012",
+    "query": "how DNS resolution is handled asynchronously",
+    "category": "cross_file",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/resolver.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/connector.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how DNS resolution is handled asynchronously"
+  },
+  {
+    "id": "semble-aiohttp-cro-013",
+    "query": "how backpressure and flow control work in streaming",
+    "category": "cross_file",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/streams.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how backpressure and flow control work in streaming"
+  },
+  {
+    "id": "semble-aiohttp-cro-014",
+    "query": "how connection draining and cleanup happen on close",
+    "category": "cross_file",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/connector.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/client_proto.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how connection draining and cleanup happen on close"
+  },
+  {
+    "id": "semble-aiohttp-cro-015",
+    "query": "how the web application sets up and tears down on startup",
+    "category": "cross_file",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/web_app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/web_runner.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the web application sets up and tears down on startup"
+  },
+  {
+    "id": "semble-aiohttp-sym-016",
+    "query": "ClientSession",
+    "category": "symbol_lookup",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/client.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ClientSession"
+  },
+  {
+    "id": "semble-aiohttp-sym-017",
+    "query": "TCPConnector",
+    "category": "symbol_lookup",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/connector.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] TCPConnector"
+  },
+  {
+    "id": "semble-aiohttp-sym-018",
+    "query": "UrlDispatcher",
+    "category": "symbol_lookup",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/web_urldispatcher.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] UrlDispatcher"
+  },
+  {
+    "id": "semble-aiohttp-sym-019",
+    "query": "ClientResponse",
+    "category": "symbol_lookup",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/client_reqrep.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ClientResponse"
+  },
+  {
+    "id": "semble-aiohttp-sym-020",
+    "query": "TraceConfig",
+    "category": "symbol_lookup",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/tracing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] TraceConfig"
+  },
+  {
+    "id": "semble-aiohttp-cro-021",
+    "query": "how ClientSession acquires and releases connections from the connector",
+    "category": "cross_file",
+    "repo": "aiohttp",
+    "ground_truth": [
+      {
+        "file_path": "aiohttp/client.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "aiohttp/connector.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how ClientSession acquires and releases connections from the connector"
+  }
+]

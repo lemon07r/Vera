@@ -1,0 +1,362 @@
+[
+  {
+    "id": "semble-model2vec-cro-001",
+    "query": "how the StaticModel encodes text to embeddings",
+    "category": "cross_file",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/model.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/inference/model.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the StaticModel encodes text to embeddings"
+  },
+  {
+    "id": "semble-model2vec-cro-002",
+    "query": "how a model is distilled from a sentence transformer",
+    "category": "cross_file",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/distillation.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how a model is distilled from a sentence transformer"
+  },
+  {
+    "id": "semble-model2vec-int-003",
+    "query": "tokenizer construction and vocabulary building",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/tokenizer/tokenizer.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/distill/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] tokenizer construction and vocabulary building"
+  },
+  {
+    "id": "semble-model2vec-int-004",
+    "query": "saving and loading models from disk",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/persistence/persistence.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/persistence/datamodels.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] saving and loading models from disk"
+  },
+  {
+    "id": "semble-model2vec-int-005",
+    "query": "reducing embedding precision to smaller integer representations",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/quantization.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/vocabulary_quantization.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] reducing embedding precision to smaller integer representations"
+  },
+  {
+    "id": "semble-model2vec-int-006",
+    "query": "pushing and loading models from HuggingFace Hub",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/persistence/hf.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] pushing and loading models from HuggingFace Hub"
+  },
+  {
+    "id": "semble-model2vec-int-007",
+    "query": "distillation inference and embedding extraction",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/inference.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] distillation inference and embedding extraction"
+  },
+  {
+    "id": "semble-model2vec-int-008",
+    "query": "training a classifier on top of embeddings",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/train/classifier.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/train/base.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] training a classifier on top of embeddings"
+  },
+  {
+    "id": "semble-model2vec-int-009",
+    "query": "generating model cards for publication",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/modelcards/modelcards.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] generating model cards for publication"
+  },
+  {
+    "id": "semble-model2vec-int-010",
+    "query": "utility functions used across the package",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/distill/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] utility functions used across the package"
+  },
+  {
+    "id": "semble-model2vec-cro-011",
+    "query": "how mean pooling is applied over token embeddings during distillation",
+    "category": "cross_file",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/inference.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how mean pooling is applied over token embeddings during distillation"
+  },
+  {
+    "id": "semble-model2vec-cro-012",
+    "query": "how PCA reduces embedding dimensionality",
+    "category": "cross_file",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/distillation.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/distill/inference.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how PCA reduces embedding dimensionality"
+  },
+  {
+    "id": "semble-model2vec-cro-013",
+    "query": "how out-of-vocabulary tokens are handled at inference time",
+    "category": "cross_file",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/model.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/tokenizer/tokenizer.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how out-of-vocabulary tokens are handled at inference time"
+  },
+  {
+    "id": "semble-model2vec-cro-014",
+    "query": "how vocabulary is pruned during distillation",
+    "category": "cross_file",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/distill/distillation.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how vocabulary is pruned during distillation"
+  },
+  {
+    "id": "semble-model2vec-cro-015",
+    "query": "how subword token weights are aggregated for whole-word embeddings",
+    "category": "cross_file",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/inference.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "model2vec/distill/distillation.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how subword token weights are aggregated for whole-word embeddings"
+  },
+  {
+    "id": "semble-model2vec-sym-016",
+    "query": "StaticModel",
+    "category": "symbol_lookup",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/model.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] StaticModel"
+  },
+  {
+    "id": "semble-model2vec-int-017",
+    "query": "distill",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/distillation.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] distill"
+  },
+  {
+    "id": "semble-model2vec-sym-018",
+    "query": "PoolingMode",
+    "category": "symbol_lookup",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/distill/inference.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] PoolingMode"
+  },
+  {
+    "id": "semble-model2vec-int-019",
+    "query": "quantize",
+    "category": "intent",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/quantization.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] quantize"
+  },
+  {
+    "id": "semble-model2vec-sym-020",
+    "query": "Tokenizer",
+    "category": "symbol_lookup",
+    "repo": "model2vec",
+    "ground_truth": [
+      {
+        "file_path": "model2vec/tokenizer/tokenizer.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Tokenizer"
+  }
+]

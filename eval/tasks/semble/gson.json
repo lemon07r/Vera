@@ -1,0 +1,326 @@
+[
+  {
+    "id": "semble-gson-int-001",
+    "query": "main Gson API for toJson and fromJson",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/Gson.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] main Gson API for toJson and fromJson"
+  },
+  {
+    "id": "semble-gson-int-002",
+    "query": "configuring custom serialization options before building Gson instance",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/GsonBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] configuring custom serialization options before building Gson instance"
+  },
+  {
+    "id": "semble-gson-cro-003",
+    "query": "reflection-based field serialization and deserialization",
+    "category": "cross_file",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/internal/bind/ReflectiveTypeAdapterFactory.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] reflection-based field serialization and deserialization"
+  },
+  {
+    "id": "semble-gson-sym-004",
+    "query": "TypeAdapter",
+    "category": "symbol_lookup",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/TypeAdapter.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] TypeAdapter"
+  },
+  {
+    "id": "semble-gson-sym-005",
+    "query": "JsonParser",
+    "category": "symbol_lookup",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/JsonParser.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] JsonParser"
+  },
+  {
+    "id": "semble-gson-int-006",
+    "query": "streaming JSON reader and token parsing",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/stream/JsonReader.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] streaming JSON reader and token parsing"
+  },
+  {
+    "id": "semble-gson-int-007",
+    "query": "streaming JSON writer and token generation",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/stream/JsonWriter.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] streaming JSON writer and token generation"
+  },
+  {
+    "id": "semble-gson-int-008",
+    "query": "generic type token for parameterized types",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/reflect/TypeToken.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] generic type token for parameterized types"
+  },
+  {
+    "id": "semble-gson-int-009",
+    "query": "serialization exclusion strategies for fields and classes",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/ExclusionStrategy.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "gson/src/main/java/com/google/gson/GsonBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] serialization exclusion strategies for fields and classes"
+  },
+  {
+    "id": "semble-gson-int-010",
+    "query": "field naming policy and key transformation",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/FieldNamingPolicy.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] field naming policy and key transformation"
+  },
+  {
+    "id": "semble-gson-cro-011",
+    "query": "how custom serializers and deserializers are registered and resolved",
+    "category": "cross_file",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/GsonBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "gson/src/main/java/com/google/gson/Gson.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how custom serializers and deserializers are registered and resolved"
+  },
+  {
+    "id": "semble-gson-cro-012",
+    "query": "how null values are handled during serialization",
+    "category": "cross_file",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/Gson.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "gson/src/main/java/com/google/gson/GsonBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how null values are handled during serialization"
+  },
+  {
+    "id": "semble-gson-int-013",
+    "query": "JSON element hierarchy and tree model",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/JsonElement.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON element hierarchy and tree model"
+  },
+  {
+    "id": "semble-gson-int-014",
+    "query": "JSON array operations and element access",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/JsonArray.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON array operations and element access"
+  },
+  {
+    "id": "semble-gson-int-015",
+    "query": "JSON object with named fields",
+    "category": "intent",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/JsonObject.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON object with named fields"
+  },
+  {
+    "id": "semble-gson-cro-016",
+    "query": "how type adapter factories are registered and selected for a given type",
+    "category": "cross_file",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/Gson.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "gson/src/main/java/com/google/gson/GsonBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how type adapter factories are registered and selected for a given type"
+  },
+  {
+    "id": "semble-gson-sym-017",
+    "query": "GsonBuilder",
+    "category": "symbol_lookup",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/GsonBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] GsonBuilder"
+  },
+  {
+    "id": "semble-gson-sym-018",
+    "query": "TypeToken",
+    "category": "symbol_lookup",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/reflect/TypeToken.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] TypeToken"
+  },
+  {
+    "id": "semble-gson-sym-019",
+    "query": "JsonReader",
+    "category": "symbol_lookup",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/stream/JsonReader.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] JsonReader"
+  },
+  {
+    "id": "semble-gson-sym-020",
+    "query": "JsonObject",
+    "category": "symbol_lookup",
+    "repo": "gson",
+    "ground_truth": [
+      {
+        "file_path": "gson/src/main/java/com/google/gson/JsonObject.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] JsonObject"
+  }
+]

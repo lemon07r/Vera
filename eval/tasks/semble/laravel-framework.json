@@ -1,0 +1,326 @@
+[
+  {
+    "id": "semble-laravel-framework-cro-001",
+    "query": "queue connection resolution and connectors",
+    "category": "cross_file",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Queue/QueueManager.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] queue connection resolution and connectors"
+  },
+  {
+    "id": "semble-laravel-framework-int-002",
+    "query": "database queue implementation",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Queue/DatabaseQueue.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] database queue implementation"
+  },
+  {
+    "id": "semble-laravel-framework-cro-003",
+    "query": "queue worker command execution",
+    "category": "cross_file",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Queue/Console/WorkCommand.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Illuminate/Queue/Worker.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] queue worker command execution"
+  },
+  {
+    "id": "semble-laravel-framework-int-004",
+    "query": "session store behavior",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Session/Store.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Illuminate/Session/SessionManager.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] session store behavior"
+  },
+  {
+    "id": "semble-laravel-framework-sym-005",
+    "query": "QueueManager",
+    "category": "symbol_lookup",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Queue/QueueManager.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] QueueManager"
+  },
+  {
+    "id": "semble-laravel-framework-cro-006",
+    "query": "routing HTTP requests to controllers",
+    "category": "cross_file",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Routing/Router.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] routing HTTP requests to controllers"
+  },
+  {
+    "id": "semble-laravel-framework-int-007",
+    "query": "route parameter binding and model resolution",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Routing/Route.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Illuminate/Routing/Router.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] route parameter binding and model resolution"
+  },
+  {
+    "id": "semble-laravel-framework-int-008",
+    "query": "HTTP request input and header access",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Http/Request.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] HTTP request input and header access"
+  },
+  {
+    "id": "semble-laravel-framework-int-009",
+    "query": "HTTP response construction and headers",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Http/Response.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] HTTP response construction and headers"
+  },
+  {
+    "id": "semble-laravel-framework-cro-010",
+    "query": "service container dependency injection and binding resolution",
+    "category": "cross_file",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Container/Container.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] service container dependency injection and binding resolution"
+  },
+  {
+    "id": "semble-laravel-framework-int-011",
+    "query": "database query builder and fluent SQL interface",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Database/Query/Builder.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] database query builder and fluent SQL interface"
+  },
+  {
+    "id": "semble-laravel-framework-int-012",
+    "query": "event dispatching and listener registration",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Events/Dispatcher.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] event dispatching and listener registration"
+  },
+  {
+    "id": "semble-laravel-framework-int-013",
+    "query": "cache store repository and driver abstraction",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Cache/Repository.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] cache store repository and driver abstraction"
+  },
+  {
+    "id": "semble-laravel-framework-int-014",
+    "query": "validation rules and error message collection",
+    "category": "intent",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Validation/Validator.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] validation rules and error message collection"
+  },
+  {
+    "id": "semble-laravel-framework-cro-015",
+    "query": "how middleware is applied through the pipeline",
+    "category": "cross_file",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Pipeline/Pipeline.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Illuminate/Routing/Router.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how middleware is applied through the pipeline"
+  },
+  {
+    "id": "semble-laravel-framework-cro-016",
+    "query": "how the application bootstraps and registers service providers",
+    "category": "cross_file",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Foundation/Application.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the application bootstraps and registers service providers"
+  },
+  {
+    "id": "semble-laravel-framework-sym-017",
+    "query": "Router",
+    "category": "symbol_lookup",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Routing/Router.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Router"
+  },
+  {
+    "id": "semble-laravel-framework-sym-018",
+    "query": "Container",
+    "category": "symbol_lookup",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Container/Container.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Container"
+  },
+  {
+    "id": "semble-laravel-framework-sym-019",
+    "query": "Request",
+    "category": "symbol_lookup",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/Http/Request.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Request"
+  },
+  {
+    "id": "semble-laravel-framework-cro-020",
+    "query": "how Blade templates are compiled and rendered by the view factory",
+    "category": "cross_file",
+    "repo": "laravel-framework",
+    "ground_truth": [
+      {
+        "file_path": "src/Illuminate/View/Factory.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Blade templates are compiled and rendered by the view factory"
+  }
+]

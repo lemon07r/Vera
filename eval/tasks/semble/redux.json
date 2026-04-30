@@ -1,0 +1,314 @@
+[
+  {
+    "id": "semble-redux-cro-001",
+    "query": "store creation and dispatch lifecycle",
+    "category": "cross_file",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/createStore.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] store creation and dispatch lifecycle"
+  },
+  {
+    "id": "semble-redux-cro-002",
+    "query": "middleware pipeline composition",
+    "category": "cross_file",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/applyMiddleware.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/compose.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] middleware pipeline composition"
+  },
+  {
+    "id": "semble-redux-int-003",
+    "query": "combining reducers and validating reducer shape",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/combineReducers.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] combining reducers and validating reducer shape"
+  },
+  {
+    "id": "semble-redux-int-004",
+    "query": "function composition utility",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/compose.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] function composition utility"
+  },
+  {
+    "id": "semble-redux-sym-005",
+    "query": "createStore",
+    "category": "symbol_lookup",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/createStore.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] createStore"
+  },
+  {
+    "id": "semble-redux-int-006",
+    "query": "action creator binding to a dispatch function",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/bindActionCreators.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] action creator binding to a dispatch function"
+  },
+  {
+    "id": "semble-redux-cro-007",
+    "query": "how listeners are subscribed and notified after state changes",
+    "category": "cross_file",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/createStore.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how listeners are subscribed and notified after state changes"
+  },
+  {
+    "id": "semble-redux-cro-008",
+    "query": "how combineReducers validates reducer return values in development",
+    "category": "cross_file",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/combineReducers.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how combineReducers validates reducer return values in development"
+  },
+  {
+    "id": "semble-redux-int-009",
+    "query": "store type definition and dispatch overloads",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/types/store.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] store type definition and dispatch overloads"
+  },
+  {
+    "id": "semble-redux-int-010",
+    "query": "action and action creator type definitions",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/types/actions.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] action and action creator type definitions"
+  },
+  {
+    "id": "semble-redux-int-011",
+    "query": "middleware type signature and API shape",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/types/middleware.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] middleware type signature and API shape"
+  },
+  {
+    "id": "semble-redux-int-012",
+    "query": "reducer type definition",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/types/reducers.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] reducer type definition"
+  },
+  {
+    "id": "semble-redux-int-013",
+    "query": "runtime type identification utility",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/utils/kindOf.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] runtime type identification utility"
+  },
+  {
+    "id": "semble-redux-int-014",
+    "query": "development-only warning helper",
+    "category": "intent",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/utils/warning.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] development-only warning helper"
+  },
+  {
+    "id": "semble-redux-cro-015",
+    "query": "how replaceReducer swaps the root reducer at runtime",
+    "category": "cross_file",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/createStore.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how replaceReducer swaps the root reducer at runtime"
+  },
+  {
+    "id": "semble-redux-cro-016",
+    "query": "how applyMiddleware wraps getState and dispatch for the middleware chain",
+    "category": "cross_file",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/applyMiddleware.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/compose.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how applyMiddleware wraps getState and dispatch for the middleware chain"
+  },
+  {
+    "id": "semble-redux-sym-017",
+    "query": "combineReducers",
+    "category": "symbol_lookup",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/combineReducers.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] combineReducers"
+  },
+  {
+    "id": "semble-redux-sym-018",
+    "query": "applyMiddleware",
+    "category": "symbol_lookup",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/applyMiddleware.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] applyMiddleware"
+  },
+  {
+    "id": "semble-redux-sym-019",
+    "query": "bindActionCreators",
+    "category": "symbol_lookup",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/bindActionCreators.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] bindActionCreators"
+  },
+  {
+    "id": "semble-redux-sym-020",
+    "query": "Middleware",
+    "category": "symbol_lookup",
+    "repo": "redux",
+    "ground_truth": [
+      {
+        "file_path": "src/types/middleware.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Middleware"
+  }
+]

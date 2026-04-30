@@ -1,0 +1,326 @@
+[
+  {
+    "id": "semble-zod-cro-001",
+    "query": "how ZodType base class parses and validates input values",
+    "category": "cross_file",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how ZodType base class parses and validates input values"
+  },
+  {
+    "id": "semble-zod-cro-002",
+    "query": "core public API functions for building schemas",
+    "category": "cross_file",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] core public API functions for building schemas"
+  },
+  {
+    "id": "semble-zod-int-003",
+    "query": "ZodError structure and issue formatting",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/errors.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ZodError structure and issue formatting"
+  },
+  {
+    "id": "semble-zod-int-004",
+    "query": "ZodCheck and check execution pipeline for string min max and number range validations",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/checks.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ZodCheck and check execution pipeline for string min max and number range validations"
+  },
+  {
+    "id": "semble-zod-int-005",
+    "query": "JSON Schema to Zod schema conversion",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/classic/from-json-schema.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON Schema to Zod schema conversion"
+  },
+  {
+    "id": "semble-zod-int-006",
+    "query": "ZodObject shape definition and object schema",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/classic/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ZodObject shape definition and object schema"
+  },
+  {
+    "id": "semble-zod-int-007",
+    "query": "union and discriminated union schema types",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/zod/src/v4/core/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] union and discriminated union schema types"
+  },
+  {
+    "id": "semble-zod-int-008",
+    "query": "optional and nullable type wrappers",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] optional and nullable type wrappers"
+  },
+  {
+    "id": "semble-zod-int-009",
+    "query": "z.transform and z.pipe for chaining Zod output transformations",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] z.transform and z.pipe for chaining Zod output transformations"
+  },
+  {
+    "id": "semble-zod-cro-010",
+    "query": "how safeParse returns a success/error result without throwing",
+    "category": "cross_file",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/parse.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/zod/src/v4/core/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how safeParse returns a success/error result without throwing"
+  },
+  {
+    "id": "semble-zod-cro-011",
+    "query": "how .refine and .superRefine add custom validation to a schema via the public API",
+    "category": "cross_file",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/zod/src/v4/core/checks.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how .refine and .superRefine add custom validation to a schema via the public API"
+  },
+  {
+    "id": "semble-zod-int-012",
+    "query": "classic Zod v4 array and tuple schema types",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/classic/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] classic Zod v4 array and tuple schema types"
+  },
+  {
+    "id": "semble-zod-int-013",
+    "query": "classic Zod v4 string schema with built-in validations",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/classic/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/zod/src/v4/core/checks.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] classic Zod v4 string schema with built-in validations"
+  },
+  {
+    "id": "semble-zod-int-014",
+    "query": "v3 compatibility error types and ZodError",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v3/errors.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] v3 compatibility error types and ZodError"
+  },
+  {
+    "id": "semble-zod-int-015",
+    "query": "z.record and z.map schema builders for key-value types",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] z.record and z.map schema builders for key-value types"
+  },
+  {
+    "id": "semble-zod-int-016",
+    "query": "ZodDefault and ZodCatch schema wrappers that supply fallback values on parse failure",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ZodDefault and ZodCatch schema wrappers that supply fallback values on parse failure"
+  },
+  {
+    "id": "semble-zod-int-017",
+    "query": "enum schema types for literal value sets",
+    "category": "intent",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/api.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] enum schema types for literal value sets"
+  },
+  {
+    "id": "semble-zod-sym-018",
+    "query": "ZodType",
+    "category": "symbol_lookup",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ZodType"
+  },
+  {
+    "id": "semble-zod-sym-019",
+    "query": "ZodError",
+    "category": "symbol_lookup",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/core/errors.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ZodError"
+  },
+  {
+    "id": "semble-zod-sym-020",
+    "query": "ZodObject",
+    "category": "symbol_lookup",
+    "repo": "zod",
+    "ground_truth": [
+      {
+        "file_path": "packages/zod/src/v4/classic/schemas.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ZodObject"
+  }
+]

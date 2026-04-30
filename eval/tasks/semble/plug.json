@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-plug-cro-001",
+    "query": "Plug.Conn struct and HTTP connection representation",
+    "category": "cross_file",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/conn.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] Plug.Conn struct and HTTP connection representation"
+  },
+  {
+    "id": "semble-plug-cro-002",
+    "query": "how the Plug behaviour defines call/2 for composable middleware",
+    "category": "cross_file",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/builder.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the Plug behaviour defines call/2 for composable middleware"
+  },
+  {
+    "id": "semble-plug-int-003",
+    "query": "Plug.Router for pattern-matched route dispatch",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/router.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Plug.Router for pattern-matched route dispatch"
+  },
+  {
+    "id": "semble-plug-int-004",
+    "query": "Plug.Parsers for parsing request body content types",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/parsers.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Plug.Parsers for parsing request body content types"
+  },
+  {
+    "id": "semble-plug-int-005",
+    "query": "JSON body parser plug",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/parsers/json.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON body parser plug"
+  },
+  {
+    "id": "semble-plug-int-006",
+    "query": "URL-encoded form body parser",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/parsers/urlencoded.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] URL-encoded form body parser"
+  },
+  {
+    "id": "semble-plug-int-007",
+    "query": "multipart body parser and file upload handling",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/parsers/multipart.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] multipart body parser and file upload handling"
+  },
+  {
+    "id": "semble-plug-int-008",
+    "query": "Plug.Session for cookie and server-side session management",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/session.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Plug.Session for cookie and server-side session management"
+  },
+  {
+    "id": "semble-plug-int-009",
+    "query": "cookie store for Plug.Session",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/session/cookie.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] cookie store for Plug.Session"
+  },
+  {
+    "id": "semble-plug-int-010",
+    "query": "CSRF protection plug",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/csrf_protection.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] CSRF protection plug"
+  },
+  {
+    "id": "semble-plug-int-011",
+    "query": "Plug.Static for serving static files",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/static.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Plug.Static for serving static files"
+  },
+  {
+    "id": "semble-plug-cro-012",
+    "query": "how Plug.Builder pipelines multiple plugs together",
+    "category": "cross_file",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/builder.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Plug.Builder pipelines multiple plugs together"
+  },
+  {
+    "id": "semble-plug-int-013",
+    "query": "request path and query string helpers on Plug.Conn",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/conn.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request path and query string helpers on Plug.Conn"
+  },
+  {
+    "id": "semble-plug-int-014",
+    "query": "how halt stops a plug pipeline from continuing",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/conn.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how halt stops a plug pipeline from continuing"
+  },
+  {
+    "id": "semble-plug-int-015",
+    "query": "sending responses and setting response status in Plug",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/conn.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] sending responses and setting response status in Plug"
+  },
+  {
+    "id": "semble-plug-int-016",
+    "query": "Plug.SSL for HTTPS enforcement and HSTS headers",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/ssl.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Plug.SSL for HTTPS enforcement and HSTS headers"
+  },
+  {
+    "id": "semble-plug-int-017",
+    "query": "request path parameter extraction in Plug.Router",
+    "category": "intent",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/router/utils.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request path parameter extraction in Plug.Router"
+  },
+  {
+    "id": "semble-plug-sym-018",
+    "query": "Conn",
+    "category": "symbol_lookup",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/conn.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Conn"
+  },
+  {
+    "id": "semble-plug-sym-019",
+    "query": "Router",
+    "category": "symbol_lookup",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/router.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Router"
+  },
+  {
+    "id": "semble-plug-sym-020",
+    "query": "Builder",
+    "category": "symbol_lookup",
+    "repo": "plug",
+    "ground_truth": [
+      {
+        "file_path": "lib/plug/builder.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Builder"
+  }
+]

@@ -1,0 +1,308 @@
+[
+  {
+    "id": "semble-aeson-int-001",
+    "query": "parsing a JSON object field with the (.:) operator",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/FromJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] parsing a JSON object field with the (.:) operator"
+  },
+  {
+    "id": "semble-aeson-int-002",
+    "query": "how withObject expects a JSON object and runs a parser on it",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/FromJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how withObject expects a JSON object and runs a parser on it"
+  },
+  {
+    "id": "semble-aeson-int-003",
+    "query": "how typeMismatch produces an error message for wrong JSON types",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/FromJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how typeMismatch produces an error message for wrong JSON types"
+  },
+  {
+    "id": "semble-aeson-int-004",
+    "query": "how parseEither runs a parser and returns Either String",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/Internal.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how parseEither runs a parser and returns Either String"
+  },
+  {
+    "id": "semble-aeson-int-005",
+    "query": "how parseMaybe runs a parser and returns Nothing on failure",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/Internal.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how parseMaybe runs a parser and returns Nothing on failure"
+  },
+  {
+    "id": "semble-aeson-int-006",
+    "query": "how withText parses a JSON string value",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/FromJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how withText parses a JSON string value"
+  },
+  {
+    "id": "semble-aeson-int-007",
+    "query": "how withArray parses a JSON array value",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/FromJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how withArray parses a JSON array value"
+  },
+  {
+    "id": "semble-aeson-cro-008",
+    "query": "how Template Haskell derives FromJSON and ToJSON instances",
+    "category": "cross_file",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/TH.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Template Haskell derives FromJSON and ToJSON instances"
+  },
+  {
+    "id": "semble-aeson-cro-009",
+    "query": "how genericToJSON uses GHC generics to encode a value",
+    "category": "cross_file",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/ToJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how genericToJSON uses GHC generics to encode a value"
+  },
+  {
+    "id": "semble-aeson-int-010",
+    "query": "how camelCase field names are converted to snake_case for JSON keys",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/Internal.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how camelCase field names are converted to snake_case for JSON keys"
+  },
+  {
+    "id": "semble-aeson-int-011",
+    "query": "how modifyFailure customizes error messages in a parser",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/Internal.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how modifyFailure customizes error messages in a parser"
+  },
+  {
+    "id": "semble-aeson-int-012",
+    "query": "how optional fields use (.:?) with a default value via (.!=)",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/FromJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how optional fields use (.:?) with a default value via (.!=)"
+  },
+  {
+    "id": "semble-aeson-cro-013",
+    "query": "how JSON encoding produces Encoding without materializing a Value",
+    "category": "cross_file",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Encoding.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how JSON encoding produces Encoding without materializing a Value"
+  },
+  {
+    "id": "semble-aeson-int-014",
+    "query": "how Key type is used as object field identifier",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/KeyMap.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Data/Aeson/Key.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how Key type is used as object field identifier"
+  },
+  {
+    "id": "semble-aeson-int-015",
+    "query": "how withScientific parses a JSON number as Scientific",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/FromJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how withScientific parses a JSON number as Scientific"
+  },
+  {
+    "id": "semble-aeson-cro-016",
+    "query": "how the Parser monad accumulates and reports JSON path errors",
+    "category": "cross_file",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/Internal.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the Parser monad accumulates and reports JSON path errors"
+  },
+  {
+    "id": "semble-aeson-int-017",
+    "query": "how toJSONKeyText creates a ToJSONKey instance from a text function",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/ToJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how toJSONKeyText creates a ToJSONKey instance from a text function"
+  },
+  {
+    "id": "semble-aeson-int-018",
+    "query": "how emptyObject and emptyArray constants are defined",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/Internal.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how emptyObject and emptyArray constants are defined"
+  },
+  {
+    "id": "semble-aeson-cro-019",
+    "query": "how sum types are encoded with tag and contents fields",
+    "category": "cross_file",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/ToJSON.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how sum types are encoded with tag and contents fields"
+  },
+  {
+    "id": "semble-aeson-int-020",
+    "query": "how formatError formats a JSONPath and message into a string",
+    "category": "intent",
+    "repo": "aeson",
+    "ground_truth": [
+      {
+        "file_path": "src/Data/Aeson/Types/Internal.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how formatError formats a JSONPath and message into a string"
+  }
+]

@@ -1,0 +1,287 @@
+[
+  {
+    "id": "semble-ecto-cro-001",
+    "query": "how Ecto.Schema defines database-backed structs and associations",
+    "category": "cross_file",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/schema.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Ecto.Schema defines database-backed structs and associations"
+  },
+  {
+    "id": "semble-ecto-cro-002",
+    "query": "Ecto.Changeset for validating and transforming data",
+    "category": "cross_file",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/changeset.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] Ecto.Changeset for validating and transforming data"
+  },
+  {
+    "id": "semble-ecto-int-003",
+    "query": "Ecto.Query DSL for composing SQL queries",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/query.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Ecto.Query DSL for composing SQL queries"
+  },
+  {
+    "id": "semble-ecto-cro-004",
+    "query": "Ecto.Repo behaviour for database interactions",
+    "category": "cross_file",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/repo.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] Ecto.Repo behaviour for database interactions"
+  },
+  {
+    "id": "semble-ecto-int-005",
+    "query": "cast and validate_required in changesets",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/changeset.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] cast and validate_required in changesets"
+  },
+  {
+    "id": "semble-ecto-int-006",
+    "query": "has_many belongs_to and many-to-many association definitions",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/schema.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] has_many belongs_to and many-to-many association definitions"
+  },
+  {
+    "id": "semble-ecto-int-007",
+    "query": "from where select and order_by query expressions",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/query.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] from where select and order_by query expressions"
+  },
+  {
+    "id": "semble-ecto-int-008",
+    "query": "preload for loading associations eagerly",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/query.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] preload for loading associations eagerly"
+  },
+  {
+    "id": "semble-ecto-int-009",
+    "query": "Ecto.Type for custom field type definitions",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/type.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Ecto.Type for custom field type definitions"
+  },
+  {
+    "id": "semble-ecto-int-010",
+    "query": "insert update delete and transaction repo callbacks",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/repo.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] insert update delete and transaction repo callbacks"
+  },
+  {
+    "id": "semble-ecto-int-011",
+    "query": "how Ecto handles embedded schemas",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/schema.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Ecto handles embedded schemas"
+  },
+  {
+    "id": "semble-ecto-int-012",
+    "query": "validate_format validate_length and constraint validators",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/changeset.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] validate_format validate_length and constraint validators"
+  },
+  {
+    "id": "semble-ecto-int-013",
+    "query": "Ecto.Queryable protocol for query composition",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/queryable.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Ecto.Queryable protocol for query composition"
+  },
+  {
+    "id": "semble-ecto-int-014",
+    "query": "Multi for composing multiple database operations in a transaction",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/multi.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Multi for composing multiple database operations in a transaction"
+  },
+  {
+    "id": "semble-ecto-int-015",
+    "query": "optimistic locking with lock_version in changesets",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/changeset.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] optimistic locking with lock_version in changesets"
+  },
+  {
+    "id": "semble-ecto-int-016",
+    "query": "association and embeds_many embeds_one for nested data",
+    "category": "intent",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/schema.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] association and embeds_many embeds_one for nested data"
+  },
+  {
+    "id": "semble-ecto-sym-017",
+    "query": "Schema",
+    "category": "symbol_lookup",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/schema.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Schema"
+  },
+  {
+    "id": "semble-ecto-sym-018",
+    "query": "Changeset",
+    "category": "symbol_lookup",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/changeset.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Changeset"
+  },
+  {
+    "id": "semble-ecto-sym-019",
+    "query": "Query",
+    "category": "symbol_lookup",
+    "repo": "ecto",
+    "ground_truth": [
+      {
+        "file_path": "lib/ecto/query.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Query"
+  }
+]

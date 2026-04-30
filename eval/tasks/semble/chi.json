@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-chi-cro-001",
+    "query": "HTTP router and middleware composition",
+    "category": "cross_file",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "mux.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "chain.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] HTTP router and middleware composition"
+  },
+  {
+    "id": "semble-chi-int-002",
+    "query": "radix tree path matching",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "tree.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] radix tree path matching"
+  },
+  {
+    "id": "semble-chi-cro-003",
+    "query": "request routing context storage",
+    "category": "cross_file",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "mux.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] request routing context storage"
+  },
+  {
+    "id": "semble-chi-int-004",
+    "query": "request logging middleware",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/logger.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request logging middleware"
+  },
+  {
+    "id": "semble-chi-sym-005",
+    "query": "Mux",
+    "category": "symbol_lookup",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "mux.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Mux"
+  },
+  {
+    "id": "semble-chi-int-006",
+    "query": "panic recovery middleware",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/recoverer.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] panic recovery middleware"
+  },
+  {
+    "id": "semble-chi-int-007",
+    "query": "request timeout enforcement middleware",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/timeout.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request timeout enforcement middleware"
+  },
+  {
+    "id": "semble-chi-int-008",
+    "query": "request throttling and concurrency limiting",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/throttle.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request throttling and concurrency limiting"
+  },
+  {
+    "id": "semble-chi-int-009",
+    "query": "gzip response compression middleware",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/compress.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] gzip response compression middleware"
+  },
+  {
+    "id": "semble-chi-int-010",
+    "query": "real IP extraction from forwarded headers",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/realip.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] real IP extraction from forwarded headers"
+  },
+  {
+    "id": "semble-chi-int-011",
+    "query": "URL path stripping and rewriting middleware",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/strip.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] URL path stripping and rewriting middleware"
+  },
+  {
+    "id": "semble-chi-int-012",
+    "query": "basic HTTP authentication middleware",
+    "category": "intent",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "middleware/basic_auth.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] basic HTTP authentication middleware"
+  },
+  {
+    "id": "semble-chi-cro-013",
+    "query": "how middleware chains are composed and ordered",
+    "category": "cross_file",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "chain.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "mux.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how middleware chains are composed and ordered"
+  },
+  {
+    "id": "semble-chi-cro-014",
+    "query": "route grouping with sub-routers",
+    "category": "cross_file",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "mux.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] route grouping with sub-routers"
+  },
+  {
+    "id": "semble-chi-cro-015",
+    "query": "how URL parameters are extracted from path segments at request time",
+    "category": "cross_file",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "tree.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how URL parameters are extracted from path segments at request time"
+  },
+  {
+    "id": "semble-chi-sym-016",
+    "query": "Router",
+    "category": "symbol_lookup",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "mux.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Router"
+  },
+  {
+    "id": "semble-chi-sym-017",
+    "query": "RouteContext",
+    "category": "symbol_lookup",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] RouteContext"
+  },
+  {
+    "id": "semble-chi-cro-018",
+    "query": "how chi resolves named URL parameters and wildcards during routing",
+    "category": "cross_file",
+    "repo": "chi",
+    "ground_truth": [
+      {
+        "file_path": "tree.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how chi resolves named URL parameters and wildcards during routing"
+  }
+]

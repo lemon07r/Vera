@@ -1,0 +1,233 @@
+[
+  {
+    "id": "semble-snapkit-int-001",
+    "query": "how makeConstraints activates AutoLayout constraints on a view using the snp closure",
+    "category": "intent",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintViewDSL.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/ConstraintMaker.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how makeConstraints activates AutoLayout constraints on a view using the snp closure"
+  },
+  {
+    "id": "semble-snapkit-int-002",
+    "query": "how remakeConstraints removes all existing constraints before applying new ones",
+    "category": "intent",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintMaker.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/Constraint.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how remakeConstraints removes all existing constraints before applying new ones"
+  },
+  {
+    "id": "semble-snapkit-int-003",
+    "query": "how equalTo lessThanOrEqualTo greaterThanOrEqualTo establish the constraint relation",
+    "category": "intent",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintMakerRelatable.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how equalTo lessThanOrEqualTo greaterThanOrEqualTo establish the constraint relation"
+  },
+  {
+    "id": "semble-snapkit-int-004",
+    "query": "how offset and inset modifiers adjust the constant value of a constraint",
+    "category": "intent",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintMakerEditable.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how offset and inset modifiers adjust the constant value of a constraint"
+  },
+  {
+    "id": "semble-snapkit-int-005",
+    "query": "how a constraint's constant or priority is updated after the constraint is already active",
+    "category": "intent",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Constraint.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how a constraint's constant or priority is updated after the constraint is already active"
+  },
+  {
+    "id": "semble-snapkit-int-006",
+    "query": "how content hugging and compression resistance priorities are exposed through snp",
+    "category": "intent",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintViewDSL.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how content hugging and compression resistance priorities are exposed through snp"
+  },
+  {
+    "id": "semble-snapkit-int-007",
+    "query": "how debug descriptions identify the source file and line number where a constraint was created",
+    "category": "intent",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Debugging.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/LayoutConstraint.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how debug descriptions identify the source file and line number where a constraint was created"
+  },
+  {
+    "id": "semble-snapkit-cro-008",
+    "query": "how the snp property bridges UIView and NSView into the SnapKit DSL",
+    "category": "cross_file",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintView+Extensions.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/ConstraintViewDSL.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the snp property bridges UIView and NSView into the SnapKit DSL"
+  },
+  {
+    "id": "semble-snapkit-cro-009",
+    "query": "how DSL protocols define layout anchor properties like left, top, edges, and center for views and guides",
+    "category": "cross_file",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintDSL.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/LayoutConstraintItem.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how DSL protocols define layout anchor properties like left, top, edges, and center for views and guides"
+  },
+  {
+    "id": "semble-snapkit-cro-010",
+    "query": "how ConstraintMaker accumulates descriptions and batch-activates them when the closure returns",
+    "category": "cross_file",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintMaker.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/ConstraintDescription.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how ConstraintMaker accumulates descriptions and batch-activates them when the closure returns"
+  },
+  {
+    "id": "semble-snapkit-sym-011",
+    "query": "ConstraintMaker",
+    "category": "symbol_lookup",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintMaker.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ConstraintMaker"
+  },
+  {
+    "id": "semble-snapkit-sym-012",
+    "query": "ConstraintPriority",
+    "category": "symbol_lookup",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintPriority.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ConstraintPriority"
+  },
+  {
+    "id": "semble-snapkit-sym-013",
+    "query": "ConstraintConfig",
+    "category": "symbol_lookup",
+    "repo": "snapkit",
+    "ground_truth": [
+      {
+        "file_path": "Sources/ConstraintConfig.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ConstraintConfig"
+  }
+]

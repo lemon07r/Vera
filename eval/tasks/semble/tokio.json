@@ -1,0 +1,320 @@
+[
+  {
+    "id": "semble-tokio-cro-001",
+    "query": "how spawned tasks are scheduled onto threads",
+    "category": "cross_file",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/runtime/scheduler/multi_thread/worker.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "tokio/src/task/spawn.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how spawned tasks are scheduled onto threads"
+  },
+  {
+    "id": "semble-tokio-int-002",
+    "query": "how the async mutex prevents concurrent access",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/sync/mutex.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how the async mutex prevents concurrent access"
+  },
+  {
+    "id": "semble-tokio-cro-003",
+    "query": "how a broadcast channel delivers messages to multiple receivers",
+    "category": "cross_file",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/sync/broadcast.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how a broadcast channel delivers messages to multiple receivers"
+  },
+  {
+    "id": "semble-tokio-cro-004",
+    "query": "how the timer wheel tracks sleep deadlines",
+    "category": "cross_file",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/runtime/time/wheel/level.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "tokio/src/time/sleep.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the timer wheel tracks sleep deadlines"
+  },
+  {
+    "id": "semble-tokio-int-005",
+    "query": "running non-async blocking code inside the async runtime",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/task/blocking.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] running non-async blocking code inside the async runtime"
+  },
+  {
+    "id": "semble-tokio-cro-006",
+    "query": "how tasks that are not Send can run on a single thread",
+    "category": "cross_file",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/task/local.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how tasks that are not Send can run on a single thread"
+  },
+  {
+    "id": "semble-tokio-int-007",
+    "query": "waiting for any of several futures to complete",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/macros/select.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] waiting for any of several futures to complete"
+  },
+  {
+    "id": "semble-tokio-cro-008",
+    "query": "how the runtime builder configures thread pool size and flavour",
+    "category": "cross_file",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/runtime/builder.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the runtime builder configures thread pool size and flavour"
+  },
+  {
+    "id": "semble-tokio-int-009",
+    "query": "rate-limiting concurrent operations with a semaphore",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/sync/semaphore.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] rate-limiting concurrent operations with a semaphore"
+  },
+  {
+    "id": "semble-tokio-int-010",
+    "query": "watching a value and being notified when it changes",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/sync/watch.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] watching a value and being notified when it changes"
+  },
+  {
+    "id": "semble-tokio-int-011",
+    "query": "collecting results from a dynamic set of spawned tasks",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/task/join_set.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] collecting results from a dynamic set of spawned tasks"
+  },
+  {
+    "id": "semble-tokio-int-012",
+    "query": "integrating a non-async file descriptor with the tokio reactor",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/io/async_fd.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] integrating a non-async file descriptor with the tokio reactor"
+  },
+  {
+    "id": "semble-tokio-sym-013",
+    "query": "JoinSet",
+    "category": "symbol_lookup",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/task/join_set.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] JoinSet"
+  },
+  {
+    "id": "semble-tokio-sym-014",
+    "query": "Semaphore",
+    "category": "symbol_lookup",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/sync/semaphore.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Semaphore"
+  },
+  {
+    "id": "semble-tokio-sym-015",
+    "query": "MissedTickBehavior",
+    "category": "symbol_lookup",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/time/interval.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] MissedTickBehavior"
+  },
+  {
+    "id": "semble-tokio-sym-016",
+    "query": "LocalSet",
+    "category": "symbol_lookup",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/task/local.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] LocalSet"
+  },
+  {
+    "id": "semble-tokio-sym-017",
+    "query": "Notify",
+    "category": "symbol_lookup",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/sync/notify.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Notify"
+  },
+  {
+    "id": "semble-tokio-int-018",
+    "query": "async file I/O operations",
+    "category": "intent",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/fs/file.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "tokio/src/fs/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] async file I/O operations"
+  },
+  {
+    "id": "semble-tokio-cro-019",
+    "query": "how the tokio runtime builder configures and starts the multi-thread scheduler",
+    "category": "cross_file",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/runtime/builder.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the tokio runtime builder configures and starts the multi-thread scheduler"
+  },
+  {
+    "id": "semble-tokio-sym-020",
+    "query": "Runtime",
+    "category": "symbol_lookup",
+    "repo": "tokio",
+    "ground_truth": [
+      {
+        "file_path": "tokio/src/runtime/runtime.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Runtime"
+  }
+]

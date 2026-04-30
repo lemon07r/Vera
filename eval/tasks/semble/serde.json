@@ -1,0 +1,308 @@
+[
+  {
+    "id": "semble-serde-cro-001",
+    "query": "Serialize and Serializer trait definitions",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/ser/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] Serialize and Serializer trait definitions"
+  },
+  {
+    "id": "semble-serde-cro-002",
+    "query": "Deserialize and Deserializer trait definitions",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] Deserialize and Deserializer trait definitions"
+  },
+  {
+    "id": "semble-serde-cro-003",
+    "query": "Visitor pattern for deserializer implementations",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] Visitor pattern for deserializer implementations"
+  },
+  {
+    "id": "semble-serde-int-004",
+    "query": "standard library type Serialize implementations",
+    "category": "intent",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/ser/impls.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] standard library type Serialize implementations"
+  },
+  {
+    "id": "semble-serde-int-005",
+    "query": "standard library type Deserialize implementations",
+    "category": "intent",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/impls.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] standard library type Deserialize implementations"
+  },
+  {
+    "id": "semble-serde-int-006",
+    "query": "value-based deserialization for self-describing formats",
+    "category": "intent",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/value.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] value-based deserialization for self-describing formats"
+  },
+  {
+    "id": "semble-serde-int-007",
+    "query": "IgnoredAny type for silently discarding unknown fields during deserialization",
+    "category": "intent",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/ignored_any.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] IgnoredAny type for silently discarding unknown fields during deserialization"
+  },
+  {
+    "id": "semble-serde-cro-008",
+    "query": "how serde_derive generates Serialize impl with serialize_field and serialize_struct",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_derive/src/ser.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how serde_derive generates Serialize impl with serialize_field and serialize_struct"
+  },
+  {
+    "id": "semble-serde-cro-009",
+    "query": "how derive macros generate Deserialize code for structs and enums",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_derive/src/de.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "serde_derive/src/internals/ast.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how derive macros generate Deserialize code for structs and enums"
+  },
+  {
+    "id": "semble-serde-cro-010",
+    "query": "how derive macros parse and apply field-level serde attributes",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_derive/src/internals/attr.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how derive macros parse and apply field-level serde attributes"
+  },
+  {
+    "id": "semble-serde-cro-011",
+    "query": "how serde handles sequences and maps during serialization",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/ser/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how serde handles sequences and maps during serialization"
+  },
+  {
+    "id": "semble-serde-cro-012",
+    "query": "MapAccess and SeqAccess for deserializing collections",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] MapAccess and SeqAccess for deserializing collections"
+  },
+  {
+    "id": "semble-serde-cro-013",
+    "query": "how serde handles lifetime-bound deserialization and borrowed data",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how serde handles lifetime-bound deserialization and borrowed data"
+  },
+  {
+    "id": "semble-serde-cro-014",
+    "query": "how EnumAccess and VariantAccess work for enum deserialization",
+    "category": "cross_file",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how EnumAccess and VariantAccess work for enum deserialization"
+  },
+  {
+    "id": "semble-serde-int-015",
+    "query": "derive proc macro entry point and registered derives",
+    "category": "intent",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_derive/src/lib.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] derive proc macro entry point and registered derives"
+  },
+  {
+    "id": "semble-serde-int-016",
+    "query": "serde_derive Container Variant and Field AST types for Rust struct and enum introspection",
+    "category": "intent",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_derive/src/internals/ast.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] serde_derive Container Variant and Field AST types for Rust struct and enum introspection"
+  },
+  {
+    "id": "semble-serde-sym-017",
+    "query": "Serialize",
+    "category": "symbol_lookup",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/ser/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Serialize"
+  },
+  {
+    "id": "semble-serde-sym-018",
+    "query": "Deserialize",
+    "category": "symbol_lookup",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Deserialize"
+  },
+  {
+    "id": "semble-serde-sym-019",
+    "query": "Serializer",
+    "category": "symbol_lookup",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/ser/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Serializer"
+  },
+  {
+    "id": "semble-serde-sym-020",
+    "query": "Visitor",
+    "category": "symbol_lookup",
+    "repo": "serde",
+    "ground_truth": [
+      {
+        "file_path": "serde_core/src/de/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Visitor"
+  }
+]

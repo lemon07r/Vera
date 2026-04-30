@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-zig-int-001",
+    "query": "how AutoHashMap provides a hash map with auto-derived hash and equality",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/hash_map.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how AutoHashMap provides a hash map with auto-derived hash and equality"
+  },
+  {
+    "id": "semble-zig-int-002",
+    "query": "how ArrayList manages a growable array with an allocator",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/array_list.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how ArrayList manages a growable array with an allocator"
+  },
+  {
+    "id": "semble-zig-int-003",
+    "query": "how std.mem.eql compares two slices for equality",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/mem.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.mem.eql compares two slices for equality"
+  },
+  {
+    "id": "semble-zig-int-004",
+    "query": "how std.fmt.bufPrint formats a string into a fixed buffer",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/fmt.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.fmt.bufPrint formats a string into a fixed buffer"
+  },
+  {
+    "id": "semble-zig-int-005",
+    "query": "how std.json parses JSON from a slice into a typed struct",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/json/static.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.json parses JSON from a slice into a typed struct"
+  },
+  {
+    "id": "semble-zig-cro-006",
+    "query": "how the JSON scanner tokenizes a JSON byte stream",
+    "category": "cross_file",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/json/Scanner.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the JSON scanner tokenizes a JSON byte stream"
+  },
+  {
+    "id": "semble-zig-int-007",
+    "query": "how Thread.spawn creates and starts a new OS thread",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/Thread.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Thread.spawn creates and starts a new OS thread"
+  },
+  {
+    "id": "semble-zig-int-008",
+    "query": "how std.testing.expect and expectEqual assert conditions in tests",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/testing.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.testing.expect and expectEqual assert conditions in tests"
+  },
+  {
+    "id": "semble-zig-int-009",
+    "query": "how std.mem.sort and sortUnstable sort a slice in place",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/mem.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.mem.sort and sortUnstable sort a slice in place"
+  },
+  {
+    "id": "semble-zig-int-010",
+    "query": "how std.fs.cwd opens the current working directory",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/fs.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.fs.cwd opens the current working directory"
+  },
+  {
+    "id": "semble-zig-int-011",
+    "query": "how std.process.args returns command-line argument iterator",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/process.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.process.args returns command-line argument iterator"
+  },
+  {
+    "id": "semble-zig-cro-012",
+    "query": "how comptime hash functions are auto-derived for arbitrary types",
+    "category": "cross_file",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/hash_map.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how comptime hash functions are auto-derived for arbitrary types"
+  },
+  {
+    "id": "semble-zig-int-013",
+    "query": "how std.fmt.parseInt parses a string to an integer",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/fmt.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.fmt.parseInt parses a string to an integer"
+  },
+  {
+    "id": "semble-zig-int-014",
+    "query": "how std.mem.copyForwards and copyBackwards copy overlapping slices",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/mem.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.mem.copyForwards and copyBackwards copy overlapping slices"
+  },
+  {
+    "id": "semble-zig-int-015",
+    "query": "how debug.print outputs to stderr for debugging",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/debug.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how debug.print outputs to stderr for debugging"
+  },
+  {
+    "id": "semble-zig-int-016",
+    "query": "how the JSON Stringify module serializes a value to JSON",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/json/Stringify.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how the JSON Stringify module serializes a value to JSON"
+  },
+  {
+    "id": "semble-zig-int-017",
+    "query": "how std.mem.span converts a null-terminated pointer to a slice",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/mem.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.mem.span converts a null-terminated pointer to a slice"
+  },
+  {
+    "id": "semble-zig-int-018",
+    "query": "how std.testing.checkAllAllocationFailures tests allocator failure paths",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/testing.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.testing.checkAllAllocationFailures tests allocator failure paths"
+  },
+  {
+    "id": "semble-zig-int-019",
+    "query": "how std.mem.zeroes initializes a type to all zero bytes",
+    "category": "intent",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/mem.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how std.mem.zeroes initializes a type to all zero bytes"
+  },
+  {
+    "id": "semble-zig-cro-020",
+    "query": "how the JSON scanner feeds input incrementally and emits tokens",
+    "category": "cross_file",
+    "repo": "zig",
+    "ground_truth": [
+      {
+        "file_path": "lib/std/json/Scanner.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the JSON scanner feeds input incrementally and emits tokens"
+  }
+]

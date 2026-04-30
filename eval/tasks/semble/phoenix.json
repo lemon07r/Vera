@@ -1,0 +1,299 @@
+[
+  {
+    "id": "semble-phoenix-cro-001",
+    "query": "how Phoenix routes are defined and dispatched to controller actions",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/router.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Phoenix routes are defined and dispatched to controller actions"
+  },
+  {
+    "id": "semble-phoenix-int-002",
+    "query": "controller actions and request handling helpers",
+    "category": "intent",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/controller.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] controller actions and request handling helpers"
+  },
+  {
+    "id": "semble-phoenix-cro-003",
+    "query": "real-time channel messaging, topics, and join/leave",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/channel.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] real-time channel messaging, topics, and join/leave"
+  },
+  {
+    "id": "semble-phoenix-int-004",
+    "query": "channel server process and message routing",
+    "category": "intent",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/channel/server.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/phoenix/channel.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] channel server process and message routing"
+  },
+  {
+    "id": "semble-phoenix-cro-005",
+    "query": "endpoint and plug pipeline configuration",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/endpoint.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] endpoint and plug pipeline configuration"
+  },
+  {
+    "id": "semble-phoenix-int-006",
+    "query": "WebSocket and long-poll socket transport",
+    "category": "intent",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/socket.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] WebSocket and long-poll socket transport"
+  },
+  {
+    "id": "semble-phoenix-int-007",
+    "query": "presence tracking, diffs, and broadcast",
+    "category": "intent",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/presence.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] presence tracking, diffs, and broadcast"
+  },
+  {
+    "id": "semble-phoenix-int-008",
+    "query": "verified routes for compile-time URL validation",
+    "category": "intent",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/verified_routes.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] verified routes for compile-time URL validation"
+  },
+  {
+    "id": "semble-phoenix-cro-009",
+    "query": "how Phoenix logs request and response lifecycle events",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/logger.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Phoenix logs request and response lifecycle events"
+  },
+  {
+    "id": "semble-phoenix-cro-010",
+    "query": "how channels handle incoming messages and replies",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/channel.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/phoenix/channel/server.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how channels handle incoming messages and replies"
+  },
+  {
+    "id": "semble-phoenix-cro-011",
+    "query": "how the router matches path segments to controller/action",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/router.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the router matches path segments to controller/action"
+  },
+  {
+    "id": "semble-phoenix-cro-012",
+    "query": "named URL generation from route helpers",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/router.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] named URL generation from route helpers"
+  },
+  {
+    "id": "semble-phoenix-cro-013",
+    "query": "how controllers render views and JSON responses",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/controller.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how controllers render views and JSON responses"
+  },
+  {
+    "id": "semble-phoenix-int-014",
+    "query": "Param protocol for extracting URL-safe IDs",
+    "category": "intent",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/param.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Param protocol for extracting URL-safe IDs"
+  },
+  {
+    "id": "semble-phoenix-int-015",
+    "query": "naming conventions for controllers and view modules",
+    "category": "intent",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/naming.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] naming conventions for controllers and view modules"
+  },
+  {
+    "id": "semble-phoenix-cro-016",
+    "query": "how Phoenix Endpoint supervises and starts the HTTP server",
+    "category": "cross_file",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/endpoint.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Phoenix Endpoint supervises and starts the HTTP server"
+  },
+  {
+    "id": "semble-phoenix-sym-017",
+    "query": "Router",
+    "category": "symbol_lookup",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/router.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Router"
+  },
+  {
+    "id": "semble-phoenix-sym-018",
+    "query": "Controller",
+    "category": "symbol_lookup",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/controller.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Controller"
+  },
+  {
+    "id": "semble-phoenix-sym-019",
+    "query": "Channel",
+    "category": "symbol_lookup",
+    "repo": "phoenix",
+    "ground_truth": [
+      {
+        "file_path": "lib/phoenix/channel.ex",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Channel"
+  }
+]

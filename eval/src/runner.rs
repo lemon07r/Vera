@@ -25,7 +25,13 @@ pub trait ToolAdapter {
     fn version(&self) -> String;
 
     /// Execute a search query and return ranked results.
-    fn search(&self, query: &str, repo_path: &str) -> Vec<RetrievalResult>;
+    /// `path_scope` optionally restricts results to a subdirectory (e.g. "src/flask").
+    fn search(
+        &self,
+        query: &str,
+        repo_path: &str,
+        path_scope: Option<&str>,
+    ) -> Vec<RetrievalResult>;
 
     /// Index a repository (if the tool requires pre-indexing).
     /// Returns (index_time_secs, storage_size_bytes).
@@ -39,6 +45,17 @@ pub fn run_benchmark(
     tasks: &[BenchmarkTask],
     repo_paths: &HashMap<String, String>,
     corpus_shas: &HashMap<String, String>,
+) -> EvalReport {
+    run_benchmark_scoped(adapter, tasks, repo_paths, corpus_shas, &HashMap::new())
+}
+
+/// Run benchmark with optional per-repo path scopes (benchmark_root).
+pub fn run_benchmark_scoped(
+    adapter: &dyn ToolAdapter,
+    tasks: &[BenchmarkTask],
+    repo_paths: &HashMap<String, String>,
+    corpus_shas: &HashMap<String, String>,
+    benchmark_roots: &HashMap<String, String>,
 ) -> EvalReport {
     let timestamp = chrono::Utc::now().to_rfc3339();
 
@@ -56,9 +73,10 @@ pub fn run_benchmark(
         .iter()
         .map(|task| {
             let repo_path = repo_paths.get(&task.repo).map(String::as_str).unwrap_or("");
+            let scope = benchmark_roots.get(&task.repo).map(String::as_str);
 
             let start = Instant::now();
-            let results = adapter.search(&task.query, repo_path);
+            let results = adapter.search(&task.query, repo_path, scope);
             let latency_ms = start.elapsed().as_secs_f64() * 1000.0;
 
             TaskResult {
@@ -173,10 +191,7 @@ impl ToolAdapter for MockAdapter {
         "mock-1.0.0".to_string()
     }
 
-    fn search(&self, _query: &str, _repo_path: &str) -> Vec<RetrievalResult> {
-        // Mock returns empty results; actual results are populated
-        // by the runner using the task's ground truth.
-        // This is overridden in run_benchmark_with_mock.
+    fn search(&self, _query: &str, _repo_path: &str, _scope: Option<&str>) -> Vec<RetrievalResult> {
         Vec::new()
     }
 

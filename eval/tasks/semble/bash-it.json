@@ -1,0 +1,344 @@
+[
+  {
+    "id": "semble-bash-it-int-001",
+    "query": "how bash-it loads and enables plugins",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/helpers.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "bash_it.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how bash-it loads and enables plugins"
+  },
+  {
+    "id": "semble-bash-it-cro-002",
+    "query": "function to enable a bash-it component like plugin or alias",
+    "category": "cross_file",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/helpers.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] function to enable a bash-it component like plugin or alias"
+  },
+  {
+    "id": "semble-bash-it-int-003",
+    "query": "how command duration is measured and displayed in prompt",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/command_duration.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/preexec.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how command duration is measured and displayed in prompt"
+  },
+  {
+    "id": "semble-bash-it-int-004",
+    "query": "battery level detection for shell prompt",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/battery.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] battery level detection for shell prompt"
+  },
+  {
+    "id": "semble-bash-it-int-005",
+    "query": "bash-it search functionality for finding plugins and aliases",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/search.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/helpers.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] bash-it search functionality for finding plugins and aliases"
+  },
+  {
+    "id": "semble-bash-it-cro-006",
+    "query": "logging utilities for bash-it debug output",
+    "category": "cross_file",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/log.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] logging utilities for bash-it debug output"
+  },
+  {
+    "id": "semble-bash-it-int-007",
+    "query": "color definitions and terminal color support",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/colors.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] color definitions and terminal color support"
+  },
+  {
+    "id": "semble-bash-it-int-008",
+    "query": "bash history configuration and deduplication",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/history.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "plugins/available/history-eternal.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] bash history configuration and deduplication"
+  },
+  {
+    "id": "semble-bash-it-int-009",
+    "query": "how tab completion scripts are sourced and activated",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/completion.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "plugins/available/alias-completion.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how tab completion scripts are sourced and activated"
+  },
+  {
+    "id": "semble-bash-it-int-010",
+    "query": "preexec and precmd hook implementation",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/preexec.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/command_duration.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] preexec and precmd hook implementation"
+  },
+  {
+    "id": "semble-bash-it-sym-011",
+    "query": "pyenv integration plugin for bash",
+    "category": "symbol_lookup",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/pyenv.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] pyenv integration plugin for bash"
+  },
+  {
+    "id": "semble-bash-it-sym-012",
+    "query": "ssh agent plugin for managing ssh keys",
+    "category": "symbol_lookup",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/ssh.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ssh agent plugin for managing ssh keys"
+  },
+  {
+    "id": "semble-bash-it-int-013",
+    "query": "jump plugin for bookmarking directories",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/jump.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] jump plugin for bookmarking directories"
+  },
+  {
+    "id": "semble-bash-it-sym-014",
+    "query": "node version manager nvm integration",
+    "category": "symbol_lookup",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/node.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] node version manager nvm integration"
+  },
+  {
+    "id": "semble-bash-it-sym-015",
+    "query": "rvm ruby version manager plugin",
+    "category": "symbol_lookup",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/rvm.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] rvm ruby version manager plugin"
+  },
+  {
+    "id": "semble-bash-it-int-016",
+    "query": "bash-it utility functions for string manipulation",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "lib/utilities.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] bash-it utility functions for string manipulation"
+  },
+  {
+    "id": "semble-bash-it-sym-017",
+    "query": "hub github cli aliases and helpers",
+    "category": "symbol_lookup",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/hub.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] hub github cli aliases and helpers"
+  },
+  {
+    "id": "semble-bash-it-int-018",
+    "query": "xterm terminal title setting functions",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/xterm.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] xterm terminal title setting functions"
+  },
+  {
+    "id": "semble-bash-it-int-019",
+    "query": "bash-it main entry point and initialization",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "bash_it.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/helpers.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] bash-it main entry point and initialization"
+  },
+  {
+    "id": "semble-bash-it-int-020",
+    "query": "projects plugin for switching between project directories",
+    "category": "intent",
+    "repo": "bash-it",
+    "ground_truth": [
+      {
+        "file_path": "plugins/available/projects.plugin.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] projects plugin for switching between project directories"
+  }
+]

@@ -1,0 +1,320 @@
+[
+  {
+    "id": "semble-curl-cro-001",
+    "query": "how curl resolves and connects to a remote host",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/connect.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how curl resolves and connects to a remote host"
+  },
+  {
+    "id": "semble-curl-int-002",
+    "query": "how a new easy handle is initialized with default settings",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how a new easy handle is initialized with default settings"
+  },
+  {
+    "id": "semble-curl-cro-003",
+    "query": "parsing the URL and filling the connection struct",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] parsing the URL and filling the connection struct"
+  },
+  {
+    "id": "semble-curl-cro-004",
+    "query": "how curl checks whether an existing connection can be reused",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how curl checks whether an existing connection can be reused"
+  },
+  {
+    "id": "semble-curl-int-005",
+    "query": "how HTTP authentication headers are selected and output",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/http.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how HTTP authentication headers are selected and output"
+  },
+  {
+    "id": "semble-curl-int-006",
+    "query": "how curl decides whether to retry a failed request",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/transfer.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how curl decides whether to retry a failed request"
+  },
+  {
+    "id": "semble-curl-cro-007",
+    "query": "pre-transfer setup: resolving credentials, ranges, and timers",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/transfer.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] pre-transfer setup: resolving credentials, ranges, and timers"
+  },
+  {
+    "id": "semble-curl-cro-008",
+    "query": "how the multi interface drives socket event loop transfers",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/multi.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the multi interface drives socket event loop transfers"
+  },
+  {
+    "id": "semble-curl-int-009",
+    "query": "cookie parsing and storage",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/cookie.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] cookie parsing and storage"
+  },
+  {
+    "id": "semble-curl-int-010",
+    "query": "how progress reporting works during a transfer",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/progress.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how progress reporting works during a transfer"
+  },
+  {
+    "id": "semble-curl-int-011",
+    "query": "MIME multipart body construction for form uploads",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/mime.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] MIME multipart body construction for form uploads"
+  },
+  {
+    "id": "semble-curl-cro-012",
+    "query": "how the easy interface wraps the multi interface for synchronous use",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/easy.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/multi.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the easy interface wraps the multi interface for synchronous use"
+  },
+  {
+    "id": "semble-curl-int-013",
+    "query": "how curl checks if HTTP If-Modified-Since condition is met",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/transfer.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how curl checks if HTTP If-Modified-Since condition is met"
+  },
+  {
+    "id": "semble-curl-cro-014",
+    "query": "connection filter chain setup for proxies and TLS",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/connect.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] connection filter chain setup for proxies and TLS"
+  },
+  {
+    "id": "semble-curl-cro-015",
+    "query": "how SSL is configured on a connection",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/connect.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how SSL is configured on a connection"
+  },
+  {
+    "id": "semble-curl-int-016",
+    "query": "how data is sent and received during a transfer",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/transfer.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how data is sent and received during a transfer"
+  },
+  {
+    "id": "semble-curl-int-017",
+    "query": "how curl keepalive and connection upkeep works",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how curl keepalive and connection upkeep works"
+  },
+  {
+    "id": "semble-curl-int-018",
+    "query": "how an existing connection is detected as dead before reuse",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how an existing connection is detected as dead before reuse"
+  },
+  {
+    "id": "semble-curl-int-019",
+    "query": "freeing all resources when closing an easy handle",
+    "category": "intent",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/url.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] freeing all resources when closing an easy handle"
+  },
+  {
+    "id": "semble-curl-cro-020",
+    "query": "how HTTP proxy tunnel CONNECT method is initiated",
+    "category": "cross_file",
+    "repo": "curl",
+    "ground_truth": [
+      {
+        "file_path": "lib/http.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how HTTP proxy tunnel CONNECT method is initiated"
+  }
+]

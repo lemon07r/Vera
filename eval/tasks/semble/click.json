@@ -1,0 +1,314 @@
+[
+  {
+    "id": "semble-click-cro-001",
+    "query": "how commands are structured and invoked",
+    "category": "cross_file",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how commands are structured and invoked"
+  },
+  {
+    "id": "semble-click-int-002",
+    "query": "command group and subcommand dispatch",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] command group and subcommand dispatch"
+  },
+  {
+    "id": "semble-click-cro-003",
+    "query": "context management and nesting across commands",
+    "category": "cross_file",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] context management and nesting across commands"
+  },
+  {
+    "id": "semble-click-cro-004",
+    "query": "decorator API for defining commands, options, and arguments",
+    "category": "cross_file",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/decorators.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] decorator API for defining commands, options, and arguments"
+  },
+  {
+    "id": "semble-click-int-005",
+    "query": "parameter type coercion and value validation",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/types.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] parameter type coercion and value validation"
+  },
+  {
+    "id": "semble-click-int-006",
+    "query": "exception types for user errors and abort",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] exception types for user errors and abort"
+  },
+  {
+    "id": "semble-click-int-007",
+    "query": "help text formatting and usage rendering",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/formatting.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] help text formatting and usage rendering"
+  },
+  {
+    "id": "semble-click-int-008",
+    "query": "test runner for CLI commands in isolation",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/testing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] test runner for CLI commands in isolation"
+  },
+  {
+    "id": "semble-click-int-009",
+    "query": "terminal output, prompts, and progress bars",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/termui.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] terminal output, prompts, and progress bars"
+  },
+  {
+    "id": "semble-click-int-010",
+    "query": "global context stack and current context access",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/globals.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] global context stack and current context access"
+  },
+  {
+    "id": "semble-click-int-011",
+    "query": "option parser and long/short option resolution",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/parser.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] option parser and long/short option resolution"
+  },
+  {
+    "id": "semble-click-int-012",
+    "query": "shell tab completion support",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/shell_completion.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] shell tab completion support"
+  },
+  {
+    "id": "semble-click-cro-013",
+    "query": "how pass_context passes the Context as the first argument",
+    "category": "cross_file",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/decorators.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how pass_context passes the Context as the first argument"
+  },
+  {
+    "id": "semble-click-cro-014",
+    "query": "how multi-value options and nargs are handled",
+    "category": "cross_file",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how multi-value options and nargs are handled"
+  },
+  {
+    "id": "semble-click-cro-015",
+    "query": "how default values are resolved from environment variables",
+    "category": "cross_file",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how default values are resolved from environment variables"
+  },
+  {
+    "id": "semble-click-int-016",
+    "query": "file and path parameter types",
+    "category": "intent",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/types.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] file and path parameter types"
+  },
+  {
+    "id": "semble-click-sym-017",
+    "query": "Command",
+    "category": "symbol_lookup",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Command"
+  },
+  {
+    "id": "semble-click-sym-018",
+    "query": "Group",
+    "category": "symbol_lookup",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Group"
+  },
+  {
+    "id": "semble-click-sym-019",
+    "query": "Context",
+    "category": "symbol_lookup",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/core.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Context"
+  },
+  {
+    "id": "semble-click-sym-020",
+    "query": "CliRunner",
+    "category": "symbol_lookup",
+    "repo": "click",
+    "ground_truth": [
+      {
+        "file_path": "src/click/testing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] CliRunner"
+  }
+]

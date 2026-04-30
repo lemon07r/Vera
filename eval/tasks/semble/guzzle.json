@@ -1,0 +1,332 @@
+[
+  {
+    "id": "semble-guzzle-int-001",
+    "query": "HTTP client request sending and defaults",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/Client.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/ClientTrait.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] HTTP client request sending and defaults"
+  },
+  {
+    "id": "semble-guzzle-cro-002",
+    "query": "middleware handler stack composition",
+    "category": "cross_file",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/HandlerStack.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Middleware.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] middleware handler stack composition"
+  },
+  {
+    "id": "semble-guzzle-int-003",
+    "query": "retry middleware and exponential backoff",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/RetryMiddleware.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] retry middleware and exponential backoff"
+  },
+  {
+    "id": "semble-guzzle-int-004",
+    "query": "cookie jar implementation",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/Cookie/CookieJar.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Cookie/SetCookie.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] cookie jar implementation"
+  },
+  {
+    "id": "semble-guzzle-int-005",
+    "query": "redirect following and location header handling",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/RedirectMiddleware.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] redirect following and location header handling"
+  },
+  {
+    "id": "semble-guzzle-int-006",
+    "query": "curl-based HTTP handler and connection management",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/Handler/CurlFactory.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Handler/CurlHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] curl-based HTTP handler and connection management"
+  },
+  {
+    "id": "semble-guzzle-int-007",
+    "query": "mock handler for simulating HTTP responses in tests",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/Handler/MockHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] mock handler for simulating HTTP responses in tests"
+  },
+  {
+    "id": "semble-guzzle-int-008",
+    "query": "concurrent request pool with limited parallelism",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/Pool.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] concurrent request pool with limited parallelism"
+  },
+  {
+    "id": "semble-guzzle-int-009",
+    "query": "available request options and their configuration",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/RequestOptions.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] available request options and their configuration"
+  },
+  {
+    "id": "semble-guzzle-int-010",
+    "query": "HTTP message formatting and request logging",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/MessageFormatter.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] HTTP message formatting and request logging"
+  },
+  {
+    "id": "semble-guzzle-int-011",
+    "query": "how request body and content-type are prepared before sending",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/PrepareBodyMiddleware.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how request body and content-type are prepared before sending"
+  },
+  {
+    "id": "semble-guzzle-int-012",
+    "query": "exception hierarchy for HTTP and transfer errors",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/Exception/RequestException.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Exception/GuzzleException.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] exception hierarchy for HTTP and transfer errors"
+  },
+  {
+    "id": "semble-guzzle-sym-013",
+    "query": "Client",
+    "category": "symbol_lookup",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/Client.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Client"
+  },
+  {
+    "id": "semble-guzzle-sym-014",
+    "query": "HandlerStack",
+    "category": "symbol_lookup",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/HandlerStack.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HandlerStack"
+  },
+  {
+    "id": "semble-guzzle-sym-015",
+    "query": "RedirectMiddleware",
+    "category": "symbol_lookup",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/RedirectMiddleware.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] RedirectMiddleware"
+  },
+  {
+    "id": "semble-guzzle-cro-016",
+    "query": "how the handler stack wraps middleware around the HTTP send",
+    "category": "cross_file",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/HandlerStack.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the handler stack wraps middleware around the HTTP send"
+  },
+  {
+    "id": "semble-guzzle-int-017",
+    "query": "retry middleware and backoff logic",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/RetryMiddleware.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] retry middleware and backoff logic"
+  },
+  {
+    "id": "semble-guzzle-cro-018",
+    "query": "how redirect responses are followed and redirect history tracked",
+    "category": "cross_file",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/RedirectMiddleware.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how redirect responses are followed and redirect history tracked"
+  },
+  {
+    "id": "semble-guzzle-int-019",
+    "query": "transfer statistics and timing information",
+    "category": "intent",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/TransferStats.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] transfer statistics and timing information"
+  },
+  {
+    "id": "semble-guzzle-sym-020",
+    "query": "HandlerStack",
+    "category": "symbol_lookup",
+    "repo": "guzzle",
+    "ground_truth": [
+      {
+        "file_path": "src/HandlerStack.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HandlerStack"
+  }
+]

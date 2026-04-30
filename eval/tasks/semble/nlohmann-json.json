@@ -1,0 +1,338 @@
+[
+  {
+    "id": "semble-nlohmann-json-cro-001",
+    "query": "how JSON values are stored as a discriminated union of types",
+    "category": "cross_file",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/json.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "include/nlohmann/detail/value_t.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how JSON values are stored as a discriminated union of types"
+  },
+  {
+    "id": "semble-nlohmann-json-cro-002",
+    "query": "JSON parser and tokenizer",
+    "category": "cross_file",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/input/parser.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "include/nlohmann/detail/input/lexer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] JSON parser and tokenizer"
+  },
+  {
+    "id": "semble-nlohmann-json-int-003",
+    "query": "JSON lexer and token scanning",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/input/lexer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON lexer and token scanning"
+  },
+  {
+    "id": "semble-nlohmann-json-int-004",
+    "query": "JSON serialization to string output",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/output/serializer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON serialization to string output"
+  },
+  {
+    "id": "semble-nlohmann-json-cro-005",
+    "query": "ADL-based to_json and from_json conversion hooks for custom types",
+    "category": "cross_file",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/adl_serializer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] ADL-based to_json and from_json conversion hooks for custom types"
+  },
+  {
+    "id": "semble-nlohmann-json-int-006",
+    "query": "exception types for parse and type errors",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/exceptions.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] exception types for parse and type errors"
+  },
+  {
+    "id": "semble-nlohmann-json-cro-007",
+    "query": "how from_json populates a custom C++ type from JSON",
+    "category": "cross_file",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/conversions/from_json.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "include/nlohmann/adl_serializer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how from_json populates a custom C++ type from JSON"
+  },
+  {
+    "id": "semble-nlohmann-json-cro-008",
+    "query": "how to_json serializes a custom C++ type to JSON",
+    "category": "cross_file",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/conversions/to_json.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "include/nlohmann/adl_serializer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how to_json serializes a custom C++ type to JSON"
+  },
+  {
+    "id": "semble-nlohmann-json-int-009",
+    "query": "JSON Pointer (RFC 6901) for navigating nested values",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/json_pointer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON Pointer (RFC 6901) for navigating nested values"
+  },
+  {
+    "id": "semble-nlohmann-json-int-010",
+    "query": "ordered map for insertion-order-preserving JSON objects",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/ordered_map.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ordered map for insertion-order-preserving JSON objects"
+  },
+  {
+    "id": "semble-nlohmann-json-int-011",
+    "query": "type traits and SFINAE utilities for serialization detection",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/meta/type_traits.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] type traits and SFINAE utilities for serialization detection"
+  },
+  {
+    "id": "semble-nlohmann-json-cro-012",
+    "query": "SAX-style event-driven JSON parsing interface",
+    "category": "cross_file",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/input/json_sax.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "include/nlohmann/detail/input/parser.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] SAX-style event-driven JSON parsing interface"
+  },
+  {
+    "id": "semble-nlohmann-json-int-013",
+    "query": "value type enum for JSON null, boolean, number, string, array, object",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/value_t.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] value type enum for JSON null, boolean, number, string, array, object"
+  },
+  {
+    "id": "semble-nlohmann-json-int-014",
+    "query": "binary format support for BSON, CBOR, and MessagePack",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/output/binary_writer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "include/nlohmann/detail/input/binary_reader.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] binary format support for BSON, CBOR, and MessagePack"
+  },
+  {
+    "id": "semble-nlohmann-json-cro-015",
+    "query": "how operator[] and at() access and create nested JSON values",
+    "category": "cross_file",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/json.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how operator[] and at() access and create nested JSON values"
+  },
+  {
+    "id": "semble-nlohmann-json-int-016",
+    "query": "JSON merge patch and diff operations",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/json.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON merge patch and diff operations"
+  },
+  {
+    "id": "semble-nlohmann-json-int-017",
+    "query": "iterator implementation for JSON arrays and objects",
+    "category": "intent",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/iterators/iter_impl.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] iterator implementation for JSON arrays and objects"
+  },
+  {
+    "id": "semble-nlohmann-json-sym-018",
+    "query": "basic_json",
+    "category": "symbol_lookup",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/json.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] basic_json"
+  },
+  {
+    "id": "semble-nlohmann-json-sym-019",
+    "query": "json_pointer",
+    "category": "symbol_lookup",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/detail/json_pointer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] json_pointer"
+  },
+  {
+    "id": "semble-nlohmann-json-sym-020",
+    "query": "adl_serializer",
+    "category": "symbol_lookup",
+    "repo": "nlohmann-json",
+    "ground_truth": [
+      {
+        "file_path": "include/nlohmann/adl_serializer.hpp",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] adl_serializer"
+  }
+]

@@ -1,0 +1,338 @@
+[
+  {
+    "id": "semble-messagepack-csharp-cro-001",
+    "query": "how objects are serialized to MessagePack binary format",
+    "category": "cross_file",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSerializer.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/MessagePack/MessagePackWriter.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how objects are serialized to MessagePack binary format"
+  },
+  {
+    "id": "semble-messagepack-csharp-cro-002",
+    "query": "how binary data is deserialized back into typed C# objects",
+    "category": "cross_file",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSerializer.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/MessagePack/MessagePackReader.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how binary data is deserialized back into typed C# objects"
+  },
+  {
+    "id": "semble-messagepack-csharp-cro-003",
+    "query": "how custom formatters are registered and resolved for types",
+    "category": "cross_file",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/IFormatterResolver.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/MessagePack/Resolvers/CompositeResolver.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how custom formatters are registered and resolved for types"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-004",
+    "query": "how the dynamic object resolver generates serialization code at runtime",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/Resolvers/DynamicObjectResolver.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how the dynamic object resolver generates serialization code at runtime"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-005",
+    "query": "how collections and arrays are serialized",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/Formatters/CollectionFormatter.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how collections and arrays are serialized"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-006",
+    "query": "how union types with subtypes are handled in serialization",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/Resolvers/DynamicUnionResolver.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how union types with subtypes are handled in serialization"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-007",
+    "query": "how serializer options control compression and resolver configuration",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSerializerOptions.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how serializer options control compression and resolver configuration"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-008",
+    "query": "how enums are serialized as integers or strings",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/Resolvers/DynamicEnumResolver.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/MessagePack/Formatters/GenericEnumFormatter`1.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      },
+      {
+        "file_path": "src/MessagePack/Formatters/EnumAsStringFormatter`1.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how enums are serialized as integers or strings"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-009",
+    "query": "reading MessagePack data from a stream incrementally",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackStreamReader.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] reading MessagePack data from a stream incrementally"
+  },
+  {
+    "id": "semble-messagepack-csharp-cro-010",
+    "query": "how the sequence pool manages buffer reuse during serialization",
+    "category": "cross_file",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/SequencePool.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/MessagePack/BufferWriter.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the sequence pool manages buffer reuse during serialization"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-011",
+    "query": "how LZ4 compression is applied to MessagePack payloads",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSerializer.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how LZ4 compression is applied to MessagePack payloads"
+  },
+  {
+    "id": "semble-messagepack-csharp-sym-012",
+    "query": "MessagePackSerializer",
+    "category": "symbol_lookup",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSerializer.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] MessagePackSerializer"
+  },
+  {
+    "id": "semble-messagepack-csharp-sym-013",
+    "query": "MessagePackReader",
+    "category": "symbol_lookup",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackReader.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] MessagePackReader"
+  },
+  {
+    "id": "semble-messagepack-csharp-sym-014",
+    "query": "IMessagePackFormatter",
+    "category": "symbol_lookup",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/Formatters/IMessagePackFormatter`1.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] IMessagePackFormatter"
+  },
+  {
+    "id": "semble-messagepack-csharp-sym-015",
+    "query": "CompositeResolver",
+    "category": "symbol_lookup",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/Resolvers/CompositeResolver.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] CompositeResolver"
+  },
+  {
+    "id": "semble-messagepack-csharp-sym-016",
+    "query": "MessagePackSerializerOptions",
+    "category": "symbol_lookup",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSerializerOptions.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] MessagePackSerializerOptions"
+  },
+  {
+    "id": "semble-messagepack-csharp-sym-017",
+    "query": "StandardResolver",
+    "category": "symbol_lookup",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/Resolvers/StandardResolver.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] StandardResolver"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-018",
+    "query": "how the MessagePack binary format codes map to types",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackCode.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how the MessagePack binary format codes map to types"
+  },
+  {
+    "id": "semble-messagepack-csharp-int-019",
+    "query": "security options and depth limits for deserialization",
+    "category": "intent",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSecurity.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] security options and depth limits for deserialization"
+  },
+  {
+    "id": "semble-messagepack-csharp-sym-020",
+    "query": "MessagePackSecurity",
+    "category": "symbol_lookup",
+    "repo": "messagepack-csharp",
+    "ground_truth": [
+      {
+        "file_path": "src/MessagePack/MessagePackSecurity.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] MessagePackSecurity"
+  }
+]

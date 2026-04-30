@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-mini.nvim-cro-001",
+    "query": "how mini.completion provides LSP-based autocompletion",
+    "category": "cross_file",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/completion.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how mini.completion provides LSP-based autocompletion"
+  },
+  {
+    "id": "semble-mini.nvim-cro-002",
+    "query": "how mini.files implements a file explorer in a floating buffer",
+    "category": "cross_file",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/files.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how mini.files implements a file explorer in a floating buffer"
+  },
+  {
+    "id": "semble-mini.nvim-cro-003",
+    "query": "how mini.pick implements a fuzzy finder picker",
+    "category": "cross_file",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/pick.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how mini.pick implements a fuzzy finder picker"
+  },
+  {
+    "id": "semble-mini.nvim-int-004",
+    "query": "how mini.diff shows inline git diff signs in buffers",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/diff.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.diff shows inline git diff signs in buffers"
+  },
+  {
+    "id": "semble-mini.nvim-int-005",
+    "query": "how mini.comment toggles line and block comments",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/comment.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.comment toggles line and block comments"
+  },
+  {
+    "id": "semble-mini.nvim-int-006",
+    "query": "how mini.ai extends text objects for selecting around and inside",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/ai.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.ai extends text objects for selecting around and inside"
+  },
+  {
+    "id": "semble-mini.nvim-int-007",
+    "query": "how mini.statusline builds a configurable Neovim status line",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/statusline.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.statusline builds a configurable Neovim status line"
+  },
+  {
+    "id": "semble-mini.nvim-int-008",
+    "query": "how mini.animate smoothly animates cursor movement and scrolling",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/animate.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.animate smoothly animates cursor movement and scrolling"
+  },
+  {
+    "id": "semble-mini.nvim-cro-009",
+    "query": "how mini.deps manages Neovim plugin installation and updates",
+    "category": "cross_file",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/deps.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how mini.deps manages Neovim plugin installation and updates"
+  },
+  {
+    "id": "semble-mini.nvim-int-010",
+    "query": "how mini.git provides git integration for files and hunks",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/git.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.git provides git integration for files and hunks"
+  },
+  {
+    "id": "semble-mini.nvim-int-011",
+    "query": "how mini.indentscope highlights the indent scope of the cursor block",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/indentscope.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.indentscope highlights the indent scope of the cursor block"
+  },
+  {
+    "id": "semble-mini.nvim-int-012",
+    "query": "how mini.fuzzy scores and ranks fuzzy matches",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/fuzzy.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.fuzzy scores and ranks fuzzy matches"
+  },
+  {
+    "id": "semble-mini.nvim-int-013",
+    "query": "how mini.hipatterns highlights configurable text patterns in buffers",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/hipatterns.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.hipatterns highlights configurable text patterns in buffers"
+  },
+  {
+    "id": "semble-mini.nvim-int-014",
+    "query": "how mini.jump implements single-character jump navigation",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/jump.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.jump implements single-character jump navigation"
+  },
+  {
+    "id": "semble-mini.nvim-int-015",
+    "query": "how mini.align aligns text using configurable separators",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/align.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.align aligns text using configurable separators"
+  },
+  {
+    "id": "semble-mini.nvim-int-016",
+    "query": "how mini.bufremove safely removes buffers without closing windows",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/bufremove.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.bufremove safely removes buffers without closing windows"
+  },
+  {
+    "id": "semble-mini.nvim-int-017",
+    "query": "how mini.colors manages and creates Neovim color schemes",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/colors.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.colors manages and creates Neovim color schemes"
+  },
+  {
+    "id": "semble-mini.nvim-int-018",
+    "query": "how mini.clue shows pending keybinding hints as a popup",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/clue.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.clue shows pending keybinding hints as a popup"
+  },
+  {
+    "id": "semble-mini.nvim-int-019",
+    "query": "how mini.base16 builds a full color scheme from a 16-color palette",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/base16.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.base16 builds a full color scheme from a 16-color palette"
+  },
+  {
+    "id": "semble-mini.nvim-int-020",
+    "query": "how mini.misc provides utility functions shared across mini modules",
+    "category": "intent",
+    "repo": "mini.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/mini/misc.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how mini.misc provides utility functions shared across mini modules"
+  }
+]

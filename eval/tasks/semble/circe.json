@@ -1,0 +1,287 @@
+[
+  {
+    "id": "semble-circe-cro-001",
+    "query": "how Encoder typeclass converts Scala values to JSON",
+    "category": "cross_file",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Encoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Encoder typeclass converts Scala values to JSON"
+  },
+  {
+    "id": "semble-circe-cro-002",
+    "query": "how Decoder typeclass parses JSON into Scala values",
+    "category": "cross_file",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Decoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Decoder typeclass parses JSON into Scala values"
+  },
+  {
+    "id": "semble-circe-int-003",
+    "query": "Json ADT representing JSON values null boolean number string array object",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Json.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Json ADT representing JSON values null boolean number string array object"
+  },
+  {
+    "id": "semble-circe-int-004",
+    "query": "Codec combining Encoder and Decoder for bidirectional conversion",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Codec.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Codec combining Encoder and Decoder for bidirectional conversion"
+  },
+  {
+    "id": "semble-circe-cro-005",
+    "query": "HCursor and cursor navigation for traversing JSON trees",
+    "category": "cross_file",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/HCursor.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] HCursor and cursor navigation for traversing JSON trees"
+  },
+  {
+    "id": "semble-circe-int-006",
+    "query": "ACursor abstract cursor for JSON traversal with error accumulation",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/ACursor.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ACursor abstract cursor for JSON traversal with error accumulation"
+  },
+  {
+    "id": "semble-circe-int-007",
+    "query": "JsonObject for key-value JSON object representation",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/JsonObject.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JsonObject for key-value JSON object representation"
+  },
+  {
+    "id": "semble-circe-int-008",
+    "query": "JsonNumber representation for precise numeric values",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/JsonNumber.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JsonNumber representation for precise numeric values"
+  },
+  {
+    "id": "semble-circe-cro-009",
+    "query": "how circe derives Encoder and Decoder instances for case classes",
+    "category": "cross_file",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Encoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how circe derives Encoder and Decoder instances for case classes"
+  },
+  {
+    "id": "semble-circe-int-010",
+    "query": "Printer for controlling JSON serialization formatting",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Printer.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Printer for controlling JSON serialization formatting"
+  },
+  {
+    "id": "semble-circe-int-011",
+    "query": "accumulating decoder errors with andAccumulating",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Decoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] accumulating decoder errors with andAccumulating"
+  },
+  {
+    "id": "semble-circe-int-012",
+    "query": "emap and flatMap on Decoder for validation and transformation",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Decoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] emap and flatMap on Decoder for validation and transformation"
+  },
+  {
+    "id": "semble-circe-cro-013",
+    "query": "how circe parses a JSON string into a Json value",
+    "category": "cross_file",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Parser.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how circe parses a JSON string into a Json value"
+  },
+  {
+    "id": "semble-circe-int-014",
+    "query": "KeyEncoder and KeyDecoder for Map key serialization",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/KeyEncoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] KeyEncoder and KeyDecoder for Map key serialization"
+  },
+  {
+    "id": "semble-circe-int-015",
+    "query": "DecodingFailure and ParsingFailure error types for handling circe errors",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Error.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] DecodingFailure and ParsingFailure error types for handling circe errors"
+  },
+  {
+    "id": "semble-circe-int-016",
+    "query": "down field and array index cursor operations",
+    "category": "intent",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/HCursor.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] down field and array index cursor operations"
+  },
+  {
+    "id": "semble-circe-sym-017",
+    "query": "Encoder",
+    "category": "symbol_lookup",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Encoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Encoder"
+  },
+  {
+    "id": "semble-circe-sym-018",
+    "query": "Decoder",
+    "category": "symbol_lookup",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Decoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Decoder"
+  },
+  {
+    "id": "semble-circe-sym-019",
+    "query": "Json",
+    "category": "symbol_lookup",
+    "repo": "circe",
+    "ground_truth": [
+      {
+        "file_path": "modules/core/shared/src/main/scala/io/circe/Json.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Json"
+  }
+]

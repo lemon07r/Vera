@@ -1,0 +1,131 @@
+# Semble benchmark subset (auto-generated)
+
+[corpus]
+version = 1
+description = "Semble benchmark subset for faster evaluation"
+clone_root = ".bench/semble-repos"
+
+[[repos]]
+name = "fastapi"
+url = "https://github.com/fastapi/fastapi.git"
+commit = "c3c9dd6b1a08bcda766e7b43eafe72c4c5e9e193"
+language = "python"
+description = "semble benchmark repo"
+benchmark_root = "fastapi"
+
+[[repos]]
+name = "flask"
+url = "https://github.com/pallets/flask.git"
+commit = "258d68b6ff5e2244386540f48b48bab90d6ab827"
+language = "python"
+description = "semble benchmark repo"
+benchmark_root = "src/flask"
+
+[[repos]]
+name = "requests"
+url = "https://github.com/psf/requests.git"
+commit = "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d"
+language = "python"
+description = "semble benchmark repo"
+benchmark_root = "src/requests"
+
+[[repos]]
+name = "axios"
+url = "https://github.com/axios/axios.git"
+commit = "c7a76ddbf277db864ee6cfb4ef17b8a08ffbe3f5"
+language = "javascript"
+description = "semble benchmark repo"
+benchmark_root = "lib"
+
+[[repos]]
+name = "express"
+url = "https://github.com/expressjs/express.git"
+commit = "8e022edc9185f540a3fcecaf5e56b850d919cdac"
+language = "javascript"
+description = "semble benchmark repo"
+benchmark_root = "lib"
+
+[[repos]]
+name = "gin"
+url = "https://github.com/gin-gonic/gin.git"
+commit = "d3ffc9985281dcf4d3bef604cce4e662b1a327a6"
+language = "go"
+description = "semble benchmark repo"
+
+[[repos]]
+name = "cobra"
+url = "https://github.com/spf13/cobra.git"
+commit = "61968e893eee2f27696c2fbc8e34fa5c4afaf7c4"
+language = "go"
+description = "semble benchmark repo"
+
+[[repos]]
+name = "gson"
+url = "https://github.com/google/gson.git"
+commit = "f4d371d29c04066dbe7fdb31f642831f9c7f40cd"
+language = "java"
+description = "semble benchmark repo"
+benchmark_root = "gson"
+
+[[repos]]
+name = "sinatra"
+url = "https://github.com/sinatra/sinatra.git"
+commit = "f891dd2b6f4911e356600efe6c3b82af97d262c6"
+language = "ruby"
+description = "semble benchmark repo"
+benchmark_root = "lib"
+
+[[repos]]
+name = "tokio"
+url = "https://github.com/tokio-rs/tokio.git"
+commit = "5db10f538b683fe88d699dfd11be31d193db011c"
+language = "rust"
+description = "semble benchmark repo"
+benchmark_root = "tokio/src"
+
+[[repos]]
+name = "serde"
+url = "https://github.com/serde-rs/serde.git"
+commit = "fa7da4a93567ed347ad0735c28e439fca688ef26"
+language = "rust"
+description = "semble benchmark repo"
+
+[[repos]]
+name = "zod"
+url = "https://github.com/colinhacks/zod.git"
+commit = "c7805073fef5b6b8857307c3d4b3597a70613bc2"
+language = "typescript"
+description = "semble benchmark repo"
+benchmark_root = "packages/zod/src"
+
+[[repos]]
+name = "phoenix"
+url = "https://github.com/phoenixframework/phoenix.git"
+commit = "c88da921ef8009e0aca8643d5334585cd35d5573"
+language = "elixir"
+description = "semble benchmark repo"
+benchmark_root = "lib"
+
+[[repos]]
+name = "axum"
+url = "https://github.com/tokio-rs/axum.git"
+commit = "309d1bd9530eec2217134cb262760af1df42ee3b"
+language = "rust"
+description = "semble benchmark repo"
+benchmark_root = "axum/src"
+
+[[repos]]
+name = "fmtlib"
+url = "https://github.com/fmtlib/fmt.git"
+commit = "382609a920d2c43c00f2951233bc0d578a783982"
+language = "cpp"
+description = "semble benchmark repo"
+benchmark_root = "include/fmt"
+
+[[repos]]
+name = "curl"
+url = "https://github.com/curl/curl.git"
+commit = "021a87cf81638af5317e142610ea0dd9f9fb4890"
+language = "c"
+description = "semble benchmark repo"
+benchmark_root = "lib"

@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-nvm-cro-001",
+    "query": "how nvm installs a specific Node.js version",
+    "category": "cross_file",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how nvm installs a specific Node.js version"
+  },
+  {
+    "id": "semble-nvm-int-002",
+    "query": "how nvm downloads a Node.js tarball from the remote",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm downloads a Node.js tarball from the remote"
+  },
+  {
+    "id": "semble-nvm-int-003",
+    "query": "how nvm resolves an alias or version string to a concrete version",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm resolves an alias or version string to a concrete version"
+  },
+  {
+    "id": "semble-nvm-int-004",
+    "query": "how nvm switches the active Node.js version in the current shell",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm switches the active Node.js version in the current shell"
+  },
+  {
+    "id": "semble-nvm-int-005",
+    "query": "how nvm finds the nearest .nvmrc file by walking up the directory tree",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm finds the nearest .nvmrc file by walking up the directory tree"
+  },
+  {
+    "id": "semble-nvm-int-006",
+    "query": "how nvm_find_project_dir locates the project root directory",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm_find_project_dir locates the project root directory"
+  },
+  {
+    "id": "semble-nvm-int-007",
+    "query": "how nvm lists installed and available Node.js versions",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm lists installed and available Node.js versions"
+  },
+  {
+    "id": "semble-nvm-int-008",
+    "query": "how nvm detects whether a version is already installed",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm detects whether a version is already installed"
+  },
+  {
+    "id": "semble-nvm-cro-009",
+    "query": "how nvm manages the PATH to point to the active Node.js bin",
+    "category": "cross_file",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how nvm manages the PATH to point to the active Node.js bin"
+  },
+  {
+    "id": "semble-nvm-int-010",
+    "query": "how nvm_download wraps curl or wget for fetching remote resources",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm_download wraps curl or wget for fetching remote resources"
+  },
+  {
+    "id": "semble-nvm-int-011",
+    "query": "how nvm handles the default alias to set the default Node.js version",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm handles the default alias to set the default Node.js version"
+  },
+  {
+    "id": "semble-nvm-int-012",
+    "query": "how nvm detects and uses system Node.js as a fallback",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm detects and uses system Node.js as a fallback"
+  },
+  {
+    "id": "semble-nvm-int-013",
+    "query": "how nvm installs the latest npm for a given Node.js version",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm installs the latest npm for a given Node.js version"
+  },
+  {
+    "id": "semble-nvm-int-014",
+    "query": "how nvm processes and validates the contents of an .nvmrc file",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm processes and validates the contents of an .nvmrc file"
+  },
+  {
+    "id": "semble-nvm-int-015",
+    "query": "how nvm_has checks whether a command exists on the system",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm_has checks whether a command exists on the system"
+  },
+  {
+    "id": "semble-nvm-int-016",
+    "query": "how nvm uninstalls a Node.js version and cleans up its directory",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm uninstalls a Node.js version and cleans up its directory"
+  },
+  {
+    "id": "semble-nvm-int-017",
+    "query": "how nvm checks curl supports libz compression",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm checks curl supports libz compression"
+  },
+  {
+    "id": "semble-nvm-int-018",
+    "query": "how nvm_get_latest fetches the latest available Node.js version",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm_get_latest fetches the latest available Node.js version"
+  },
+  {
+    "id": "semble-nvm-int-019",
+    "query": "how nvm sanitizes the auth header in download requests",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm sanitizes the auth header in download requests"
+  },
+  {
+    "id": "semble-nvm-int-020",
+    "query": "how nvm detects color support and conditionally uses ANSI codes",
+    "category": "intent",
+    "repo": "nvm",
+    "ground_truth": [
+      {
+        "file_path": "nvm.sh",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how nvm detects color support and conditionally uses ANSI codes"
+  }
+]

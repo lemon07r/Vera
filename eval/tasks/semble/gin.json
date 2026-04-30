@@ -1,0 +1,338 @@
+[
+  {
+    "id": "semble-gin-cro-001",
+    "query": "how routes are grouped and registered",
+    "category": "cross_file",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "routergroup.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "gin.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how routes are grouped and registered"
+  },
+  {
+    "id": "semble-gin-int-002",
+    "query": "radix tree path matching",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "tree.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] radix tree path matching"
+  },
+  {
+    "id": "semble-gin-int-003",
+    "query": "request context lifecycle and helpers",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request context lifecycle and helpers"
+  },
+  {
+    "id": "semble-gin-int-004",
+    "query": "catching runtime panics in request handlers and returning 500",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "recovery.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] catching runtime panics in request handlers and returning 500"
+  },
+  {
+    "id": "semble-gin-cro-005",
+    "query": "JSON request binding and validation",
+    "category": "cross_file",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "binding/json.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "binding/default_validator.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] JSON request binding and validation"
+  },
+  {
+    "id": "semble-gin-cro-006",
+    "query": "how the Gin Engine embeds RouterGroup and uses Context per request",
+    "category": "cross_file",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "gin.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "routergroup.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      },
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the Gin Engine embeds RouterGroup and uses Context per request"
+  },
+  {
+    "id": "semble-gin-int-007",
+    "query": "logging middleware and access log format",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "logger.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] logging middleware and access log format"
+  },
+  {
+    "id": "semble-gin-int-008",
+    "query": "JSON response rendering",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "render/json.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON response rendering"
+  },
+  {
+    "id": "semble-gin-int-009",
+    "query": "HTML template rendering",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "render/html.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] HTML template rendering"
+  },
+  {
+    "id": "semble-gin-int-010",
+    "query": "query parameter and URL path variable extraction",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] query parameter and URL path variable extraction"
+  },
+  {
+    "id": "semble-gin-int-011",
+    "query": "multipart form and file upload handling",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] multipart form and file upload handling"
+  },
+  {
+    "id": "semble-gin-int-012",
+    "query": "error types and per-request error collection",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "errors.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] error types and per-request error collection"
+  },
+  {
+    "id": "semble-gin-int-013",
+    "query": "form data binding for URL-encoded requests",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "binding/form.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "binding/default_validator.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] form data binding for URL-encoded requests"
+  },
+  {
+    "id": "semble-gin-cro-014",
+    "query": "how validators are plugged in for struct binding",
+    "category": "cross_file",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "binding/default_validator.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how validators are plugged in for struct binding"
+  },
+  {
+    "id": "semble-gin-cro-015",
+    "query": "how middleware is applied globally and to route groups",
+    "category": "cross_file",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "routergroup.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "gin.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how middleware is applied globally and to route groups"
+  },
+  {
+    "id": "semble-gin-int-016",
+    "query": "utility helpers for path detection and content-type formatting",
+    "category": "intent",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "utils.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] utility helpers for path detection and content-type formatting"
+  },
+  {
+    "id": "semble-gin-sym-017",
+    "query": "Engine",
+    "category": "symbol_lookup",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "gin.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Engine"
+  },
+  {
+    "id": "semble-gin-sym-018",
+    "query": "Context",
+    "category": "symbol_lookup",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Context"
+  },
+  {
+    "id": "semble-gin-sym-019",
+    "query": "RouterGroup",
+    "category": "symbol_lookup",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "routergroup.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] RouterGroup"
+  },
+  {
+    "id": "semble-gin-cro-020",
+    "query": "how Abort and response writing prevent further handler execution",
+    "category": "cross_file",
+    "repo": "gin",
+    "ground_truth": [
+      {
+        "file_path": "context.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Abort and response writing prevent further handler execution"
+  }
+]

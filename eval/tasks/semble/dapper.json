@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-dapper-cro-001",
+    "query": "how Dapper Query maps SQL results to typed objects",
+    "category": "cross_file",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Dapper Query maps SQL results to typed objects"
+  },
+  {
+    "id": "semble-dapper-int-002",
+    "query": "Execute and ExecuteScalar for running SQL commands",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Execute and ExecuteScalar for running SQL commands"
+  },
+  {
+    "id": "semble-dapper-int-003",
+    "query": "async Query and Execute methods for database operations",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.Async.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] async Query and Execute methods for database operations"
+  },
+  {
+    "id": "semble-dapper-int-004",
+    "query": "DynamicParameters for passing dynamic SQL parameters",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/DynamicParameters.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] DynamicParameters for passing dynamic SQL parameters"
+  },
+  {
+    "id": "semble-dapper-cro-005",
+    "query": "how Dapper maps columns to object properties by name",
+    "category": "cross_file",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Dapper maps columns to object properties by name"
+  },
+  {
+    "id": "semble-dapper-int-006",
+    "query": "multi-mapping QueryMultiple for reading multiple result sets",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] multi-mapping QueryMultiple for reading multiple result sets"
+  },
+  {
+    "id": "semble-dapper-int-007",
+    "query": "CommandDefinition for parameterized command configuration",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/CommandDefinition.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] CommandDefinition for parameterized command configuration"
+  },
+  {
+    "id": "semble-dapper-int-008",
+    "query": "DbString for specifying varchar vs nvarchar parameters",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/DbString.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] DbString for specifying varchar vs nvarchar parameters"
+  },
+  {
+    "id": "semble-dapper-cro-009",
+    "query": "how Dapper caches parameter and deserializer IL",
+    "category": "cross_file",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Dapper caches parameter and deserializer IL"
+  },
+  {
+    "id": "semble-dapper-int-010",
+    "query": "TypeHandler and custom type mapping",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] TypeHandler and custom type mapping"
+  },
+  {
+    "id": "semble-dapper-int-011",
+    "query": "split-on multi-mapping for joining related objects",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] split-on multi-mapping for joining related objects"
+  },
+  {
+    "id": "semble-dapper-int-012",
+    "query": "table-valued parameter support",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/TableValuedParameter.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] table-valued parameter support"
+  },
+  {
+    "id": "semble-dapper-cro-013",
+    "query": "how IDataReader is consumed and results materialized",
+    "category": "cross_file",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how IDataReader is consumed and results materialized"
+  },
+  {
+    "id": "semble-dapper-int-014",
+    "query": "QueryFirst and QuerySingle for single-row queries",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] QueryFirst and QuerySingle for single-row queries"
+  },
+  {
+    "id": "semble-dapper-int-015",
+    "query": "transaction support in Dapper queries",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] transaction support in Dapper queries"
+  },
+  {
+    "id": "semble-dapper-int-016",
+    "query": "FeatureSupport and database dialect detection",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/FeatureSupport.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] FeatureSupport and database dialect detection"
+  },
+  {
+    "id": "semble-dapper-int-017",
+    "query": "wrapping IDbConnection extension methods",
+    "category": "intent",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] wrapping IDbConnection extension methods"
+  },
+  {
+    "id": "semble-dapper-sym-018",
+    "query": "SqlMapper",
+    "category": "symbol_lookup",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/SqlMapper.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] SqlMapper"
+  },
+  {
+    "id": "semble-dapper-sym-019",
+    "query": "DynamicParameters",
+    "category": "symbol_lookup",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/DynamicParameters.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] DynamicParameters"
+  },
+  {
+    "id": "semble-dapper-sym-020",
+    "query": "CommandDefinition",
+    "category": "symbol_lookup",
+    "repo": "dapper",
+    "ground_truth": [
+      {
+        "file_path": "Dapper/CommandDefinition.cs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] CommandDefinition"
+  }
+]

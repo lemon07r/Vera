@@ -1,0 +1,377 @@
+[
+  {
+    "id": "semble-httpx-cro-001",
+    "query": "how are HTTP requests sent",
+    "category": "cross_file",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_client.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how are HTTP requests sent"
+  },
+  {
+    "id": "semble-httpx-int-002",
+    "query": "authentication and credentials",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_auth.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] authentication and credentials"
+  },
+  {
+    "id": "semble-httpx-int-003",
+    "query": "connection pooling and transport",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_transports/default.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_transports/base.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] connection pooling and transport"
+  },
+  {
+    "id": "semble-httpx-int-004",
+    "query": "URL parsing and construction",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_urlparse.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_urls.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] URL parsing and construction"
+  },
+  {
+    "id": "semble-httpx-int-005",
+    "query": "response decoding and content",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_decoders.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] response decoding and content"
+  },
+  {
+    "id": "semble-httpx-int-006",
+    "query": "timeout configuration",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_config.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] timeout configuration"
+  },
+  {
+    "id": "semble-httpx-int-007",
+    "query": "cookie handling",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_client.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] cookie handling"
+  },
+  {
+    "id": "semble-httpx-int-008",
+    "query": "multipart file upload",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_multipart.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_content.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] multipart file upload"
+  },
+  {
+    "id": "semble-httpx-int-009",
+    "query": "redirect following",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_client.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] redirect following"
+  },
+  {
+    "id": "semble-httpx-int-010",
+    "query": "error and exception types",
+    "category": "intent",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] error and exception types"
+  },
+  {
+    "id": "semble-httpx-cro-011",
+    "query": "how does digest authentication handle the challenge-response flow",
+    "category": "cross_file",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_auth.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how does digest authentication handle the challenge-response flow"
+  },
+  {
+    "id": "semble-httpx-cro-012",
+    "query": "how are keep-alive connections managed and reused",
+    "category": "cross_file",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_transports/default.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_config.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are keep-alive connections managed and reused"
+  },
+  {
+    "id": "semble-httpx-cro-013",
+    "query": "how does streaming response body iteration work",
+    "category": "cross_file",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_decoders.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does streaming response body iteration work"
+  },
+  {
+    "id": "semble-httpx-cro-014",
+    "query": "how are query parameters encoded into the URL",
+    "category": "cross_file",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_urls.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_urlparse.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are query parameters encoded into the URL"
+  },
+  {
+    "id": "semble-httpx-cro-015",
+    "query": "how are retries and transport errors surfaced to the caller",
+    "category": "cross_file",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_transports/default.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are retries and transport errors surfaced to the caller"
+  },
+  {
+    "id": "semble-httpx-sym-016",
+    "query": "DigestAuth",
+    "category": "symbol_lookup",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_auth.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] DigestAuth"
+  },
+  {
+    "id": "semble-httpx-sym-017",
+    "query": "AsyncClient",
+    "category": "symbol_lookup",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_client.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] AsyncClient"
+  },
+  {
+    "id": "semble-httpx-sym-018",
+    "query": "Timeout",
+    "category": "symbol_lookup",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_config.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Timeout"
+  },
+  {
+    "id": "semble-httpx-sym-019",
+    "query": "HTTPStatusError",
+    "category": "symbol_lookup",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HTTPStatusError"
+  },
+  {
+    "id": "semble-httpx-sym-020",
+    "query": "URL",
+    "category": "symbol_lookup",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_urls.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] URL"
+  },
+  {
+    "id": "semble-httpx-cro-021",
+    "query": "how the HTTP transport backend sends requests over the wire",
+    "category": "cross_file",
+    "repo": "httpx",
+    "ground_truth": [
+      {
+        "file_path": "httpx/_transports/default.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "httpx/_transports/base.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the HTTP transport backend sends requests over the wire"
+  }
+]

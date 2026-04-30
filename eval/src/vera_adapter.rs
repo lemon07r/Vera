@@ -49,17 +49,27 @@ impl ToolAdapter for VeraBm25Adapter {
         format!("{MODEL_NAME}/{}", env!("CARGO_PKG_VERSION"))
     }
 
-    fn search(&self, query: &str, repo_path: &str) -> Vec<RetrievalResult> {
+    fn search(
+        &self,
+        query: &str,
+        repo_path: &str,
+        path_scope: Option<&str>,
+    ) -> Vec<RetrievalResult> {
         let repo_path = Path::new(repo_path);
         if repo_path.as_os_str().is_empty() {
             return Vec::new();
+        }
+
+        let mut filters = SearchFilters::default();
+        if let Some(scope) = path_scope {
+            filters.path_glob = Some(format!("{scope}/**"));
         }
 
         match execute_search(
             &index_dir(repo_path),
             query,
             &self.config,
-            &SearchFilters::default(),
+            &filters,
             RESULT_LIMIT,
             InferenceBackend::Api,
         ) {
@@ -162,6 +172,111 @@ fn dir_size(path: &Path) -> u64 {
     }
 }
 
+/// Full-pipeline Vera adapter that uses real ONNX models with a specified backend.
+///
+/// Unlike `VeraBm25Adapter`, this runs the complete hybrid search pipeline
+/// (embedding + BM25 + RRF fusion + optional reranking) via `execute_search`.
+/// Use `InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda)` for GPU
+/// acceleration.
+pub struct VeraFullAdapter {
+    runtime: Runtime,
+    config: VeraConfig,
+    backend: InferenceBackend,
+}
+
+impl VeraFullAdapter {
+    pub fn new(backend: InferenceBackend) -> anyhow::Result<Self> {
+        let mut config = VeraConfig::default();
+        config.adjust_for_backend(backend);
+        Ok(Self {
+            runtime: Runtime::new()?,
+            config,
+            backend,
+        })
+    }
+}
+
+impl ToolAdapter for VeraFullAdapter {
+    fn name(&self) -> &str {
+        "vera-full"
+    }
+
+    fn version(&self) -> String {
+        format!("vera-full-{}/{}", self.backend, env!("CARGO_PKG_VERSION"))
+    }
+
+    fn search(
+        &self,
+        query: &str,
+        repo_path: &str,
+        path_scope: Option<&str>,
+    ) -> Vec<RetrievalResult> {
+        let repo_path = Path::new(repo_path);
+        if repo_path.as_os_str().is_empty() {
+            return Vec::new();
+        }
+
+        let mut filters = SearchFilters::default();
+        if let Some(scope) = path_scope {
+            filters.path_glob = Some(format!("{scope}/**"));
+        }
+
+        match execute_search(
+            &index_dir(repo_path),
+            query,
+            &self.config,
+            &filters,
+            RESULT_LIMIT,
+            self.backend,
+        ) {
+            Ok((results, _)) => results.into_iter().map(into_retrieval_result).collect(),
+            Err(err) => {
+                eprintln!(
+                    "warning: vera-full search failed for {}: {err}",
+                    repo_path.display()
+                );
+                Vec::new()
+            }
+        }
+    }
+
+    fn index(&self, repo_path: &str) -> (f64, u64) {
+        let repo_path = Path::new(repo_path);
+
+        let (provider, model_name) =
+            match self
+                .runtime
+                .block_on(vera_core::embedding::create_dynamic_provider(
+                    &self.config,
+                    self.backend,
+                )) {
+                Ok(pair) => pair,
+                Err(err) => {
+                    eprintln!("warning: failed to create embedding provider: {err}");
+                    return (0.0, 0);
+                }
+            };
+
+        let indexed = self.runtime.block_on(index_repository(
+            repo_path,
+            &provider,
+            &self.config,
+            &model_name,
+        ));
+
+        match indexed {
+            Ok(summary) => (summary.elapsed_secs, dir_size(&index_dir(repo_path))),
+            Err(err) => {
+                eprintln!(
+                    "warning: vera-full index failed for {}: {err}",
+                    repo_path.display()
+                );
+                (0.0, 0)
+            }
+        }
+    }
+}
+
 pub fn repo_paths_from_manifest(
     repo_root: &Path,
     manifest: &crate::types::CorpusManifest,
@@ -175,6 +290,22 @@ pub fn repo_paths_from_manifest(
                 repo.name.clone(),
                 clone_root.join(&repo.name).display().to_string(),
             )
+        })
+        .collect()
+}
+
+/// Extract benchmark_root scopes from corpus manifest.
+/// Returns repo_name -> benchmark_root (e.g. "fastapi" -> "fastapi").
+pub fn benchmark_roots_from_manifest(
+    manifest: &crate::types::CorpusManifest,
+) -> std::collections::HashMap<String, String> {
+    manifest
+        .repos
+        .iter()
+        .filter_map(|repo| {
+            repo.benchmark_root
+                .as_ref()
+                .map(|root| (repo.name.clone(), root.clone()))
         })
         .collect()
 }
@@ -208,7 +339,7 @@ mod tests {
         assert!(index_time >= 0.0);
         assert!(size > 0);
 
-        let results = adapter.search("authenticate token", dir.path().to_str().unwrap());
+        let results = adapter.search("authenticate token", dir.path().to_str().unwrap(), None);
         assert!(
             results.iter().any(|result| result.file_path == "auth.rs"),
             "expected auth.rs in results, got {results:?}"

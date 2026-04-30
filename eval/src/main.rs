@@ -163,9 +163,14 @@ fn cmd_verify_corpus(corpus_path: &Path) -> Result<()> {
     }
 }
 
-fn load_verified_corpus(
-    corpus_path: &Path,
-) -> Result<(HashMap<String, String>, HashMap<String, String>)> {
+/// Repo paths, SHAs, and benchmark_root scopes from the corpus manifest.
+struct VerifiedCorpus {
+    repo_paths: HashMap<String, String>,
+    repo_shas: HashMap<String, String>,
+    benchmark_roots: HashMap<String, String>,
+}
+
+fn load_verified_corpus(corpus_path: &Path) -> Result<VerifiedCorpus> {
     if !corpus_path.exists() {
         anyhow::bail!("Corpus manifest not found at {}", corpus_path.display());
     }
@@ -185,13 +190,18 @@ fn load_verified_corpus(
     }
 
     let repo_paths = vera_adapter::repo_paths_from_manifest(&repo_root, &manifest);
+    let benchmark_roots = vera_adapter::benchmark_roots_from_manifest(&manifest);
     let repo_shas = manifest
         .repos
         .iter()
         .map(|repo| (repo.name.clone(), repo.commit.clone()))
         .collect();
 
-    Ok((repo_paths, repo_shas))
+    Ok(VerifiedCorpus {
+        repo_paths,
+        repo_shas,
+        benchmark_roots,
+    })
 }
 
 fn ensure_task_repos_known(
@@ -231,14 +241,50 @@ fn run_report(
             runner::run_benchmark_with_mock(&mock, tasks)
         }
         "vera-bm25" => {
-            let (repo_paths, corpus_shas) = load_verified_corpus(corpus_path)?;
-            ensure_task_repos_known(tasks, &repo_paths)?;
+            let corpus = load_verified_corpus(corpus_path)?;
+            ensure_task_repos_known(tasks, &corpus.repo_paths)?;
             let vera = vera_adapter::VeraBm25Adapter::new()?;
-            runner::run_benchmark(&vera, tasks, &repo_paths, &corpus_shas)
+            runner::run_benchmark_scoped(
+                &vera,
+                tasks,
+                &corpus.repo_paths,
+                &corpus.repo_shas,
+                &corpus.benchmark_roots,
+            )
+        }
+        "vera-cuda" => {
+            let corpus = load_verified_corpus(corpus_path)?;
+            ensure_task_repos_known(tasks, &corpus.repo_paths)?;
+            let backend = vera_core::config::InferenceBackend::OnnxJina(
+                vera_core::config::OnnxExecutionProvider::Cuda,
+            );
+            let vera = vera_adapter::VeraFullAdapter::new(backend)?;
+            runner::run_benchmark_scoped(
+                &vera,
+                tasks,
+                &corpus.repo_paths,
+                &corpus.repo_shas,
+                &corpus.benchmark_roots,
+            )
+        }
+        "vera-cpu" => {
+            let corpus = load_verified_corpus(corpus_path)?;
+            ensure_task_repos_known(tasks, &corpus.repo_paths)?;
+            let backend = vera_core::config::InferenceBackend::OnnxJina(
+                vera_core::config::OnnxExecutionProvider::Cpu,
+            );
+            let vera = vera_adapter::VeraFullAdapter::new(backend)?;
+            runner::run_benchmark_scoped(
+                &vera,
+                tasks,
+                &corpus.repo_paths,
+                &corpus.repo_shas,
+                &corpus.benchmark_roots,
+            )
         }
         other => {
             anyhow::bail!(
-                "Unknown tool '{}'. Available: vera-bm25, mock-perfect, mock-partial.",
+                "Unknown tool '{}'. Available: vera-bm25, vera-cuda, vera-cpu, mock-perfect, mock-partial.",
                 other
             );
         }

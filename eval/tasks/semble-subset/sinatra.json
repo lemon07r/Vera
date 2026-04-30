@@ -1,0 +1,314 @@
+[
+  {
+    "id": "semble-sinatra-int-001",
+    "query": "core Sinatra DSL and routing behavior",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] core Sinatra DSL and routing behavior"
+  },
+  {
+    "id": "semble-sinatra-cro-002",
+    "query": "application startup and command line entrypoint",
+    "category": "cross_file",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/main.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] application startup and command line entrypoint"
+  },
+  {
+    "id": "semble-sinatra-int-003",
+    "query": "exception rendering and stack traces",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/show_exceptions.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] exception rendering and stack traces"
+  },
+  {
+    "id": "semble-sinatra-int-004",
+    "query": "request logging middleware",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/middleware/logger.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request logging middleware"
+  },
+  {
+    "id": "semble-sinatra-int-005",
+    "query": "how route handlers are compiled and URL patterns matched",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how route handlers are compiled and URL patterns matched"
+  },
+  {
+    "id": "semble-sinatra-int-006",
+    "query": "before and after filter hooks for the request lifecycle",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1486,
+        "line_end": 1505,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] before and after filter hooks for the request lifecycle"
+  },
+  {
+    "id": "semble-sinatra-int-007",
+    "query": "response helper methods: halt, pass and redirect",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] response helper methods: halt, pass and redirect"
+  },
+  {
+    "id": "semble-sinatra-int-008",
+    "query": "how templates are rendered with erb haml and other engines",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 742,
+        "line_end": 948,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how templates are rendered with erb haml and other engines"
+  },
+  {
+    "id": "semble-sinatra-cro-009",
+    "query": "how the Rack middleware stack is assembled before requests are handled",
+    "category": "cross_file",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the Rack middleware stack is assembled before requests are handled"
+  },
+  {
+    "id": "semble-sinatra-int-010",
+    "query": "case-insensitive hash for request params",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/indifferent_hash.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] case-insensitive hash for request params"
+  },
+  {
+    "id": "semble-sinatra-sym-011",
+    "query": "Sinatra::Base",
+    "category": "symbol_lookup",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Sinatra::Base"
+  },
+  {
+    "id": "semble-sinatra-sym-012",
+    "query": "Sinatra::Application",
+    "category": "symbol_lookup",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/main.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:symbol] Sinatra::Application"
+  },
+  {
+    "id": "semble-sinatra-sym-013",
+    "query": "Sinatra::ShowExceptions",
+    "category": "symbol_lookup",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/show_exceptions.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Sinatra::ShowExceptions"
+  },
+  {
+    "id": "semble-sinatra-sym-014",
+    "query": "Sinatra::Helpers",
+    "category": "symbol_lookup",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 286,
+        "line_end": 1050,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Sinatra::Helpers"
+  },
+  {
+    "id": "semble-sinatra-sym-015",
+    "query": "IndifferentHash",
+    "category": "symbol_lookup",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/indifferent_hash.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] IndifferentHash"
+  },
+  {
+    "id": "semble-sinatra-cro-016",
+    "query": "how Sinatra::Application inherits and configures Base for standalone use",
+    "category": "cross_file",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/main.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how Sinatra::Application inherits and configures Base for standalone use"
+  },
+  {
+    "id": "semble-sinatra-cro-017",
+    "query": "how route conditions are evaluated before dispatching",
+    "category": "cross_file",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1048,
+        "line_end": 1100,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how route conditions are evaluated before dispatching"
+  },
+  {
+    "id": "semble-sinatra-int-018",
+    "query": "show_exceptions middleware for development error pages",
+    "category": "intent",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/show_exceptions.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] show_exceptions middleware for development error pages"
+  },
+  {
+    "id": "semble-sinatra-cro-019",
+    "query": "how Sinatra::Base registers class-level route helpers like get post put delete",
+    "category": "cross_file",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Sinatra::Base registers class-level route helpers like get post put delete"
+  },
+  {
+    "id": "semble-sinatra-sym-020",
+    "query": "IndifferentHash",
+    "category": "symbol_lookup",
+    "repo": "sinatra",
+    "ground_truth": [
+      {
+        "file_path": "lib/sinatra/indifferent_hash.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] IndifferentHash"
+  }
+]

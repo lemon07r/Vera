@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-zig-clap-cro-001",
+    "query": "how zig-clap parses command-line arguments into a typed result",
+    "category": "cross_file",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zig-clap parses command-line arguments into a typed result"
+  },
+  {
+    "id": "semble-zig-clap-int-002",
+    "query": "how Param defines a named CLI parameter with short and long flags",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Param defines a named CLI parameter with short and long flags"
+  },
+  {
+    "id": "semble-zig-clap-int-003",
+    "query": "how parseParams parses a string of parameter definitions at comptime",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how parseParams parses a string of parameter definitions at comptime"
+  },
+  {
+    "id": "semble-zig-clap-int-004",
+    "query": "how zig-clap Result type holds parsed argument values",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zig-clap Result type holds parsed argument values"
+  },
+  {
+    "id": "semble-zig-clap-cro-005",
+    "query": "how zig-clap streaming parser processes arguments one token at a time",
+    "category": "cross_file",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap/streaming.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zig-clap streaming parser processes arguments one token at a time"
+  },
+  {
+    "id": "semble-zig-clap-int-006",
+    "query": "how zig-clap iterates over OS process arguments",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap/args.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zig-clap iterates over OS process arguments"
+  },
+  {
+    "id": "semble-zig-clap-int-007",
+    "query": "how zig-clap built-in parsers convert strings to typed values",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap/parsers.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zig-clap built-in parsers convert strings to typed values"
+  },
+  {
+    "id": "semble-zig-clap-int-008",
+    "query": "how zig-clap prints help text for all defined parameters",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zig-clap prints help text for all defined parameters"
+  },
+  {
+    "id": "semble-zig-clap-int-009",
+    "query": "how zig-clap prints usage summary for a command",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zig-clap prints usage summary for a command"
+  },
+  {
+    "id": "semble-zig-clap-int-010",
+    "query": "how Diagnostic captures and reports argument parsing errors",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Diagnostic captures and reports argument parsing errors"
+  },
+  {
+    "id": "semble-zig-clap-int-011",
+    "query": "how Values enum controls whether a flag expects zero or one argument",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Values enum controls whether a flag expects zero or one argument"
+  },
+  {
+    "id": "semble-zig-clap-int-012",
+    "query": "how parseParamsComptime creates a parameter array at compile time",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how parseParamsComptime creates a parameter array at compile time"
+  },
+  {
+    "id": "semble-zig-clap-int-013",
+    "query": "how ParseOptions customize the parsing behavior for edge cases",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how ParseOptions customize the parsing behavior for edge cases"
+  },
+  {
+    "id": "semble-zig-clap-int-014",
+    "query": "how Names resolves the longest name for display and matching",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Names resolves the longest name for display and matching"
+  },
+  {
+    "id": "semble-zig-clap-int-015",
+    "query": "how zig-clap handles positional arguments without a flag prefix",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zig-clap handles positional arguments without a flag prefix"
+  },
+  {
+    "id": "semble-zig-clap-int-016",
+    "query": "how parseEx provides a lower-level parsing API with custom iterators",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how parseEx provides a lower-level parsing API with custom iterators"
+  },
+  {
+    "id": "semble-zig-clap-int-017",
+    "query": "how ResultEx extends Result with extra context for advanced use",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how ResultEx extends Result with extra context for advanced use"
+  },
+  {
+    "id": "semble-zig-clap-int-018",
+    "query": "how zig-clap detects and handles unrecognized flags as errors",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap/streaming.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zig-clap detects and handles unrecognized flags as errors"
+  },
+  {
+    "id": "semble-zig-clap-int-019",
+    "query": "how helpToFile writes formatted help output to a file handle",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how helpToFile writes formatted help output to a file handle"
+  },
+  {
+    "id": "semble-zig-clap-int-020",
+    "query": "how Help struct stores help text associated with a parameter",
+    "category": "intent",
+    "repo": "zig-clap",
+    "ground_truth": [
+      {
+        "file_path": "clap.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Help struct stores help text associated with a parameter"
+  }
+]

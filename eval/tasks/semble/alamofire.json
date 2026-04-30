@@ -1,0 +1,332 @@
+[
+  {
+    "id": "semble-alamofire-cro-001",
+    "query": "how the Session manages the underlying URLSession and dispatches requests",
+    "category": "cross_file",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/Session.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Source/Core/SessionDelegate.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the Session manages the underlying URLSession and dispatches requests"
+  },
+  {
+    "id": "semble-alamofire-cro-002",
+    "query": "how request retrying is implemented with backoff and retry conditions",
+    "category": "cross_file",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/RetryPolicy.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Source/Features/RequestInterceptor.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how request retrying is implemented with backoff and retry conditions"
+  },
+  {
+    "id": "semble-alamofire-int-003",
+    "query": "how response validation checks status codes and content types",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/Validation.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how response validation checks status codes and content types"
+  },
+  {
+    "id": "semble-alamofire-int-004",
+    "query": "how response serialization decodes JSON, Decodable, and strings",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/ResponseSerialization.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how response serialization decodes JSON, Decodable, and strings"
+  },
+  {
+    "id": "semble-alamofire-int-005",
+    "query": "how multipart form data encodes fields and file attachments",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/MultipartFormData.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Source/Features/MultipartUpload.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how multipart form data encodes fields and file attachments"
+  },
+  {
+    "id": "semble-alamofire-int-006",
+    "query": "how authentication interceptors handle credential challenges",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/AuthenticationInterceptor.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how authentication interceptors handle credential challenges"
+  },
+  {
+    "id": "semble-alamofire-int-007",
+    "query": "how server trust evaluation handles SSL certificate pinning",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/ServerTrustEvaluation.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how server trust evaluation handles SSL certificate pinning"
+  },
+  {
+    "id": "semble-alamofire-int-008",
+    "query": "how URL query parameters are encoded from Encodable values",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/URLEncodedFormEncoder.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Source/Core/ParameterEncoder.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how URL query parameters are encoded from Encodable values"
+  },
+  {
+    "id": "semble-alamofire-int-009",
+    "query": "how network reachability is monitored to detect connectivity changes",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/NetworkReachabilityManager.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how network reachability is monitored to detect connectivity changes"
+  },
+  {
+    "id": "semble-alamofire-int-010",
+    "query": "how download requests save responses to disk",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/DownloadRequest.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how download requests save responses to disk"
+  },
+  {
+    "id": "semble-alamofire-int-011",
+    "query": "how request and response events are logged via EventMonitor",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/EventMonitor.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how request and response events are logged via EventMonitor"
+  },
+  {
+    "id": "semble-alamofire-cro-012",
+    "query": "how the Request class tracks lifecycle state transitions",
+    "category": "cross_file",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/Request.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the Request class tracks lifecycle state transitions"
+  },
+  {
+    "id": "semble-alamofire-sym-013",
+    "query": "Session",
+    "category": "symbol_lookup",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/Session.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Session"
+  },
+  {
+    "id": "semble-alamofire-sym-014",
+    "query": "AFError",
+    "category": "symbol_lookup",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/AFError.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] AFError"
+  },
+  {
+    "id": "semble-alamofire-sym-015",
+    "query": "RetryPolicy",
+    "category": "symbol_lookup",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/RetryPolicy.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] RetryPolicy"
+  },
+  {
+    "id": "semble-alamofire-sym-016",
+    "query": "ServerTrustEvaluating",
+    "category": "symbol_lookup",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Features/ServerTrustEvaluation.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ServerTrustEvaluating"
+  },
+  {
+    "id": "semble-alamofire-sym-017",
+    "query": "HTTPHeaders",
+    "category": "symbol_lookup",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/HTTPHeaders.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HTTPHeaders"
+  },
+  {
+    "id": "semble-alamofire-int-018",
+    "query": "how upload requests stream data to the server",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/UploadRequest.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how upload requests stream data to the server"
+  },
+  {
+    "id": "semble-alamofire-int-019",
+    "query": "parameter encoding for URL and JSON request bodies",
+    "category": "intent",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/ParameterEncoding.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Source/Core/ParameterEncoder.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] parameter encoding for URL and JSON request bodies"
+  },
+  {
+    "id": "semble-alamofire-sym-020",
+    "query": "URLConvertible",
+    "category": "symbol_lookup",
+    "repo": "alamofire",
+    "ground_truth": [
+      {
+        "file_path": "Source/Core/URLConvertible+URLRequestConvertible.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] URLConvertible"
+  }
+]

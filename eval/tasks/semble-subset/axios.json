@@ -1,0 +1,332 @@
+[
+  {
+    "id": "semble-axios-cro-001",
+    "query": "how HTTP requests are dispatched through the configured adapter",
+    "category": "cross_file",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/dispatchRequest.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/adapters/adapters.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how HTTP requests are dispatched through the configured adapter"
+  },
+  {
+    "id": "semble-axios-int-002",
+    "query": "request and response interceptors",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/InterceptorManager.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/core/Axios.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] request and response interceptors"
+  },
+  {
+    "id": "semble-axios-int-003",
+    "query": "node HTTP adapter implementation",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/adapters/http.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] node HTTP adapter implementation"
+  },
+  {
+    "id": "semble-axios-cro-004",
+    "query": "how config defaults are merged before a request is sent",
+    "category": "cross_file",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/mergeConfig.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/core/Axios.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how config defaults are merged before a request is sent"
+  },
+  {
+    "id": "semble-axios-sym-005",
+    "query": "Axios",
+    "category": "symbol_lookup",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/Axios.js",
+        "line_start": 22,
+        "line_end": 61,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Axios"
+  },
+  {
+    "id": "semble-axios-sym-006",
+    "query": "InterceptorManager",
+    "category": "symbol_lookup",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/InterceptorManager.js",
+        "line_start": 5,
+        "line_end": 33,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] InterceptorManager"
+  },
+  {
+    "id": "semble-axios-sym-007",
+    "query": "mergeConfig",
+    "category": "symbol_lookup",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/mergeConfig.js",
+        "line_start": 17,
+        "line_end": 106,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] mergeConfig"
+  },
+  {
+    "id": "semble-axios-int-008",
+    "query": "XHR browser adapter implementation",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/adapters/xhr.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] XHR browser adapter implementation"
+  },
+  {
+    "id": "semble-axios-int-009",
+    "query": "request cancellation and abort controller support",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/cancel/CancelToken.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request cancellation and abort controller support"
+  },
+  {
+    "id": "semble-axios-int-010",
+    "query": "URL building and query parameter serialization",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/helpers/buildURL.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] URL building and query parameter serialization"
+  },
+  {
+    "id": "semble-axios-int-011",
+    "query": "HTTP response settling and status code validation",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/settle.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] HTTP response settling and status code validation"
+  },
+  {
+    "id": "semble-axios-cro-012",
+    "query": "axios default configuration and request/response transformers",
+    "category": "cross_file",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/defaults/index.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] axios default configuration and request/response transformers"
+  },
+  {
+    "id": "semble-axios-cro-013",
+    "query": "how axios instances are created with custom base config",
+    "category": "cross_file",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/Axios.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/axios.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how axios instances are created with custom base config"
+  },
+  {
+    "id": "semble-axios-int-014",
+    "query": "header management and case-insensitive normalization",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/AxiosHeaders.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] header management and case-insensitive normalization"
+  },
+  {
+    "id": "semble-axios-int-015",
+    "query": "error types and axios-specific error enrichment",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/AxiosError.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] error types and axios-specific error enrichment"
+  },
+  {
+    "id": "semble-axios-cro-016",
+    "query": "how request and response data is transformed in the pipeline",
+    "category": "cross_file",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/dispatchRequest.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/defaults/index.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how request and response data is transformed in the pipeline"
+  },
+  {
+    "id": "semble-axios-int-017",
+    "query": "general utility functions for type checking and extending",
+    "category": "intent",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/utils.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] general utility functions for type checking and extending"
+  },
+  {
+    "id": "semble-axios-sym-018",
+    "query": "CancelToken",
+    "category": "symbol_lookup",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/cancel/CancelToken.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] CancelToken"
+  },
+  {
+    "id": "semble-axios-sym-019",
+    "query": "AxiosError",
+    "category": "symbol_lookup",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/AxiosError.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] AxiosError"
+  },
+  {
+    "id": "semble-axios-sym-020",
+    "query": "AxiosHeaders",
+    "category": "symbol_lookup",
+    "repo": "axios",
+    "ground_truth": [
+      {
+        "file_path": "lib/core/AxiosHeaders.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] AxiosHeaders"
+  }
+]

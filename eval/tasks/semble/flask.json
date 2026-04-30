@@ -1,0 +1,395 @@
+[
+  {
+    "id": "semble-flask-cro-001",
+    "query": "how are routes registered",
+    "category": "cross_file",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/sansio/scaffold.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/sansio/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are routes registered"
+  },
+  {
+    "id": "semble-flask-int-002",
+    "query": "request context handling",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/ctx.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request context handling"
+  },
+  {
+    "id": "semble-flask-int-003",
+    "query": "session management",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/sessions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] session management"
+  },
+  {
+    "id": "semble-flask-int-004",
+    "query": "blueprint registration",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/sansio/blueprints.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/blueprints.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] blueprint registration"
+  },
+  {
+    "id": "semble-flask-int-005",
+    "query": "configuration loading",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/config.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] configuration loading"
+  },
+  {
+    "id": "semble-flask-int-006",
+    "query": "template rendering",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/templating.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] template rendering"
+  },
+  {
+    "id": "semble-flask-int-007",
+    "query": "error handlers",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/sansio/scaffold.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] error handlers"
+  },
+  {
+    "id": "semble-flask-int-008",
+    "query": "CLI commands",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/cli.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] CLI commands"
+  },
+  {
+    "id": "semble-flask-int-009",
+    "query": "testing client",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/testing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] testing client"
+  },
+  {
+    "id": "semble-flask-int-010",
+    "query": "JSON response helpers",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/json/provider.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/helpers.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] JSON response helpers"
+  },
+  {
+    "id": "semble-flask-cro-011",
+    "query": "how does the application context push and pop around requests",
+    "category": "cross_file",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/ctx.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does the application context push and pop around requests"
+  },
+  {
+    "id": "semble-flask-cro-012",
+    "query": "how does Flask select which error handler to invoke for an exception",
+    "category": "cross_file",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/sansio/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does Flask select which error handler to invoke for an exception"
+  },
+  {
+    "id": "semble-flask-cro-013",
+    "query": "how is g used to store data scoped to the current request",
+    "category": "cross_file",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/ctx.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/globals.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how is g used to store data scoped to the current request"
+  },
+  {
+    "id": "semble-flask-cro-014",
+    "query": "how are request lifecycle signals emitted",
+    "category": "cross_file",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/signals.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are request lifecycle signals emitted"
+  },
+  {
+    "id": "semble-flask-cro-015",
+    "query": "how does Flask convert a view return value into a response object",
+    "category": "cross_file",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/wrappers.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does Flask convert a view return value into a response object"
+  },
+  {
+    "id": "semble-flask-sym-016",
+    "query": "Blueprint",
+    "category": "symbol_lookup",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/sansio/blueprints.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/blueprints.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:symbol] Blueprint"
+  },
+  {
+    "id": "semble-flask-sym-017",
+    "query": "render_template",
+    "category": "symbol_lookup",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/templating.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] render_template"
+  },
+  {
+    "id": "semble-flask-sym-018",
+    "query": "Flask",
+    "category": "symbol_lookup",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/app.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Flask"
+  },
+  {
+    "id": "semble-flask-int-019",
+    "query": "session",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/sessions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/globals.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] session"
+  },
+  {
+    "id": "semble-flask-int-020",
+    "query": "g",
+    "category": "intent",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/globals.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/ctx.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] g"
+  },
+  {
+    "id": "semble-flask-cro-021",
+    "query": "how Blueprint inherits routing behaviour from its sansio base class",
+    "category": "cross_file",
+    "repo": "flask",
+    "ground_truth": [
+      {
+        "file_path": "src/flask/sansio/blueprints.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/flask/blueprints.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how Blueprint inherits routing behaviour from its sansio base class"
+  }
+]

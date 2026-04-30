@@ -1,0 +1,314 @@
+[
+  {
+    "id": "semble-xmonad-cro-001",
+    "query": "how xmonad's X monad wraps IO with display and window state",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Core.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how xmonad's X monad wraps IO with display and window state"
+  },
+  {
+    "id": "semble-xmonad-cro-002",
+    "query": "how xmonad manages and tiles windows using StackSet",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "StackSet.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how xmonad manages and tiles windows using StackSet"
+  },
+  {
+    "id": "semble-xmonad-int-003",
+    "query": "how xmonad handles window focus and workspace switching",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad handles window focus and workspace switching"
+  },
+  {
+    "id": "semble-xmonad-cro-004",
+    "query": "how xmonad applies layout algorithms to arrange windows on screen",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Layout.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how xmonad applies layout algorithms to arrange windows on screen"
+  },
+  {
+    "id": "semble-xmonad-int-005",
+    "query": "how xmonad's ManageHook routes new windows to workspaces",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "ManageHook.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad's ManageHook routes new windows to workspaces"
+  },
+  {
+    "id": "semble-xmonad-int-006",
+    "query": "how xmonad reads and applies user configuration at startup",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Config.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad reads and applies user configuration at startup"
+  },
+  {
+    "id": "semble-xmonad-cro-007",
+    "query": "how xmonad handles X11 events in its event loop",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Main.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how xmonad handles X11 events in its event loop"
+  },
+  {
+    "id": "semble-xmonad-int-008",
+    "query": "how xmonad kills a window and cleans up its state",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad kills a window and cleans up its state"
+  },
+  {
+    "id": "semble-xmonad-int-009",
+    "query": "how xmonad uses withDisplay to get the X11 Display handle",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Core.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad uses withDisplay to get the X11 Display handle"
+  },
+  {
+    "id": "semble-xmonad-int-010",
+    "query": "how xmonad's StackSet tracks the focused window in a workspace",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "StackSet.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad's StackSet tracks the focused window in a workspace"
+  },
+  {
+    "id": "semble-xmonad-int-011",
+    "query": "how xmonad redraws and refreshes windows after a layout change",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad redraws and refreshes windows after a layout change"
+  },
+  {
+    "id": "semble-xmonad-cro-012",
+    "query": "how xmonad manages multiple screens with multiple workspaces",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "StackSet.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how xmonad manages multiple screens with multiple workspaces"
+  },
+  {
+    "id": "semble-xmonad-int-013",
+    "query": "how xmonad moves a window to a different workspace",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad moves a window to a different workspace"
+  },
+  {
+    "id": "semble-xmonad-int-014",
+    "query": "how userCode wraps user actions to catch exceptions",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Core.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how userCode wraps user actions to catch exceptions"
+  },
+  {
+    "id": "semble-xmonad-int-015",
+    "query": "how xmonad sets window border and title properties",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad sets window border and title properties"
+  },
+  {
+    "id": "semble-xmonad-cro-016",
+    "query": "how xmonad handles floating windows separately from tiled ones",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "StackSet.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how xmonad handles floating windows separately from tiled ones"
+  },
+  {
+    "id": "semble-xmonad-int-017",
+    "query": "how xmonad's runX executes an X action with its config and state",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Core.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad's runX executes an X action with its config and state"
+  },
+  {
+    "id": "semble-xmonad-cro-018",
+    "query": "how xmonad initializes the display and root window at startup",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Main.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how xmonad initializes the display and root window at startup"
+  },
+  {
+    "id": "semble-xmonad-cro-019",
+    "query": "how Layout typeclass allows pluggable tiling algorithms",
+    "category": "cross_file",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Layout.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Layout typeclass allows pluggable tiling algorithms"
+  },
+  {
+    "id": "semble-xmonad-int-020",
+    "query": "how xmonad's windows function atomically applies StackSet transformations",
+    "category": "intent",
+    "repo": "xmonad",
+    "ground_truth": [
+      {
+        "file_path": "Operations.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how xmonad's windows function atomically applies StackSet transformations"
+  }
+]

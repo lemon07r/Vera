@@ -1,0 +1,332 @@
+[
+  {
+    "id": "semble-vapor-cro-001",
+    "query": "how Application configures and boots a Vapor server",
+    "category": "cross_file",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Application.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Application configures and boots a Vapor server"
+  },
+  {
+    "id": "semble-vapor-cro-002",
+    "query": "how routes are registered on the RoutesBuilder",
+    "category": "cross_file",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Routing/RoutesBuilder+Method.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/Vapor/Routing/RoutesBuilder.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how routes are registered on the RoutesBuilder"
+  },
+  {
+    "id": "semble-vapor-int-003",
+    "query": "Request type and HTTP request representation in Vapor",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Request/Request.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Request type and HTTP request representation in Vapor"
+  },
+  {
+    "id": "semble-vapor-int-004",
+    "query": "Response type and HTTP response construction in Vapor",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Response/Response.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Response type and HTTP response construction in Vapor"
+  },
+  {
+    "id": "semble-vapor-int-005",
+    "query": "Content protocol for encoding and decoding request and response bodies",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Content/Content.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Content protocol for encoding and decoding request and response bodies"
+  },
+  {
+    "id": "semble-vapor-int-006",
+    "query": "Middleware protocol and how middleware wraps request handling",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Middleware/Middleware.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Middleware protocol and how middleware wraps request handling"
+  },
+  {
+    "id": "semble-vapor-cro-007",
+    "query": "how Vapor Application stores and retrieves services via Storage",
+    "category": "cross_file",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Utilities/Storage.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Vapor Application stores and retrieves services via Storage"
+  },
+  {
+    "id": "semble-vapor-int-008",
+    "query": "WebSocket upgrade and handler registration in Vapor",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Routing/RoutesBuilder+WebSocket.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] WebSocket upgrade and handler registration in Vapor"
+  },
+  {
+    "id": "semble-vapor-int-009",
+    "query": "Abort error and HTTP error response throwing",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Error/Abort.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Abort error and HTTP error response throwing"
+  },
+  {
+    "id": "semble-vapor-int-010",
+    "query": "Sessions and session driver for server-side session storage",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Sessions/Session.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/Vapor/Sessions/SessionsMiddleware.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] Sessions and session driver for server-side session storage"
+  },
+  {
+    "id": "semble-vapor-int-011",
+    "query": "Validations and Validatable for request body validation",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Validation/Validations.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Validations and Validatable for request body validation"
+  },
+  {
+    "id": "semble-vapor-int-012",
+    "query": "how route groups and route collections compose routes",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Routing/RoutesBuilder+Group.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/Vapor/Routing/RouteCollection.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how route groups and route collections compose routes"
+  },
+  {
+    "id": "semble-vapor-int-013",
+    "query": "FileMiddleware for serving static files",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Middleware/FileMiddleware.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] FileMiddleware for serving static files"
+  },
+  {
+    "id": "semble-vapor-int-014",
+    "query": "how serve and boot commands start the Vapor HTTP server",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Commands/ServeCommand.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/Vapor/HTTP/Server/HTTPServer.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how serve and boot commands start the Vapor HTTP server"
+  },
+  {
+    "id": "semble-vapor-int-015",
+    "query": "Environment configuration for development production and testing",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Environment/Environment.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Environment configuration for development production and testing"
+  },
+  {
+    "id": "semble-vapor-int-016",
+    "query": "CORS middleware for cross-origin resource sharing",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Middleware/CORSMiddleware.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] CORS middleware for cross-origin resource sharing"
+  },
+  {
+    "id": "semble-vapor-int-017",
+    "query": "HTTP status codes and media types in Vapor",
+    "category": "intent",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/HTTP/HTTPStatus.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "Sources/Vapor/HTTP/Headers/HTTPMediaType.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] HTTP status codes and media types in Vapor"
+  },
+  {
+    "id": "semble-vapor-sym-018",
+    "query": "Application",
+    "category": "symbol_lookup",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Application.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Application"
+  },
+  {
+    "id": "semble-vapor-sym-019",
+    "query": "Request",
+    "category": "symbol_lookup",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Request/Request.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Request"
+  },
+  {
+    "id": "semble-vapor-sym-020",
+    "query": "Middleware",
+    "category": "symbol_lookup",
+    "repo": "vapor",
+    "ground_truth": [
+      {
+        "file_path": "Sources/Vapor/Middleware/Middleware.swift",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Middleware"
+  }
+]

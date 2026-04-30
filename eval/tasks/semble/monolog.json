@@ -1,0 +1,332 @@
+[
+  {
+    "id": "semble-monolog-cro-001",
+    "query": "logger handler stack and processors",
+    "category": "cross_file",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Logger.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] logger handler stack and processors"
+  },
+  {
+    "id": "semble-monolog-int-002",
+    "query": "stream log handler writes to files and streams",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/StreamHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] stream log handler writes to files and streams"
+  },
+  {
+    "id": "semble-monolog-int-003",
+    "query": "line formatter output formatting",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Formatter/LineFormatter.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] line formatter output formatting"
+  },
+  {
+    "id": "semble-monolog-int-004",
+    "query": "json log formatting",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Formatter/JsonFormatter.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] json log formatting"
+  },
+  {
+    "id": "semble-monolog-sym-005",
+    "query": "Logger",
+    "category": "symbol_lookup",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Logger.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Logger"
+  },
+  {
+    "id": "semble-monolog-sym-006",
+    "query": "StreamHandler",
+    "category": "symbol_lookup",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/StreamHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] StreamHandler"
+  },
+  {
+    "id": "semble-monolog-sym-007",
+    "query": "JsonFormatter",
+    "category": "symbol_lookup",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Formatter/JsonFormatter.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] JsonFormatter"
+  },
+  {
+    "id": "semble-monolog-cro-008",
+    "query": "how log handlers are registered and invoked by Logger",
+    "category": "cross_file",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Logger.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Monolog/Handler/AbstractHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how log handlers are registered and invoked by Logger"
+  },
+  {
+    "id": "semble-monolog-int-009",
+    "query": "rotating file handler for log rotation by date",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/RotatingFileHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Monolog/Handler/StreamHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] rotating file handler for log rotation by date"
+  },
+  {
+    "id": "semble-monolog-int-010",
+    "query": "syslog handler for system-level logging",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/SyslogHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] syslog handler for system-level logging"
+  },
+  {
+    "id": "semble-monolog-int-011",
+    "query": "filter handler for level-based record filtering",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/FilterHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] filter handler for level-based record filtering"
+  },
+  {
+    "id": "semble-monolog-int-012",
+    "query": "group handler to broadcast log records to multiple handlers",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/GroupHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] group handler to broadcast log records to multiple handlers"
+  },
+  {
+    "id": "semble-monolog-int-013",
+    "query": "PSR-3 log message placeholder processor",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Processor/PsrLogMessageProcessor.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] PSR-3 log message placeholder processor"
+  },
+  {
+    "id": "semble-monolog-int-014",
+    "query": "introspection processor adding caller class and method to records",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Processor/IntrospectionProcessor.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] introspection processor adding caller class and method to records"
+  },
+  {
+    "id": "semble-monolog-int-015",
+    "query": "normalizer formatter for converting complex values to arrays",
+    "category": "intent",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Formatter/NormalizerFormatter.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] normalizer formatter for converting complex values to arrays"
+  },
+  {
+    "id": "semble-monolog-cro-016",
+    "query": "abstract processing handler with formatting lifecycle",
+    "category": "cross_file",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/AbstractProcessingHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Monolog/Handler/AbstractHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] abstract processing handler with formatting lifecycle"
+  },
+  {
+    "id": "semble-monolog-cro-017",
+    "query": "how log records propagate through the handler bubble chain",
+    "category": "cross_file",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Logger.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Monolog/Handler/AbstractHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how log records propagate through the handler bubble chain"
+  },
+  {
+    "id": "semble-monolog-cro-018",
+    "query": "how formatters transform log records into output strings",
+    "category": "cross_file",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Formatter/LineFormatter.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/Monolog/Formatter/NormalizerFormatter.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how formatters transform log records into output strings"
+  },
+  {
+    "id": "semble-monolog-sym-019",
+    "query": "RotatingFileHandler",
+    "category": "symbol_lookup",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Handler/RotatingFileHandler.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] RotatingFileHandler"
+  },
+  {
+    "id": "semble-monolog-sym-020",
+    "query": "PsrLogMessageProcessor",
+    "category": "symbol_lookup",
+    "repo": "monolog",
+    "ground_truth": [
+      {
+        "file_path": "src/Monolog/Processor/PsrLogMessageProcessor.php",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] PsrLogMessageProcessor"
+  }
+]

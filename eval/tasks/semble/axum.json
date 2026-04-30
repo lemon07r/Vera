@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-axum-cro-001",
+    "query": "how axum Handler trait dispatches requests to async handler functions",
+    "category": "cross_file",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/handler/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how axum Handler trait dispatches requests to async handler functions"
+  },
+  {
+    "id": "semble-axum-int-002",
+    "query": "Router path_router implementation for storing and matching routes",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/routing/path_router.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Router path_router implementation for storing and matching routes"
+  },
+  {
+    "id": "semble-axum-cro-003",
+    "query": "how extractors implement FromRequest and FromRequestParts",
+    "category": "cross_file",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/extract/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how extractors implement FromRequest and FromRequestParts"
+  },
+  {
+    "id": "semble-axum-int-004",
+    "query": "Path extractor for capturing URL path parameters",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/extract/path/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Path extractor for capturing URL path parameters"
+  },
+  {
+    "id": "semble-axum-int-005",
+    "query": "State extractor for sharing application state across handlers",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/extract/state.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] State extractor for sharing application state across handlers"
+  },
+  {
+    "id": "semble-axum-int-006",
+    "query": "Json extractor and response for deserializing and serializing JSON bodies",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/json.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Json extractor and response for deserializing and serializing JSON bodies"
+  },
+  {
+    "id": "semble-axum-cro-007",
+    "query": "how IntoResponse converts handler return values to HTTP responses",
+    "category": "cross_file",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/response/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how IntoResponse converts handler return values to HTTP responses"
+  },
+  {
+    "id": "semble-axum-int-008",
+    "query": "from_fn middleware for wrapping handlers with async functions",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/middleware/from_fn.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] from_fn middleware for wrapping handlers with async functions"
+  },
+  {
+    "id": "semble-axum-int-009",
+    "query": "error handling and how errors are converted to responses",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/error_handling/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] error handling and how errors are converted to responses"
+  },
+  {
+    "id": "semble-axum-cro-010",
+    "query": "how axum nests routers and merges router trees",
+    "category": "cross_file",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/routing/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how axum nests routers and merges router trees"
+  },
+  {
+    "id": "semble-axum-int-011",
+    "query": "Form extractor for parsing URL-encoded request bodies",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/form.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Form extractor for parsing URL-encoded request bodies"
+  },
+  {
+    "id": "semble-axum-int-012",
+    "query": "WebSocket upgrade and handler",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/extract/ws.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] WebSocket upgrade and handler"
+  },
+  {
+    "id": "semble-axum-cro-013",
+    "query": "how MethodRouter dispatches GET POST PUT DELETE by HTTP method",
+    "category": "cross_file",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/routing/method_routing.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how MethodRouter dispatches GET POST PUT DELETE by HTTP method"
+  },
+  {
+    "id": "semble-axum-int-014",
+    "query": "BoxedIntoRoute and type-erased route storage",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/routing/route.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] BoxedIntoRoute and type-erased route storage"
+  },
+  {
+    "id": "semble-axum-int-015",
+    "query": "parsing uploaded binary file parts from HTTP requests",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/extract/multipart.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] parsing uploaded binary file parts from HTTP requests"
+  },
+  {
+    "id": "semble-axum-int-016",
+    "query": "how axum maps Tower middleware layers onto the router",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/middleware/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how axum maps Tower middleware layers onto the router"
+  },
+  {
+    "id": "semble-axum-int-017",
+    "query": "rejection types and rejection responses for failed extractions",
+    "category": "intent",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/extract/rejection.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] rejection types and rejection responses for failed extractions"
+  },
+  {
+    "id": "semble-axum-sym-018",
+    "query": "Router",
+    "category": "symbol_lookup",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/routing/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Router"
+  },
+  {
+    "id": "semble-axum-sym-019",
+    "query": "IntoResponse",
+    "category": "symbol_lookup",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/response/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] IntoResponse"
+  },
+  {
+    "id": "semble-axum-sym-020",
+    "query": "FromRequest",
+    "category": "symbol_lookup",
+    "repo": "axum",
+    "ground_truth": [
+      {
+        "file_path": "axum/src/extract/mod.rs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] FromRequest"
+  }
+]

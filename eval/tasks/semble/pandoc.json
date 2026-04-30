@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-pandoc-cro-001",
+    "query": "how pandoc reads and parses Markdown into an AST",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Readers/Markdown.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pandoc reads and parses Markdown into an AST"
+  },
+  {
+    "id": "semble-pandoc-cro-002",
+    "query": "how pandoc writes an AST to HTML output",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Writers/HTML.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pandoc writes an AST to HTML output"
+  },
+  {
+    "id": "semble-pandoc-int-003",
+    "query": "how pandoc converts a document to LaTeX",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Writers/LaTeX.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc converts a document to LaTeX"
+  },
+  {
+    "id": "semble-pandoc-cro-004",
+    "query": "how the PandocMonad typeclass abstracts IO for readers and writers",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Class.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the PandocMonad typeclass abstracts IO for readers and writers"
+  },
+  {
+    "id": "semble-pandoc-int-005",
+    "query": "how pandoc handles YAML metadata blocks in documents",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Readers/Markdown.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc handles YAML metadata blocks in documents"
+  },
+  {
+    "id": "semble-pandoc-int-006",
+    "query": "how pandoc applies document transforms like header shifting",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Transforms.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc applies document transforms like header shifting"
+  },
+  {
+    "id": "semble-pandoc-int-007",
+    "query": "how pandoc reads a DocBook XML document",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Readers/DocBook.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc reads a DocBook XML document"
+  },
+  {
+    "id": "semble-pandoc-cro-008",
+    "query": "how pandoc handles citations and bibliography processing",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Citeproc.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pandoc handles citations and bibliography processing"
+  },
+  {
+    "id": "semble-pandoc-int-009",
+    "query": "how pandoc options control output format and extensions",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Options.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc options control output format and extensions"
+  },
+  {
+    "id": "semble-pandoc-int-010",
+    "query": "how pandoc parses table structures in documents",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Parsing/GridTable.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc parses table structures in documents"
+  },
+  {
+    "id": "semble-pandoc-int-011",
+    "query": "how pandoc fetches and embeds media into self-contained output",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "SelfContained.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc fetches and embeds media into self-contained output"
+  },
+  {
+    "id": "semble-pandoc-int-012",
+    "query": "how pandoc writes CommonMark Markdown output",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Writers/CommonMark.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc writes CommonMark Markdown output"
+  },
+  {
+    "id": "semble-pandoc-int-013",
+    "query": "how pandoc reads RST reStructuredText documents",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Readers/RST.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc reads RST reStructuredText documents"
+  },
+  {
+    "id": "semble-pandoc-cro-014",
+    "query": "how pandoc handles Lua filter scripting",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Scripting.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pandoc handles Lua filter scripting"
+  },
+  {
+    "id": "semble-pandoc-cro-015",
+    "query": "how pandoc's app module orchestrates reading, filtering, and writing",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "App.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pandoc's app module orchestrates reading, filtering, and writing"
+  },
+  {
+    "id": "semble-pandoc-int-016",
+    "query": "how pandoc handles TeX math in documents",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "TeX.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc handles TeX math in documents"
+  },
+  {
+    "id": "semble-pandoc-cro-017",
+    "query": "how pandoc parses generic parsing utilities for readers",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Parsing/General.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pandoc parses generic parsing utilities for readers"
+  },
+  {
+    "id": "semble-pandoc-cro-018",
+    "query": "how pandoc generates PDF output via LaTeX or other backends",
+    "category": "cross_file",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "PDF.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pandoc generates PDF output via LaTeX or other backends"
+  },
+  {
+    "id": "semble-pandoc-int-019",
+    "query": "how pandoc templates are processed and rendered",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Templates.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc templates are processed and rendered"
+  },
+  {
+    "id": "semble-pandoc-int-020",
+    "query": "how pandoc error types represent conversion failures",
+    "category": "intent",
+    "repo": "pandoc",
+    "ground_truth": [
+      {
+        "file_path": "Error.hs",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how pandoc error types represent conversion failures"
+  }
+]

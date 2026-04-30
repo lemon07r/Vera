@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-redis-int-001",
+    "query": "how Redis implements the SET command with options like NX, EX, PX",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/t_string.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Redis implements the SET command with options like NX, EX, PX"
+  },
+  {
+    "id": "semble-redis-cro-002",
+    "query": "how active key expiration cycle works",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/expire.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how active key expiration cycle works"
+  },
+  {
+    "id": "semble-redis-cro-003",
+    "query": "how RDB persistence serializes the database to disk",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/rdb.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how RDB persistence serializes the database to disk"
+  },
+  {
+    "id": "semble-redis-cro-004",
+    "query": "how append-only file logging records write commands",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/aof.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how append-only file logging records write commands"
+  },
+  {
+    "id": "semble-redis-cro-005",
+    "query": "how pub/sub message delivery works to subscribers",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/pubsub.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how pub/sub message delivery works to subscribers"
+  },
+  {
+    "id": "semble-redis-cro-006",
+    "query": "how master-replica replication syncs data to replicas",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/replication.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how master-replica replication syncs data to replicas"
+  },
+  {
+    "id": "semble-redis-cro-007",
+    "query": "reading and parsing client commands from the network",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/networking.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] reading and parsing client commands from the network"
+  },
+  {
+    "id": "semble-redis-int-008",
+    "query": "how sorted sets score-based range queries work",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/t_zset.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how sorted sets score-based range queries work"
+  },
+  {
+    "id": "semble-redis-int-009",
+    "query": "how Redis hash objects store and retrieve fields",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/t_hash.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Redis hash objects store and retrieve fields"
+  },
+  {
+    "id": "semble-redis-int-010",
+    "query": "how SETRANGE modifies a substring within a string value",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/t_string.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how SETRANGE modifies a substring within a string value"
+  },
+  {
+    "id": "semble-redis-cro-011",
+    "query": "how the event loop handles file events and time events",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/ae.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the event loop handles file events and time events"
+  },
+  {
+    "id": "semble-redis-int-012",
+    "query": "expiring keys set with EXPIRE or TTL commands",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/expire.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] expiring keys set with EXPIRE or TTL commands"
+  },
+  {
+    "id": "semble-redis-int-013",
+    "query": "how slave keys with expiry are tracked in replication",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/expire.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how slave keys with expiry are tracked in replication"
+  },
+  {
+    "id": "semble-redis-cro-014",
+    "query": "server startup initialization and configuration loading",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/server.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] server startup initialization and configuration loading"
+  },
+  {
+    "id": "semble-redis-int-015",
+    "query": "how RDB saves LZF-compressed string objects",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/rdb.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how RDB saves LZF-compressed string objects"
+  },
+  {
+    "id": "semble-redis-cro-016",
+    "query": "how Redis cluster handles slot assignment and routing",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/cluster.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Redis cluster handles slot assignment and routing"
+  },
+  {
+    "id": "semble-redis-int-017",
+    "query": "how list push and pop operations are implemented",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/t_list.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how list push and pop operations are implemented"
+  },
+  {
+    "id": "semble-redis-int-018",
+    "query": "how set intersection and union operations work",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/t_set.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how set intersection and union operations work"
+  },
+  {
+    "id": "semble-redis-cro-019",
+    "query": "how the database keyspace stores and looks up keys",
+    "category": "cross_file",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/db.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the database keyspace stores and looks up keys"
+  },
+  {
+    "id": "semble-redis-int-020",
+    "query": "how server logging formats and writes log messages",
+    "category": "intent",
+    "repo": "redis",
+    "ground_truth": [
+      {
+        "file_path": "src/server.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how server logging formats and writes log messages"
+  }
+]

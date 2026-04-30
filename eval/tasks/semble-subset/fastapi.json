@@ -1,0 +1,386 @@
+[
+  {
+    "id": "semble-fastapi-cro-001",
+    "query": "how does dependency injection work",
+    "category": "cross_file",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/dependencies/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/dependencies/models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      },
+      {
+        "file_path": "fastapi/params.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does dependency injection work"
+  },
+  {
+    "id": "semble-fastapi-int-002",
+    "query": "request validation and error handling",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/exception_handlers.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] request validation and error handling"
+  },
+  {
+    "id": "semble-fastapi-cro-003",
+    "query": "how are routes registered",
+    "category": "cross_file",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/applications.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are routes registered"
+  },
+  {
+    "id": "semble-fastapi-int-004",
+    "query": "websocket endpoint implementation",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/websockets.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] websocket endpoint implementation"
+  },
+  {
+    "id": "semble-fastapi-int-005",
+    "query": "OpenAPI schema generation",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/openapi/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/openapi/models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] OpenAPI schema generation"
+  },
+  {
+    "id": "semble-fastapi-int-006",
+    "query": "middleware stack and CORS",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/middleware/cors.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/applications.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] middleware stack and CORS"
+  },
+  {
+    "id": "semble-fastapi-int-007",
+    "query": "file upload handling",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/datastructures.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] file upload handling"
+  },
+  {
+    "id": "semble-fastapi-int-008",
+    "query": "response model serialization",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/encoders.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] response model serialization"
+  },
+  {
+    "id": "semble-fastapi-int-009",
+    "query": "running work after returning an HTTP response without blocking",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/background.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] running work after returning an HTTP response without blocking"
+  },
+  {
+    "id": "semble-fastapi-int-010",
+    "query": "security and OAuth2 authentication",
+    "category": "intent",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/security/oauth2.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/security/http.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] security and OAuth2 authentication"
+  },
+  {
+    "id": "semble-fastapi-cro-011",
+    "query": "how is response validation and serialization applied before sending",
+    "category": "cross_file",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/encoders.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how is response validation and serialization applied before sending"
+  },
+  {
+    "id": "semble-fastapi-cro-012",
+    "query": "how are nested and sub-dependencies resolved",
+    "category": "cross_file",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/dependencies/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how are nested and sub-dependencies resolved"
+  },
+  {
+    "id": "semble-fastapi-cro-013",
+    "query": "how does FastAPI run sync route functions without blocking",
+    "category": "cross_file",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/concurrency.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does FastAPI run sync route functions without blocking"
+  },
+  {
+    "id": "semble-fastapi-cro-014",
+    "query": "how are path parameters extracted and type-converted",
+    "category": "cross_file",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/dependencies/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are path parameters extracted and type-converted"
+  },
+  {
+    "id": "semble-fastapi-cro-015",
+    "query": "how does exception propagation work through dependency injection",
+    "category": "cross_file",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/dependencies/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does exception propagation work through dependency injection"
+  },
+  {
+    "id": "semble-fastapi-sym-016",
+    "query": "Depends",
+    "category": "symbol_lookup",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/params.py",
+        "line_start": 746,
+        "line_end": 749,
+        "relevance": 2
+      },
+      {
+        "file_path": "fastapi/param_functions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:symbol] Depends"
+  },
+  {
+    "id": "semble-fastapi-sym-017",
+    "query": "HTTPException",
+    "category": "symbol_lookup",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/exceptions.py",
+        "line_start": 17,
+        "line_end": 66,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HTTPException"
+  },
+  {
+    "id": "semble-fastapi-sym-018",
+    "query": "APIRouter",
+    "category": "symbol_lookup",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/routing.py",
+        "line_start": 1005,
+        "line_end": 1030,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] APIRouter"
+  },
+  {
+    "id": "semble-fastapi-sym-019",
+    "query": "BackgroundTasks",
+    "category": "symbol_lookup",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/background.py",
+        "line_start": 11,
+        "line_end": 39,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] BackgroundTasks"
+  },
+  {
+    "id": "semble-fastapi-sym-020",
+    "query": "OAuth2PasswordBearer",
+    "category": "symbol_lookup",
+    "repo": "fastapi",
+    "ground_truth": [
+      {
+        "file_path": "fastapi/security/oauth2.py",
+        "line_start": 433,
+        "line_end": 471,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] OAuth2PasswordBearer"
+  }
+]

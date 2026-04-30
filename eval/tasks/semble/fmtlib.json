@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-fmtlib-cro-001",
+    "query": "how fmt::format and fmt::print format strings at runtime",
+    "category": "cross_file",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how fmt::format and fmt::print format strings at runtime"
+  },
+  {
+    "id": "semble-fmtlib-cro-002",
+    "query": "basic_format_args and format_arg argument storage and type erasure",
+    "category": "cross_file",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/base.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] basic_format_args and format_arg argument storage and type erasure"
+  },
+  {
+    "id": "semble-fmtlib-int-003",
+    "query": "formatter specialization for custom type formatting",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] formatter specialization for custom type formatting"
+  },
+  {
+    "id": "semble-fmtlib-int-004",
+    "query": "compile-time format string checking and FMT_COMPILE macro",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/compile.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] compile-time format string checking and FMT_COMPILE macro"
+  },
+  {
+    "id": "semble-fmtlib-int-005",
+    "query": "color and text style formatting for terminal output",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/color.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] color and text style formatting for terminal output"
+  },
+  {
+    "id": "semble-fmtlib-int-006",
+    "query": "formatting ranges containers and tuples",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/ranges.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] formatting ranges containers and tuples"
+  },
+  {
+    "id": "semble-fmtlib-int-007",
+    "query": "chrono duration and time point formatting",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/chrono.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] chrono duration and time point formatting"
+  },
+  {
+    "id": "semble-fmtlib-int-008",
+    "query": "ostream integration for writing to std::ostream",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/ostream.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ostream integration for writing to std::ostream"
+  },
+  {
+    "id": "semble-fmtlib-int-009",
+    "query": "printf-compatible formatting with fmt::printf and fmt::sprintf",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/printf.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] printf-compatible formatting with fmt::printf and fmt::sprintf"
+  },
+  {
+    "id": "semble-fmtlib-int-010",
+    "query": "format_to and back_insert_iterator output adapters",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] format_to and back_insert_iterator output adapters"
+  },
+  {
+    "id": "semble-fmtlib-int-011",
+    "query": "memory buffer and basic_memory_buffer for efficient allocation",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] memory buffer and basic_memory_buffer for efficient allocation"
+  },
+  {
+    "id": "semble-fmtlib-cro-012",
+    "query": "dynamic_format_arg_store for building argument lists at runtime",
+    "category": "cross_file",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/args.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] dynamic_format_arg_store for building argument lists at runtime"
+  },
+  {
+    "id": "semble-fmtlib-int-013",
+    "query": "std::filesystem path formatting support",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/std.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] std::filesystem path formatting support"
+  },
+  {
+    "id": "semble-fmtlib-int-014",
+    "query": "format_error and error handling for invalid format strings",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/base.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] format_error and error handling for invalid format strings"
+  },
+  {
+    "id": "semble-fmtlib-int-015",
+    "query": "width precision fill and alignment format specifiers",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] width precision fill and alignment format specifiers"
+  },
+  {
+    "id": "semble-fmtlib-int-016",
+    "query": "fmt::arg named arguments for use in format strings",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/args.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] fmt::arg named arguments for use in format strings"
+  },
+  {
+    "id": "semble-fmtlib-int-017",
+    "query": "how fmt handles integer floating point and string formatting",
+    "category": "intent",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how fmt handles integer floating point and string formatting"
+  },
+  {
+    "id": "semble-fmtlib-sym-018",
+    "query": "formatter",
+    "category": "symbol_lookup",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] formatter"
+  },
+  {
+    "id": "semble-fmtlib-sym-019",
+    "query": "basic_format_args",
+    "category": "symbol_lookup",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/base.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] basic_format_args"
+  },
+  {
+    "id": "semble-fmtlib-sym-020",
+    "query": "basic_memory_buffer",
+    "category": "symbol_lookup",
+    "repo": "fmtlib",
+    "ground_truth": [
+      {
+        "file_path": "include/fmt/format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] basic_memory_buffer"
+  }
+]

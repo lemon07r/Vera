@@ -1,0 +1,368 @@
+[
+  {
+    "id": "semble-ktor-cro-001",
+    "query": "how the HttpClient is configured with plugins and an engine",
+    "category": "cross_file",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/HttpClient.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/HttpClientConfig.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the HttpClient is configured with plugins and an engine"
+  },
+  {
+    "id": "semble-ktor-cro-002",
+    "query": "how request and response pipelines process interceptors",
+    "category": "cross_file",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/request/HttpRequestPipeline.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/statement/HttpResponsePipeline.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how request and response pipelines process interceptors"
+  },
+  {
+    "id": "semble-ktor-cro-003",
+    "query": "how HTTP caching stores and validates cached responses",
+    "category": "cross_file",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/cache/HttpCache.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/cache/HttpCacheEntry.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how HTTP caching stores and validates cached responses"
+  },
+  {
+    "id": "semble-ktor-int-004",
+    "query": "how HTTP status codes are checked and exceptions raised on failure",
+    "category": "intent",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/HttpCallValidator.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how HTTP status codes are checked and exceptions raised on failure"
+  },
+  {
+    "id": "semble-ktor-int-005",
+    "query": "how request and response timeouts are enforced",
+    "category": "intent",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/HttpTimeout.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how request and response timeouts are enforced"
+  },
+  {
+    "id": "semble-ktor-int-006",
+    "query": "how HTTP redirects are followed automatically",
+    "category": "intent",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/HttpRedirect.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how HTTP redirects are followed automatically"
+  },
+  {
+    "id": "semble-ktor-int-007",
+    "query": "how cookies are stored and sent with requests",
+    "category": "intent",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/cookies/HttpCookies.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/cookies/AcceptAllCookiesStorage.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how cookies are stored and sent with requests"
+  },
+  {
+    "id": "semble-ktor-int-008",
+    "query": "how multipart form data uploads are constructed",
+    "category": "intent",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/request/forms/FormDataContent.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/request/forms/formDsl.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how multipart form data uploads are constructed"
+  },
+  {
+    "id": "semble-ktor-cro-009",
+    "query": "how WebSocket connections are established and messages exchanged",
+    "category": "cross_file",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/websocket/WebSockets.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/websocket/ClientSessions.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how WebSocket connections are established and messages exchanged"
+  },
+  {
+    "id": "semble-ktor-int-010",
+    "query": "how server-sent events are received and parsed from a streaming response",
+    "category": "intent",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/sse/SSE.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/sse/DefaultClientSSESession.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how server-sent events are received and parsed from a streaming response"
+  },
+  {
+    "id": "semble-ktor-cro-011",
+    "query": "how the engine abstraction separates the client API from the transport",
+    "category": "cross_file",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/engine/HttpClientEngine.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/engine/HttpClientEngineBase.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the engine abstraction separates the client API from the transport"
+  },
+  {
+    "id": "semble-ktor-sym-012",
+    "query": "HttpClient",
+    "category": "symbol_lookup",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/HttpClient.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HttpClient"
+  },
+  {
+    "id": "semble-ktor-sym-013",
+    "query": "HttpTimeout",
+    "category": "symbol_lookup",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/HttpTimeout.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HttpTimeout"
+  },
+  {
+    "id": "semble-ktor-sym-014",
+    "query": "HttpRedirect",
+    "category": "symbol_lookup",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/HttpRedirect.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HttpRedirect"
+  },
+  {
+    "id": "semble-ktor-sym-015",
+    "query": "HttpCookies",
+    "category": "symbol_lookup",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/cookies/HttpCookies.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HttpCookies"
+  },
+  {
+    "id": "semble-ktor-sym-016",
+    "query": "HttpClientEngine",
+    "category": "symbol_lookup",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/engine/HttpClientEngine.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HttpClientEngine"
+  },
+  {
+    "id": "semble-ktor-cro-017",
+    "query": "how the HttpClient plugin installation and configuration pipeline works",
+    "category": "cross_file",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/api/ClientPluginBuilder.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/HttpClient.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the HttpClient plugin installation and configuration pipeline works"
+  },
+  {
+    "id": "semble-ktor-cro-018",
+    "query": "how client plugins intercept and transform requests and responses",
+    "category": "cross_file",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/api/ClientPluginBuilder.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/plugins/api/ClientPluginInstance.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how client plugins intercept and transform requests and responses"
+  },
+  {
+    "id": "semble-ktor-int-019",
+    "query": "HTTP client engine abstraction and engine factory",
+    "category": "intent",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/engine/HttpClientEngine.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/engine/HttpClientEngineFactory.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] HTTP client engine abstraction and engine factory"
+  },
+  {
+    "id": "semble-ktor-sym-020",
+    "query": "HttpClientCall",
+    "category": "symbol_lookup",
+    "repo": "ktor",
+    "ground_truth": [
+      {
+        "file_path": "ktor-client/ktor-client-core/common/src/io/ktor/client/call/HttpClientCall.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HttpClientCall"
+  }
+]

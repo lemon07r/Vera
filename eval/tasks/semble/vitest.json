@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-vitest-cro-001",
+    "query": "how vitest discovers and runs test files",
+    "category": "cross_file",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/core.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how vitest discovers and runs test files"
+  },
+  {
+    "id": "semble-vitest-cro-002",
+    "query": "test runner worker pool scheduling and execution",
+    "category": "cross_file",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/pools/pool.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] test runner worker pool scheduling and execution"
+  },
+  {
+    "id": "semble-vitest-cro-003",
+    "query": "how vitest statically collects describe it and test block locations for test discovery",
+    "category": "cross_file",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/ast-collect.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how vitest statically collects describe it and test block locations for test discovery"
+  },
+  {
+    "id": "semble-vitest-int-004",
+    "query": "expect assertion API and matchers",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/integrations/chai/index.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] expect assertion API and matchers"
+  },
+  {
+    "id": "semble-vitest-int-005",
+    "query": "vi mock and spy utilities for mocking modules and functions",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/integrations/vi.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] vi mock and spy utilities for mocking modules and functions"
+  },
+  {
+    "id": "semble-vitest-int-006",
+    "query": "snapshot testing serialization and comparison",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/integrations/snapshot/chai.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] snapshot testing serialization and comparison"
+  },
+  {
+    "id": "semble-vitest-int-007",
+    "query": "coverage provider and instrumentation integration",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/coverage.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] coverage provider and instrumentation integration"
+  },
+  {
+    "id": "semble-vitest-int-008",
+    "query": "vitest configuration options and defineConfig",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/types/config.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] vitest configuration options and defineConfig"
+  },
+  {
+    "id": "semble-vitest-cro-009",
+    "query": "how beforeAll afterAll and lifecycle hooks affect the test execution order",
+    "category": "cross_file",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/test-run.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how beforeAll afterAll and lifecycle hooks affect the test execution order"
+  },
+  {
+    "id": "semble-vitest-int-010",
+    "query": "test reporter interface for listening to test events and results",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/public/reporters.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] test reporter interface for listening to test events and results"
+  },
+  {
+    "id": "semble-vitest-cro-011",
+    "query": "how vitest initializes worker threads for parallel test execution",
+    "category": "cross_file",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/runtime/workers/init.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how vitest initializes worker threads for parallel test execution"
+  },
+  {
+    "id": "semble-vitest-int-012",
+    "query": "module mocker for intercepting and replacing module imports at runtime",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/runtime/moduleRunner/moduleMocker.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] module mocker for intercepting and replacing module imports at runtime"
+  },
+  {
+    "id": "semble-vitest-int-013",
+    "query": "task state and task result tracking",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/utils/tasks.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] task state and task result tracking"
+  },
+  {
+    "id": "semble-vitest-int-014",
+    "query": "fake timers and timer mocking utilities",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/integrations/mock/timers.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] fake timers and timer mocking utilities"
+  },
+  {
+    "id": "semble-vitest-cro-015",
+    "query": "how the StateManager tracks running cancelled and completed test state",
+    "category": "cross_file",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/state.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the StateManager tracks running cancelled and completed test state"
+  },
+  {
+    "id": "semble-vitest-int-016",
+    "query": "project-level configuration and workspace projects",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/project.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] project-level configuration and workspace projects"
+  },
+  {
+    "id": "semble-vitest-int-017",
+    "query": "test watcher for file changes in watch mode",
+    "category": "intent",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/watcher.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] test watcher for file changes in watch mode"
+  },
+  {
+    "id": "semble-vitest-sym-018",
+    "query": "Vitest",
+    "category": "symbol_lookup",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/core.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Vitest"
+  },
+  {
+    "id": "semble-vitest-sym-019",
+    "query": "VitestProject",
+    "category": "symbol_lookup",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/project.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] VitestProject"
+  },
+  {
+    "id": "semble-vitest-sym-020",
+    "query": "StateManager",
+    "category": "symbol_lookup",
+    "repo": "vitest",
+    "ground_truth": [
+      {
+        "file_path": "packages/vitest/src/node/state.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] StateManager"
+  }
+]

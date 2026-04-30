@@ -1,0 +1,326 @@
+[
+  {
+    "id": "semble-cats-cro-001",
+    "query": "how the Functor type class defines mapping over a context",
+    "category": "cross_file",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Functor.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the Functor type class defines mapping over a context"
+  },
+  {
+    "id": "semble-cats-cro-002",
+    "query": "how Monad composes dependent effectful computations with flatMap",
+    "category": "cross_file",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Monad.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "core/src/main/scala/cats/FlatMap.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how Monad composes dependent effectful computations with flatMap"
+  },
+  {
+    "id": "semble-cats-cro-003",
+    "query": "how Applicative combines independent effects",
+    "category": "cross_file",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Applicative.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "core/src/main/scala/cats/Apply.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how Applicative combines independent effects"
+  },
+  {
+    "id": "semble-cats-int-004",
+    "query": "how errors are handled and recovered in ApplicativeError and MonadError",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/ApplicativeError.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "core/src/main/scala/cats/MonadError.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how errors are handled and recovered in ApplicativeError and MonadError"
+  },
+  {
+    "id": "semble-cats-int-005",
+    "query": "how Validated accumulates errors across independent computations",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/data/Validated.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Validated accumulates errors across independent computations"
+  },
+  {
+    "id": "semble-cats-int-006",
+    "query": "how EitherT combines the Either monad with another effect",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/data/EitherT.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how EitherT combines the Either monad with another effect"
+  },
+  {
+    "id": "semble-cats-int-007",
+    "query": "how Kleisli composes functions that return monadic values",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/data/Kleisli.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Kleisli composes functions that return monadic values"
+  },
+  {
+    "id": "semble-cats-int-008",
+    "query": "how Eval provides lazy and memoized evaluation",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Eval.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Eval provides lazy and memoized evaluation"
+  },
+  {
+    "id": "semble-cats-int-009",
+    "query": "how Foldable traverses and reduces elements in a container",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Foldable.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Foldable traverses and reduces elements in a container"
+  },
+  {
+    "id": "semble-cats-int-010",
+    "query": "how Chain provides O(1) concatenation as an alternative to List",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/data/Chain.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Chain provides O(1) concatenation as an alternative to List"
+  },
+  {
+    "id": "semble-cats-int-011",
+    "query": "how natural transformations map between type constructors",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/arrow/FunctionK.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how natural transformations map between type constructors"
+  },
+  {
+    "id": "semble-cats-int-012",
+    "query": "how the Contravariant functor reverses the mapping direction",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Contravariant.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how the Contravariant functor reverses the mapping direction"
+  },
+  {
+    "id": "semble-cats-sym-013",
+    "query": "Monad",
+    "category": "symbol_lookup",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Monad.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Monad"
+  },
+  {
+    "id": "semble-cats-sym-014",
+    "query": "Functor",
+    "category": "symbol_lookup",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Functor.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Functor"
+  },
+  {
+    "id": "semble-cats-sym-015",
+    "query": "EitherT",
+    "category": "symbol_lookup",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/data/EitherT.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] EitherT"
+  },
+  {
+    "id": "semble-cats-sym-016",
+    "query": "Validated",
+    "category": "symbol_lookup",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/data/Validated.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Validated"
+  },
+  {
+    "id": "semble-cats-sym-017",
+    "query": "Kleisli",
+    "category": "symbol_lookup",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/data/Kleisli.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Kleisli"
+  },
+  {
+    "id": "semble-cats-cro-018",
+    "query": "how Traverse sequences effects over a structure",
+    "category": "cross_file",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Traverse.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Traverse sequences effects over a structure"
+  },
+  {
+    "id": "semble-cats-int-019",
+    "query": "MonoidK and SemigroupK type classes for combining higher-kinded values",
+    "category": "intent",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/MonoidK.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "core/src/main/scala/cats/SemigroupK.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] MonoidK and SemigroupK type classes for combining higher-kinded values"
+  },
+  {
+    "id": "semble-cats-sym-020",
+    "query": "Foldable",
+    "category": "symbol_lookup",
+    "repo": "cats",
+    "ground_truth": [
+      {
+        "file_path": "core/src/main/scala/cats/Foldable.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Foldable"
+  }
+]

@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-bats-core-int-001",
+    "query": "how the run command captures output and exit status of a command under test",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how the run command captures output and exit status of a command under test"
+  },
+  {
+    "id": "semble-bats-core-int-002",
+    "query": "how bats loads external helper libraries with load",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats loads external helper libraries with load"
+  },
+  {
+    "id": "semble-bats-core-int-003",
+    "query": "how bats_pipe chains commands and captures their exit codes",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats_pipe chains commands and captures their exit codes"
+  },
+  {
+    "id": "semble-bats-core-int-004",
+    "query": "how skip aborts a test without marking it as a failure",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how skip aborts a test without marking it as a failure"
+  },
+  {
+    "id": "semble-bats-core-int-005",
+    "query": "how bats_separate_lines splits command output into an array",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats_separate_lines splits command output into an array"
+  },
+  {
+    "id": "semble-bats-core-cro-006",
+    "query": "how parallel test execution is gated with a semaphore",
+    "category": "cross_file",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/semaphore.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how parallel test execution is gated with a semaphore"
+  },
+  {
+    "id": "semble-bats-core-cro-007",
+    "query": "how a test file is preprocessed before execution",
+    "category": "cross_file",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/preprocessing.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how a test file is preprocessed before execution"
+  },
+  {
+    "id": "semble-bats-core-int-008",
+    "query": "how stack traces are captured on test failure",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/tracing.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how stack traces are captured on test failure"
+  },
+  {
+    "id": "semble-bats-core-cro-009",
+    "query": "how test function metadata is registered",
+    "category": "cross_file",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how test function metadata is registered"
+  },
+  {
+    "id": "semble-bats-core-int-010",
+    "query": "how bats formats test result output",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/formatter.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats formats test result output"
+  },
+  {
+    "id": "semble-bats-core-cro-011",
+    "query": "how bats validates the test count across parallel workers",
+    "category": "cross_file",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/validator.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how bats validates the test count across parallel workers"
+  },
+  {
+    "id": "semble-bats-core-int-012",
+    "query": "how bats finds a library in the BATS_LIB_PATH",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats finds a library in the BATS_LIB_PATH"
+  },
+  {
+    "id": "semble-bats-core-int-013",
+    "query": "how bats_errexit_subshell runs a command in a subshell with errexit",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats_errexit_subshell runs a command in a subshell with errexit"
+  },
+  {
+    "id": "semble-bats-core-cro-014",
+    "query": "how setup and teardown hooks are called around each test",
+    "category": "cross_file",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how setup and teardown hooks are called around each test"
+  },
+  {
+    "id": "semble-bats-core-int-015",
+    "query": "how warnings are emitted for deprecated bats features",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/warnings.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how warnings are emitted for deprecated bats features"
+  },
+  {
+    "id": "semble-bats-core-cro-016",
+    "query": "how the preprocessed test source is evaluated",
+    "category": "cross_file",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/preprocessing.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the preprocessed test source is evaluated"
+  },
+  {
+    "id": "semble-bats-core-cro-017",
+    "query": "how flock and shlock provide mutual exclusion on file locks",
+    "category": "cross_file",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/semaphore.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how flock and shlock provide mutual exclusion on file locks"
+  },
+  {
+    "id": "semble-bats-core-int-018",
+    "query": "how the failed command line is printed in a stack trace",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/tracing.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how the failed command line is printed in a stack trace"
+  },
+  {
+    "id": "semble-bats-core-int-019",
+    "query": "how bats_load_library loads a library by slug name",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats_load_library loads a library by slug name"
+  },
+  {
+    "id": "semble-bats-core-int-020",
+    "query": "how bats should retry a flaky test",
+    "category": "intent",
+    "repo": "bats-core",
+    "ground_truth": [
+      {
+        "file_path": "lib/bats-core/test_functions.bash",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how bats should retry a flaky test"
+  }
+]

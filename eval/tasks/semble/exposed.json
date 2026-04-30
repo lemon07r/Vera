@@ -1,0 +1,320 @@
+[
+  {
+    "id": "semble-exposed-cro-001",
+    "query": "how Table defines columns and constraints in Exposed DSL",
+    "category": "cross_file",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Table.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Table defines columns and constraints in Exposed DSL"
+  },
+  {
+    "id": "semble-exposed-int-002",
+    "query": "Column definition and column types in Exposed",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Column.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Column definition and column types in Exposed"
+  },
+  {
+    "id": "semble-exposed-cro-003",
+    "query": "how SQL queries are built with the Exposed query DSL",
+    "category": "cross_file",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/AbstractQuery.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how SQL queries are built with the Exposed query DSL"
+  },
+  {
+    "id": "semble-exposed-int-004",
+    "query": "Transaction block and database session management",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Transaction.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/transactions/Transactions.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Transaction block and database session management"
+  },
+  {
+    "id": "semble-exposed-int-005",
+    "query": "Database connection configuration and dialect selection",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/DatabaseApi.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Database connection configuration and dialect selection"
+  },
+  {
+    "id": "semble-exposed-int-006",
+    "query": "insert insertAndGetId and batch insert operations",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/statements/InsertStatement.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] insert insertAndGetId and batch insert operations"
+  },
+  {
+    "id": "semble-exposed-int-007",
+    "query": "update and delete statement builders",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/statements/UpdateStatement.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/statements/DeleteStatement.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] update and delete statement builders"
+  },
+  {
+    "id": "semble-exposed-int-008",
+    "query": "Op and SqlExpressionBuilder for composing WHERE conditions",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Op.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Op and SqlExpressionBuilder for composing WHERE conditions"
+  },
+  {
+    "id": "semble-exposed-int-009",
+    "query": "aggregate functions sum count avg and groupBy",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Function.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] aggregate functions sum count avg and groupBy"
+  },
+  {
+    "id": "semble-exposed-int-010",
+    "query": "SchemaUtils for creating and dropping database tables",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-jdbc/src/main/kotlin/org/jetbrains/exposed/v1/jdbc/SchemaUtils.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/SchemaUtilityApi.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] SchemaUtils for creating and dropping database tables"
+  },
+  {
+    "id": "semble-exposed-cro-011",
+    "query": "how expressions and SQL operators are composed in Exposed",
+    "category": "cross_file",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Expression.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how expressions and SQL operators are composed in Exposed"
+  },
+  {
+    "id": "semble-exposed-int-012",
+    "query": "vendor-specific SQL generation and database dialect interface",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/vendors/DatabaseDialect.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] vendor-specific SQL generation and database dialect interface"
+  },
+  {
+    "id": "semble-exposed-int-013",
+    "query": "ResultRow and how query results are read by column",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/ResultRow.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ResultRow and how query results are read by column"
+  },
+  {
+    "id": "semble-exposed-int-014",
+    "query": "index and unique constraint definition on tables",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Constraints.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] index and unique constraint definition on tables"
+  },
+  {
+    "id": "semble-exposed-int-015",
+    "query": "ColumnType mapping between Kotlin types and SQL types",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/ColumnType.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ColumnType mapping between Kotlin types and SQL types"
+  },
+  {
+    "id": "semble-exposed-int-016",
+    "query": "upsert and batch upsert statement for insert-or-update",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/statements/UpsertStatement.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] upsert and batch upsert statement for insert-or-update"
+  },
+  {
+    "id": "semble-exposed-int-017",
+    "query": "database exceptions and error handling in Exposed",
+    "category": "intent",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Exceptions.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] database exceptions and error handling in Exposed"
+  },
+  {
+    "id": "semble-exposed-sym-018",
+    "query": "Table",
+    "category": "symbol_lookup",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Table.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Table"
+  },
+  {
+    "id": "semble-exposed-sym-019",
+    "query": "Transaction",
+    "category": "symbol_lookup",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/Transaction.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Transaction"
+  },
+  {
+    "id": "semble-exposed-sym-020",
+    "query": "ResultRow",
+    "category": "symbol_lookup",
+    "repo": "exposed",
+    "ground_truth": [
+      {
+        "file_path": "exposed-core/src/main/kotlin/org/jetbrains/exposed/v1/core/ResultRow.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ResultRow"
+  }
+]

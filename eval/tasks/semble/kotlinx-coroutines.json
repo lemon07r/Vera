@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-kotlinx-coroutines-cro-001",
+    "query": "how launch and async coroutine builders start coroutines",
+    "category": "cross_file",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/Builders.common.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how launch and async coroutine builders start coroutines"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-002",
+    "query": "Deferred and await for async result computation",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/Deferred.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Deferred and await for async result computation"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-003",
+    "query": "Job interface and coroutine lifecycle management",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/Job.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Job interface and coroutine lifecycle management"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-cro-004",
+    "query": "how coroutine lifetime is tied to a parent scope",
+    "category": "cross_file",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/CoroutineScope.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how coroutine lifetime is tied to a parent scope"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-005",
+    "query": "CoroutineContext and coroutine context elements",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/CoroutineContext.common.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] CoroutineContext and coroutine context elements"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-006",
+    "query": "Flow interface and cold stream definition",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/flow/Flow.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Flow interface and cold stream definition"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-007",
+    "query": "flow builder and how cold flows are created",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/flow/Builders.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] flow builder and how cold flows are created"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-008",
+    "query": "flow operators map filter transform and collect",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/flow/operators/Transform.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] flow operators map filter transform and collect"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-009",
+    "query": "Channel for sending and receiving values between coroutines",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/channels/Channel.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Channel for sending and receiving values between coroutines"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-cro-010",
+    "query": "how select expression waits on multiple suspending operations",
+    "category": "cross_file",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/selects/Select.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how select expression waits on multiple suspending operations"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-011",
+    "query": "Mutex and Semaphore for coroutine synchronization",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/sync/Mutex.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Mutex and Semaphore for coroutine synchronization"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-012",
+    "query": "withContext for switching coroutine dispatcher context",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/Builders.common.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] withContext for switching coroutine dispatcher context"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-013",
+    "query": "CoroutineDispatcher and dispatching coroutines to threads",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/CoroutineDispatcher.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] CoroutineDispatcher and dispatching coroutines to threads"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-014",
+    "query": "StateFlow and SharedFlow for hot reactive state",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/flow/StateFlow.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] StateFlow and SharedFlow for hot reactive state"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-015",
+    "query": "coroutine exception handling and CoroutineExceptionHandler",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/CoroutineExceptionHandler.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] coroutine exception handling and CoroutineExceptionHandler"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-016",
+    "query": "SupervisorJob and supervisor scope for isolated failure handling",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/Supervisor.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] SupervisorJob and supervisor scope for isolated failure handling"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-int-017",
+    "query": "delay and withTimeout suspending time functions",
+    "category": "intent",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/Delay.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] delay and withTimeout suspending time functions"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-sym-018",
+    "query": "Job",
+    "category": "symbol_lookup",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/Job.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Job"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-sym-019",
+    "query": "Flow",
+    "category": "symbol_lookup",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/flow/Flow.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Flow"
+  },
+  {
+    "id": "semble-kotlinx-coroutines-sym-020",
+    "query": "Channel",
+    "category": "symbol_lookup",
+    "repo": "kotlinx-coroutines",
+    "ground_truth": [
+      {
+        "file_path": "kotlinx-coroutines-core/common/src/channels/Channel.kt",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Channel"
+  }
+]

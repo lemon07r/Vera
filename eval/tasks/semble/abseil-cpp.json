@@ -1,0 +1,320 @@
+[
+  {
+    "id": "semble-abseil-cpp-int-001",
+    "query": "absl::flat_hash_map and flat_hash_set hash table containers",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/container/flat_hash_map.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "absl/container/flat_hash_set.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] absl::flat_hash_map and flat_hash_set hash table containers"
+  },
+  {
+    "id": "semble-abseil-cpp-cro-002",
+    "query": "raw_hash_set open addressing SIMD group-based slot probing implementation",
+    "category": "cross_file",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/container/internal/raw_hash_set.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] raw_hash_set open addressing SIMD group-based slot probing implementation"
+  },
+  {
+    "id": "semble-abseil-cpp-int-003",
+    "query": "absl::string_view for non-owning string references",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/strings/string_view.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::string_view for non-owning string references"
+  },
+  {
+    "id": "semble-abseil-cpp-int-004",
+    "query": "absl::StrCat and StrAppend for efficient string concatenation",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/strings/str_cat.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::StrCat and StrAppend for efficient string concatenation"
+  },
+  {
+    "id": "semble-abseil-cpp-int-005",
+    "query": "absl::StrSplit and StrJoin for string splitting and joining",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/strings/str_split.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::StrSplit and StrJoin for string splitting and joining"
+  },
+  {
+    "id": "semble-abseil-cpp-int-006",
+    "query": "absl::Status and StatusOr for error propagation",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/status/status.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "absl/status/statusor.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] absl::Status and StatusOr for error propagation"
+  },
+  {
+    "id": "semble-abseil-cpp-int-007",
+    "query": "absl::Time and absl::Duration for time representation",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/time/time.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::Time and absl::Duration for time representation"
+  },
+  {
+    "id": "semble-abseil-cpp-int-008",
+    "query": "absl::optional and absl::variant for vocabulary types",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/types/optional.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "absl/types/variant.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] absl::optional and absl::variant for vocabulary types"
+  },
+  {
+    "id": "semble-abseil-cpp-int-009",
+    "query": "absl::Mutex and MutexLock for synchronization",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/synchronization/mutex.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::Mutex and MutexLock for synchronization"
+  },
+  {
+    "id": "semble-abseil-cpp-int-010",
+    "query": "absl logging macros ABSL_LOG and ABSL_CHECK",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/log/absl_log.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl logging macros ABSL_LOG and ABSL_CHECK"
+  },
+  {
+    "id": "semble-abseil-cpp-int-011",
+    "query": "absl::Span for non-owning sequence view",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/types/span.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::Span for non-owning sequence view"
+  },
+  {
+    "id": "semble-abseil-cpp-int-012",
+    "query": "absl::node_hash_map for pointer-stable hash map",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/container/node_hash_map.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::node_hash_map for pointer-stable hash map"
+  },
+  {
+    "id": "semble-abseil-cpp-cro-013",
+    "query": "absl::Hash and the Abseil hashing framework",
+    "category": "cross_file",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/hash/hash.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] absl::Hash and the Abseil hashing framework"
+  },
+  {
+    "id": "semble-abseil-cpp-int-014",
+    "query": "absl::Notification for one-time event signaling between threads",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/synchronization/notification.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::Notification for one-time event signaling between threads"
+  },
+  {
+    "id": "semble-abseil-cpp-int-015",
+    "query": "absl::AnyInvocable for move-only callable wrapper",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/functional/any_invocable.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::AnyInvocable for move-only callable wrapper"
+  },
+  {
+    "id": "semble-abseil-cpp-int-016",
+    "query": "absl::btree_map and btree_set sorted containers",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/container/btree_map.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::btree_map and btree_set sorted containers"
+  },
+  {
+    "id": "semble-abseil-cpp-int-017",
+    "query": "absl::StrFormat and string formatting API",
+    "category": "intent",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/strings/str_format.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] absl::StrFormat and string formatting API"
+  },
+  {
+    "id": "semble-abseil-cpp-sym-018",
+    "query": "flat_hash_map",
+    "category": "symbol_lookup",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/container/flat_hash_map.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] flat_hash_map"
+  },
+  {
+    "id": "semble-abseil-cpp-sym-019",
+    "query": "Status",
+    "category": "symbol_lookup",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/status/status.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Status"
+  },
+  {
+    "id": "semble-abseil-cpp-sym-020",
+    "query": "Mutex",
+    "category": "symbol_lookup",
+    "repo": "abseil-cpp",
+    "ground_truth": [
+      {
+        "file_path": "absl/synchronization/mutex.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Mutex"
+  }
+]

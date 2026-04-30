@@ -1,0 +1,314 @@
+[
+  {
+    "id": "semble-telescope.nvim-cro-001",
+    "query": "how Picker:find opens a floating window and starts fuzzy finding",
+    "category": "cross_file",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/pickers.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how Picker:find opens a floating window and starts fuzzy finding"
+  },
+  {
+    "id": "semble-telescope.nvim-int-002",
+    "query": "how Sorter:score ranks a prompt against a candidate entry",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/sorters.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Sorter:score ranks a prompt against a candidate entry"
+  },
+  {
+    "id": "semble-telescope.nvim-cro-003",
+    "query": "how finders feed entries into a picker results buffer",
+    "category": "cross_file",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/finders.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how finders feed entries into a picker results buffer"
+  },
+  {
+    "id": "semble-telescope.nvim-cro-004",
+    "query": "how telescope actions map keys to picker operations",
+    "category": "cross_file",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/actions/init.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lua/telescope/mappings.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how telescope actions map keys to picker operations"
+  },
+  {
+    "id": "semble-telescope.nvim-cro-005",
+    "query": "how previewers render a selected entry in the preview window",
+    "category": "cross_file",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/previewers/buffer_previewer.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lua/telescope/previewers/previewer.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how previewers render a selected entry in the preview window"
+  },
+  {
+    "id": "semble-telescope.nvim-int-006",
+    "query": "how make_entry creates display strings and ordinals for results",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/make_entry.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how make_entry creates display strings and ordinals for results"
+  },
+  {
+    "id": "semble-telescope.nvim-cro-007",
+    "query": "how picker layout strategies position the floating windows",
+    "category": "cross_file",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/pickers/layout_strategies.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how picker layout strategies position the floating windows"
+  },
+  {
+    "id": "semble-telescope.nvim-int-008",
+    "query": "how telescope config sets defaults for all pickers",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/config.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how telescope config sets defaults for all pickers"
+  },
+  {
+    "id": "semble-telescope.nvim-int-009",
+    "query": "how builtin file_files picker searches and presents files",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/builtin/__files.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how builtin file_files picker searches and presents files"
+  },
+  {
+    "id": "semble-telescope.nvim-int-010",
+    "query": "TelescopeGlobalState storing picker status keyed by prompt bufnr",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/state.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] TelescopeGlobalState storing picker status keyed by prompt bufnr"
+  },
+  {
+    "id": "semble-telescope.nvim-int-011",
+    "query": "how git status changes are listed in a picker",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/builtin/__git.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how git status changes are listed in a picker"
+  },
+  {
+    "id": "semble-telescope.nvim-int-012",
+    "query": "how LSP references and definitions are shown in telescope",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/builtin/__lsp.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how LSP references and definitions are shown in telescope"
+  },
+  {
+    "id": "semble-telescope.nvim-int-013",
+    "query": "how Picker:get_selection returns the currently highlighted entry",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/pickers.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Picker:get_selection returns the currently highlighted entry"
+  },
+  {
+    "id": "semble-telescope.nvim-int-014",
+    "query": "how themes modify the layout for dropdown or cursor pickers",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/themes.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how themes modify the layout for dropdown or cursor pickers"
+  },
+  {
+    "id": "semble-telescope.nvim-cro-015",
+    "query": "how entry_manager stores and retrieves picker results",
+    "category": "cross_file",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/entry_manager.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how entry_manager stores and retrieves picker results"
+  },
+  {
+    "id": "semble-telescope.nvim-int-016",
+    "query": "how utils provides path and string helper functions",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/utils.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how utils provides path and string helper functions"
+  },
+  {
+    "id": "semble-telescope.nvim-int-017",
+    "query": "how diagnostic entries are displayed with severity in telescope",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/builtin/__diagnostics.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how diagnostic entries are displayed with severity in telescope"
+  },
+  {
+    "id": "semble-telescope.nvim-int-018",
+    "query": "how operators apply actions to multiple selected entries",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/operators.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how operators apply actions to multiple selected entries"
+  },
+  {
+    "id": "semble-telescope.nvim-int-019",
+    "query": "how Picker:move_selection changes the highlighted row",
+    "category": "intent",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/pickers.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how Picker:move_selection changes the highlighted row"
+  },
+  {
+    "id": "semble-telescope.nvim-cro-020",
+    "query": "how async_job runs an external command and streams results",
+    "category": "cross_file",
+    "repo": "telescope.nvim",
+    "ground_truth": [
+      {
+        "file_path": "lua/telescope/async_job.lua",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how async_job runs an external command and streams results"
+  }
+]

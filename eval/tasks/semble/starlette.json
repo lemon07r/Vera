@@ -1,0 +1,359 @@
+[
+  {
+    "id": "semble-starlette-cro-001",
+    "query": "how are URL routes registered and matched",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "starlette/convertors.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are URL routes registered and matched"
+  },
+  {
+    "id": "semble-starlette-cro-002",
+    "query": "how does authentication middleware work",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/middleware/authentication.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "starlette/authentication.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how does authentication middleware work"
+  },
+  {
+    "id": "semble-starlette-int-003",
+    "query": "websocket connection and message handling",
+    "category": "intent",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/websockets.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] websocket connection and message handling"
+  },
+  {
+    "id": "semble-starlette-cro-004",
+    "query": "how are static files served",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/staticfiles.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how are static files served"
+  },
+  {
+    "id": "semble-starlette-int-005",
+    "query": "parsing form data and file uploads",
+    "category": "intent",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/formparsers.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "starlette/datastructures.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] parsing form data and file uploads"
+  },
+  {
+    "id": "semble-starlette-cro-006",
+    "query": "how does the test client simulate requests",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/testclient.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how does the test client simulate requests"
+  },
+  {
+    "id": "semble-starlette-int-007",
+    "query": "background task scheduling and execution",
+    "category": "intent",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/background.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] background task scheduling and execution"
+  },
+  {
+    "id": "semble-starlette-int-008",
+    "query": "application lifespan startup and shutdown events",
+    "category": "intent",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "starlette/applications.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] application lifespan startup and shutdown events"
+  },
+  {
+    "id": "semble-starlette-int-009",
+    "query": "streaming response implementation",
+    "category": "intent",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/responses.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] streaming response implementation"
+  },
+  {
+    "id": "semble-starlette-cro-010",
+    "query": "how base middleware wraps request handling",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/middleware/base.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how base middleware wraps request handling"
+  },
+  {
+    "id": "semble-starlette-cro-011",
+    "query": "how request state persists arbitrary data across middleware",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/requests.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how request state persists arbitrary data across middleware"
+  },
+  {
+    "id": "semble-starlette-cro-012",
+    "query": "how path convertor types work for route parameters",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/convertors.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "starlette/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how path convertor types work for route parameters"
+  },
+  {
+    "id": "semble-starlette-cro-013",
+    "query": "how session data is signed and stored in cookies",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/middleware/sessions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how session data is signed and stored in cookies"
+  },
+  {
+    "id": "semble-starlette-cro-014",
+    "query": "how CORS preflight requests are handled",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/middleware/cors.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how CORS preflight requests are handled"
+  },
+  {
+    "id": "semble-starlette-cro-015",
+    "query": "how errors in ASGI apps are caught and turned into responses",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/middleware/errors.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "starlette/middleware/exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how errors in ASGI apps are caught and turned into responses"
+  },
+  {
+    "id": "semble-starlette-sym-016",
+    "query": "BaseHTTPMiddleware",
+    "category": "symbol_lookup",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/middleware/base.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] BaseHTTPMiddleware"
+  },
+  {
+    "id": "semble-starlette-sym-017",
+    "query": "Request",
+    "category": "symbol_lookup",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/requests.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Request"
+  },
+  {
+    "id": "semble-starlette-sym-018",
+    "query": "WebSocket",
+    "category": "symbol_lookup",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/websockets.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] WebSocket"
+  },
+  {
+    "id": "semble-starlette-sym-019",
+    "query": "BackgroundTask",
+    "category": "symbol_lookup",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/background.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] BackgroundTask"
+  },
+  {
+    "id": "semble-starlette-sym-020",
+    "query": "Router",
+    "category": "symbol_lookup",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Router"
+  },
+  {
+    "id": "semble-starlette-cro-021",
+    "query": "how the Starlette application delegates routing and lifespan to Router",
+    "category": "cross_file",
+    "repo": "starlette",
+    "ground_truth": [
+      {
+        "file_path": "starlette/applications.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "starlette/routing.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the Starlette application delegates routing and lifespan to Router"
+  }
+]

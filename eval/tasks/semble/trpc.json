@@ -1,0 +1,350 @@
+[
+  {
+    "id": "semble-trpc-cro-001",
+    "query": "how a tRPC router is created and procedures are registered",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/router.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how a tRPC router is created and procedures are registered"
+  },
+  {
+    "id": "semble-trpc-cro-002",
+    "query": "how middleware chains context transformations between procedures",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/middleware.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how middleware chains context transformations between procedures"
+  },
+  {
+    "id": "semble-trpc-int-003",
+    "query": "how input validation and parsing works for procedures",
+    "category": "intent",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/parser.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how input validation and parsing works for procedures"
+  },
+  {
+    "id": "semble-trpc-cro-004",
+    "query": "how HTTP requests are resolved to tRPC procedures",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/http.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how HTTP requests are resolved to tRPC procedures"
+  },
+  {
+    "id": "semble-trpc-int-005",
+    "query": "how error formatting and serialization works",
+    "category": "intent",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/error/formatter.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/error/TRPCError.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how error formatting and serialization works"
+  },
+  {
+    "id": "semble-trpc-cro-006",
+    "query": "how server-sent events and subscriptions are streamed to the client",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/stream/sse.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/stream/jsonl.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how server-sent events and subscriptions are streamed to the client"
+  },
+  {
+    "id": "semble-trpc-int-007",
+    "query": "how the observable pattern is used for subscriptions",
+    "category": "intent",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/observable/observable.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/observable/operators.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how the observable pattern is used for subscriptions"
+  },
+  {
+    "id": "semble-trpc-int-008",
+    "query": "how type inference extracts input and output types from procedures",
+    "category": "intent",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/clientish/inference.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how type inference extracts input and output types from procedures"
+  },
+  {
+    "id": "semble-trpc-cro-009",
+    "query": "adapting tRPC to run as a Node.js HTTP server handler",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/adapters/node-http/nodeHTTPRequestHandler.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/adapters/node-http/incomingMessageToRequest.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] adapting tRPC to run as a Node.js HTTP server handler"
+  },
+  {
+    "id": "semble-trpc-int-010",
+    "query": "WebSocket adapter for real-time subscriptions",
+    "category": "intent",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/adapters/ws.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] WebSocket adapter for real-time subscriptions"
+  },
+  {
+    "id": "semble-trpc-cro-011",
+    "query": "how tRPC is initialized with root config and context factory",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/initTRPC.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/rootConfig.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how tRPC is initialized with root config and context factory"
+  },
+  {
+    "id": "semble-trpc-int-012",
+    "query": "how data transformer is applied to serialize and deserialize procedure payloads",
+    "category": "intent",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/transformer.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how data transformer is applied to serialize and deserialize procedure payloads"
+  },
+  {
+    "id": "semble-trpc-sym-013",
+    "query": "TRPCError",
+    "category": "symbol_lookup",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/error/TRPCError.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] TRPCError"
+  },
+  {
+    "id": "semble-trpc-sym-014",
+    "query": "AnyRouter",
+    "category": "symbol_lookup",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/router.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] AnyRouter"
+  },
+  {
+    "id": "semble-trpc-sym-015",
+    "query": "MiddlewareBuilder",
+    "category": "symbol_lookup",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/middleware.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] MiddlewareBuilder"
+  },
+  {
+    "id": "semble-trpc-sym-016",
+    "query": "inferProcedureInput",
+    "category": "symbol_lookup",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/procedure.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] inferProcedureInput"
+  },
+  {
+    "id": "semble-trpc-sym-017",
+    "query": "fetchRequestHandler",
+    "category": "symbol_lookup",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/adapters/fetch/fetchRequestHandler.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] fetchRequestHandler"
+  },
+  {
+    "id": "semble-trpc-int-018",
+    "query": "WebSocket adapter for real-time tRPC subscriptions",
+    "category": "intent",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/adapters/ws.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] WebSocket adapter for real-time tRPC subscriptions"
+  },
+  {
+    "id": "semble-trpc-cro-019",
+    "query": "how tRPC procedures are defined and chained with input and output validation",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/procedure.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how tRPC procedures are defined and chained with input and output validation"
+  },
+  {
+    "id": "semble-trpc-cro-020",
+    "query": "how tRPC routers are created and merged",
+    "category": "cross_file",
+    "repo": "trpc",
+    "ground_truth": [
+      {
+        "file_path": "packages/server/src/unstable-core-do-not-import/router.ts",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how tRPC routers are created and merged"
+  }
+]

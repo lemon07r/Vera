@@ -1,0 +1,332 @@
+[
+  {
+    "id": "semble-requests-cro-001",
+    "query": "how HTTP sessions manage state and connections",
+    "category": "cross_file",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/sessions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how HTTP sessions manage state and connections"
+  },
+  {
+    "id": "semble-requests-int-002",
+    "query": "authentication mechanisms and credential handling",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/auth.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] authentication mechanisms and credential handling"
+  },
+  {
+    "id": "semble-requests-int-003",
+    "query": "transport adapters and connection pooling",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/adapters.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] transport adapters and connection pooling"
+  },
+  {
+    "id": "semble-requests-int-004",
+    "query": "cookie storage and persistence",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/cookies.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] cookie storage and persistence"
+  },
+  {
+    "id": "semble-requests-cro-005",
+    "query": "how redirects are followed",
+    "category": "cross_file",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/sessions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/requests/models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how redirects are followed"
+  },
+  {
+    "id": "semble-requests-int-006",
+    "query": "error and exception types",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/exceptions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] error and exception types"
+  },
+  {
+    "id": "semble-requests-int-007",
+    "query": "request and response model internals",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request and response model internals"
+  },
+  {
+    "id": "semble-requests-int-008",
+    "query": "SSL certificate verification",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/adapters.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/requests/certs.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] SSL certificate verification"
+  },
+  {
+    "id": "semble-requests-int-009",
+    "query": "event hooks system",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/hooks.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] event hooks system"
+  },
+  {
+    "id": "semble-requests-int-010",
+    "query": "utility functions for encoding and headers",
+    "category": "intent",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] utility functions for encoding and headers"
+  },
+  {
+    "id": "semble-requests-cro-011",
+    "query": "how a PreparedRequest is built from user-supplied arguments",
+    "category": "cross_file",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/requests/sessions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how a PreparedRequest is built from user-supplied arguments"
+  },
+  {
+    "id": "semble-requests-cro-012",
+    "query": "how digest authentication implements the challenge-response handshake",
+    "category": "cross_file",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/auth.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how digest authentication implements the challenge-response handshake"
+  },
+  {
+    "id": "semble-requests-cro-013",
+    "query": "how response encoding is detected from headers and content",
+    "category": "cross_file",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/requests/models.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how response encoding is detected from headers and content"
+  },
+  {
+    "id": "semble-requests-cro-014",
+    "query": "how proxy settings are read from environment variables",
+    "category": "cross_file",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/utils.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/requests/sessions.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how proxy settings are read from environment variables"
+  },
+  {
+    "id": "semble-requests-cro-015",
+    "query": "how connection keep-alive and pooling limits are configured",
+    "category": "cross_file",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/adapters.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how connection keep-alive and pooling limits are configured"
+  },
+  {
+    "id": "semble-requests-sym-016",
+    "query": "Session",
+    "category": "symbol_lookup",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/sessions.py",
+        "line_start": 356,
+        "line_end": 394,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Session"
+  },
+  {
+    "id": "semble-requests-sym-017",
+    "query": "HTTPDigestAuth",
+    "category": "symbol_lookup",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/auth.py",
+        "line_start": 107,
+        "line_end": 136,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HTTPDigestAuth"
+  },
+  {
+    "id": "semble-requests-sym-018",
+    "query": "PreparedRequest",
+    "category": "symbol_lookup",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/models.py",
+        "line_start": 315,
+        "line_end": 364,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] PreparedRequest"
+  },
+  {
+    "id": "semble-requests-sym-019",
+    "query": "HTTPAdapter",
+    "category": "symbol_lookup",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/adapters.py",
+        "line_start": 144,
+        "line_end": 192,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HTTPAdapter"
+  },
+  {
+    "id": "semble-requests-sym-020",
+    "query": "Response",
+    "category": "symbol_lookup",
+    "repo": "requests",
+    "ground_truth": [
+      {
+        "file_path": "src/requests/models.py",
+        "line_start": 642,
+        "line_end": 691,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Response"
+  }
+]

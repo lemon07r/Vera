@@ -1,0 +1,272 @@
+[
+  {
+    "id": "semble-rack-int-001",
+    "query": "HTTP request wrapper and forwarded headers",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/request.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] HTTP request wrapper and forwarded headers"
+  },
+  {
+    "id": "semble-rack-int-002",
+    "query": "building and sending an HTTP reply with headers and body",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/response.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] building and sending an HTTP reply with headers and body"
+  },
+  {
+    "id": "semble-rack-cro-003",
+    "query": "middleware builder DSL",
+    "category": "cross_file",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/builder.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] middleware builder DSL"
+  },
+  {
+    "id": "semble-rack-cro-004",
+    "query": "URL path mapping across mounted apps",
+    "category": "cross_file",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/urlmap.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] URL path mapping across mounted apps"
+  },
+  {
+    "id": "semble-rack-sym-005",
+    "query": "Request",
+    "category": "symbol_lookup",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/request.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Request"
+  },
+  {
+    "id": "semble-rack-sym-006",
+    "query": "Rack::Response",
+    "category": "symbol_lookup",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/response.rb",
+        "line_start": 23,
+        "line_end": 62,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Rack::Response"
+  },
+  {
+    "id": "semble-rack-sym-007",
+    "query": "Rack::Builder",
+    "category": "symbol_lookup",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/builder.rb",
+        "line_start": 36,
+        "line_end": 80,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Rack::Builder"
+  },
+  {
+    "id": "semble-rack-int-008",
+    "query": "ETag caching and conditional response headers",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/etag.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ETag caching and conditional response headers"
+  },
+  {
+    "id": "semble-rack-int-009",
+    "query": "static file serving middleware",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/static.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] static file serving middleware"
+  },
+  {
+    "id": "semble-rack-int-010",
+    "query": "serving a file index page for a folder on disk",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/directory.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] serving a file index page for a folder on disk"
+  },
+  {
+    "id": "semble-rack-int-011",
+    "query": "MIME type detection from file extensions",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/mime.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] MIME type detection from file extensions"
+  },
+  {
+    "id": "semble-rack-int-012",
+    "query": "utility methods for parameter parsing and URL encoding",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/utils.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] utility methods for parameter parsing and URL encoding"
+  },
+  {
+    "id": "semble-rack-int-013",
+    "query": "splitting multipart/form-data bodies into individual fields",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/multipart.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] splitting multipart/form-data bodies into individual fields"
+  },
+  {
+    "id": "semble-rack-int-014",
+    "query": "Rack spec conformance validator",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/lint.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Rack spec conformance validator"
+  },
+  {
+    "id": "semble-rack-int-015",
+    "query": "deferred body proxy for lazy response bodies",
+    "category": "intent",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/body_proxy.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] deferred body proxy for lazy response bodies"
+  },
+  {
+    "id": "semble-rack-cro-016",
+    "query": "how the Builder DSL assembles the middleware stack with use and run",
+    "category": "cross_file",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/builder.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the Builder DSL assembles the middleware stack with use and run"
+  },
+  {
+    "id": "semble-rack-sym-017",
+    "query": "Utils",
+    "category": "symbol_lookup",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/utils.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Utils"
+  },
+  {
+    "id": "semble-rack-sym-018",
+    "query": "Lint",
+    "category": "symbol_lookup",
+    "repo": "rack",
+    "ground_truth": [
+      {
+        "file_path": "lib/rack/lint.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Lint"
+  }
+]

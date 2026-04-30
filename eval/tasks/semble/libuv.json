@@ -1,0 +1,368 @@
+[
+  {
+    "id": "semble-libuv-int-001",
+    "query": "how libuv implements the event loop run and tick",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/core.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/win/core.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] how libuv implements the event loop run and tick"
+  },
+  {
+    "id": "semble-libuv-int-002",
+    "query": "timer implementation and heap-based scheduling",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/timer.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/heap-inl.h",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] timer implementation and heap-based scheduling"
+  },
+  {
+    "id": "semble-libuv-int-003",
+    "query": "thread pool and work queue for async operations",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/threadpool.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] thread pool and work queue for async operations"
+  },
+  {
+    "id": "semble-libuv-int-004",
+    "query": "async handle for waking up the event loop from another thread",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/async.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/unix/core.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] async handle for waking up the event loop from another thread"
+  },
+  {
+    "id": "semble-libuv-int-005",
+    "query": "file system operations like read write open stat",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/fs.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] file system operations like read write open stat"
+  },
+  {
+    "id": "semble-libuv-int-006",
+    "query": "TCP stream connect and accept implementation",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/tcp.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/unix/stream.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] TCP stream connect and accept implementation"
+  },
+  {
+    "id": "semble-libuv-int-007",
+    "query": "UDP socket send and receive",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/udp.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] UDP socket send and receive"
+  },
+  {
+    "id": "semble-libuv-int-008",
+    "query": "resolving hostnames asynchronously using the thread pool",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/getaddrinfo.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/threadpool.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] resolving hostnames asynchronously using the thread pool"
+  },
+  {
+    "id": "semble-libuv-int-009",
+    "query": "pipe IPC between processes",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/pipe.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/unix/stream.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] pipe IPC between processes"
+  },
+  {
+    "id": "semble-libuv-int-010",
+    "query": "child process spawning and management",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/process.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] child process spawning and management"
+  },
+  {
+    "id": "semble-libuv-int-011",
+    "query": "signal handling integration with event loop",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/signal.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] signal handling integration with event loop"
+  },
+  {
+    "id": "semble-libuv-int-012",
+    "query": "file system event watching with inotify or kqueue",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/fsevents.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/fs-poll.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] file system event watching with inotify or kqueue"
+  },
+  {
+    "id": "semble-libuv-int-013",
+    "query": "idle and prepare handle callbacks before blocking",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/core.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] idle and prepare handle callbacks before blocking"
+  },
+  {
+    "id": "semble-libuv-int-014",
+    "query": "random number generation using OS entropy",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/random.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/unix/random-devurandom.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] random number generation using OS entropy"
+  },
+  {
+    "id": "semble-libuv-cro-015",
+    "query": "shared library dlopen and dlsym wrapper",
+    "category": "cross_file",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/dl.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] shared library dlopen and dlsym wrapper"
+  },
+  {
+    "id": "semble-libuv-int-016",
+    "query": "network interface address enumeration",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/bsd-ifaddrs.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/unix/linux.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] network interface address enumeration"
+  },
+  {
+    "id": "semble-libuv-int-017",
+    "query": "libuv handle reference counting and close",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/uv-common.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/unix/core.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] libuv handle reference counting and close"
+  },
+  {
+    "id": "semble-libuv-int-018",
+    "query": "thread creation and mutex synchronization primitives",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/thread.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/thread-common.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] thread creation and mutex synchronization primitives"
+  },
+  {
+    "id": "semble-libuv-sym-019",
+    "query": "IDNA internationalized domain name encoding",
+    "category": "symbol_lookup",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/idna.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] IDNA internationalized domain name encoding"
+  },
+  {
+    "id": "semble-libuv-int-020",
+    "query": "tty terminal raw mode and window size",
+    "category": "intent",
+    "repo": "libuv",
+    "ground_truth": [
+      {
+        "file_path": "src/unix/tty.c",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] tty terminal raw mode and window size"
+  }
+]

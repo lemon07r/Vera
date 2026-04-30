@@ -203,4 +203,8 @@ pub struct RepoEntry {
     pub commit: String,
     pub language: String,
     pub description: String,
+    /// Optional subdirectory scope for benchmarks (e.g. "src/flask").
+    /// When set, search results are filtered to only include files under this path.
+    #[serde(default)]
+    pub benchmark_root: Option<String>,
 }

@@ -1,0 +1,338 @@
+[
+  {
+    "id": "semble-jackson-databind-int-001",
+    "query": "ObjectMapper entry point for reading and writing JSON",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectMapper.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] ObjectMapper entry point for reading and writing JSON"
+  },
+  {
+    "id": "semble-jackson-databind-cro-002",
+    "query": "JSON-specific mapper builder",
+    "category": "cross_file",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/json/JsonMapper.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectMapper.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] JSON-specific mapper builder"
+  },
+  {
+    "id": "semble-jackson-databind-int-003",
+    "query": "mutable JSON object node with named field operations",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/node/ObjectNode.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/tools/jackson/databind/node/JsonNodeFactory.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] mutable JSON object node with named field operations"
+  },
+  {
+    "id": "semble-jackson-databind-cro-004",
+    "query": "polymorphic type resolution",
+    "category": "cross_file",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/jsontype/impl/StdTypeResolverBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/tools/jackson/databind/jsontype/impl/TypeDeserializerBase.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] polymorphic type resolution"
+  },
+  {
+    "id": "semble-jackson-databind-sym-005",
+    "query": "ObjectMapper",
+    "category": "symbol_lookup",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectMapper.java",
+        "line_start": 93,
+        "line_end": 132,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ObjectMapper"
+  },
+  {
+    "id": "semble-jackson-databind-sym-006",
+    "query": "JsonMapper",
+    "category": "symbol_lookup",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/json/JsonMapper.java",
+        "line_start": 16,
+        "line_end": 44,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectMapper.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:symbol] JsonMapper"
+  },
+  {
+    "id": "semble-jackson-databind-sym-007",
+    "query": "ObjectNode",
+    "category": "symbol_lookup",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/node/ObjectNode.java",
+        "line_start": 21,
+        "line_end": 60,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ObjectNode"
+  },
+  {
+    "id": "semble-jackson-databind-int-008",
+    "query": "reading and deserializing JSON into Java objects with type control",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectReader.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] reading and deserializing JSON into Java objects with type control"
+  },
+  {
+    "id": "semble-jackson-databind-int-009",
+    "query": "writing and serializing Java objects to JSON with configuration",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectWriter.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] writing and serializing Java objects to JSON with configuration"
+  },
+  {
+    "id": "semble-jackson-databind-int-010",
+    "query": "bean deserialization from JSON properties",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/deser/bean/BeanDeserializer.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] bean deserialization from JSON properties"
+  },
+  {
+    "id": "semble-jackson-databind-int-011",
+    "query": "bean serialization of Java object fields to JSON",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ser/BeanSerializer.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] bean serialization of Java object fields to JSON"
+  },
+  {
+    "id": "semble-jackson-databind-int-012",
+    "query": "type factory for parameterized and collection types",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/type/TypeFactory.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] type factory for parameterized and collection types"
+  },
+  {
+    "id": "semble-jackson-databind-cro-013",
+    "query": "deserialization context and error accumulation during parsing",
+    "category": "cross_file",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/DeserializationContext.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] deserialization context and error accumulation during parsing"
+  },
+  {
+    "id": "semble-jackson-databind-cro-014",
+    "query": "mapper builder fluent configuration API",
+    "category": "cross_file",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/cfg/MapperBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectMapper.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] mapper builder fluent configuration API"
+  },
+  {
+    "id": "semble-jackson-databind-int-015",
+    "query": "deserialization feature flags and configuration options",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/DeserializationFeature.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] deserialization feature flags and configuration options"
+  },
+  {
+    "id": "semble-jackson-databind-cro-016",
+    "query": "how the mapper resolves a deserializer for a given Java type",
+    "category": "cross_file",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectMapper.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/tools/jackson/databind/deser/BeanDeserializerFactory.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how the mapper resolves a deserializer for a given Java type"
+  },
+  {
+    "id": "semble-jackson-databind-sym-017",
+    "query": "ObjectReader",
+    "category": "symbol_lookup",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectReader.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ObjectReader"
+  },
+  {
+    "id": "semble-jackson-databind-sym-018",
+    "query": "ObjectWriter",
+    "category": "symbol_lookup",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/ObjectWriter.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ObjectWriter"
+  },
+  {
+    "id": "semble-jackson-databind-sym-019",
+    "query": "TypeFactory",
+    "category": "symbol_lookup",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/type/TypeFactory.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] TypeFactory"
+  },
+  {
+    "id": "semble-jackson-databind-int-020",
+    "query": "JSON array node with indexed element access",
+    "category": "intent",
+    "repo": "jackson-databind",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/tools/jackson/databind/node/ArrayNode.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON array node with indexed element access"
+  }
+]

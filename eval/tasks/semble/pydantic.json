@@ -1,0 +1,350 @@
+[
+  {
+    "id": "semble-pydantic-cro-001",
+    "query": "how is BaseModel defined and instantiated",
+    "category": "cross_file",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/main.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how is BaseModel defined and instantiated"
+  },
+  {
+    "id": "semble-pydantic-cro-002",
+    "query": "how are model fields declared and constrained",
+    "category": "cross_file",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/fields.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/types.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how are model fields declared and constrained"
+  },
+  {
+    "id": "semble-pydantic-int-003",
+    "query": "JSON schema generation from models",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/json_schema.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON schema generation from models"
+  },
+  {
+    "id": "semble-pydantic-int-004",
+    "query": "custom field and model validators",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/functional_validators.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/class_validators.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] custom field and model validators"
+  },
+  {
+    "id": "semble-pydantic-cro-005",
+    "query": "how to serialize models to JSON",
+    "category": "cross_file",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/functional_serializers.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/main.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how to serialize models to JSON"
+  },
+  {
+    "id": "semble-pydantic-int-006",
+    "query": "network types like URLs and email addresses",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/networks.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] network types like URLs and email addresses"
+  },
+  {
+    "id": "semble-pydantic-int-007",
+    "query": "model configuration and settings",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/config.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] model configuration and settings"
+  },
+  {
+    "id": "semble-pydantic-int-008",
+    "query": "validating data without a model using TypeAdapter",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/type_adapter.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] validating data without a model using TypeAdapter"
+  },
+  {
+    "id": "semble-pydantic-int-009",
+    "query": "alias handling for field names",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/aliases.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/alias_generators.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] alias handling for field names"
+  },
+  {
+    "id": "semble-pydantic-int-010",
+    "query": "root model for wrapping a single value",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/root_model.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] root model for wrapping a single value"
+  },
+  {
+    "id": "semble-pydantic-cro-011",
+    "query": "how discriminated unions select the right model variant",
+    "category": "cross_file",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/types.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/main.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how discriminated unions select the right model variant"
+  },
+  {
+    "id": "semble-pydantic-cro-012",
+    "query": "how computed fields are defined on a model",
+    "category": "cross_file",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/fields.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/functional_serializers.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how computed fields are defined on a model"
+  },
+  {
+    "id": "semble-pydantic-int-013",
+    "query": "what runs after model initialisation in model_post_init",
+    "category": "intent",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/main.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] what runs after model initialisation in model_post_init"
+  },
+  {
+    "id": "semble-pydantic-cro-014",
+    "query": "how model inheritance and field overriding works",
+    "category": "cross_file",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/main.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/fields.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how model inheritance and field overriding works"
+  },
+  {
+    "id": "semble-pydantic-cro-015",
+    "query": "how to validate a function's arguments with pydantic",
+    "category": "cross_file",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/validate_call_decorator.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "pydantic/decorator.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how to validate a function's arguments with pydantic"
+  },
+  {
+    "id": "semble-pydantic-sym-016",
+    "query": "BaseModel",
+    "category": "symbol_lookup",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/main.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] BaseModel"
+  },
+  {
+    "id": "semble-pydantic-sym-017",
+    "query": "field_validator",
+    "category": "symbol_lookup",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/functional_validators.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] field_validator"
+  },
+  {
+    "id": "semble-pydantic-sym-018",
+    "query": "model_validator",
+    "category": "symbol_lookup",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/functional_validators.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] model_validator"
+  },
+  {
+    "id": "semble-pydantic-sym-019",
+    "query": "ConfigDict",
+    "category": "symbol_lookup",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/config.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ConfigDict"
+  },
+  {
+    "id": "semble-pydantic-sym-020",
+    "query": "Field",
+    "category": "symbol_lookup",
+    "repo": "pydantic",
+    "ground_truth": [
+      {
+        "file_path": "pydantic/fields.py",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Field"
+  }
+]

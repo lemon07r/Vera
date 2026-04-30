@@ -1,0 +1,302 @@
+[
+  {
+    "id": "semble-zls-cro-001",
+    "query": "how zls analyzes Zig source code to resolve types and declarations",
+    "category": "cross_file",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "analysis.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zls analyzes Zig source code to resolve types and declarations"
+  },
+  {
+    "id": "semble-zls-cro-002",
+    "query": "how zls DocumentStore loads and caches Zig source files",
+    "category": "cross_file",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "DocumentStore.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zls DocumentStore loads and caches Zig source files"
+  },
+  {
+    "id": "semble-zls-int-003",
+    "query": "how zls provides goto definition for symbols",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/goto.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls provides goto definition for symbols"
+  },
+  {
+    "id": "semble-zls-cro-004",
+    "query": "how zls generates completion items from declarations and types",
+    "category": "cross_file",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/completions.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zls generates completion items from declarations and types"
+  },
+  {
+    "id": "semble-zls-int-005",
+    "query": "how zls provides hover information for symbols under the cursor",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/hover.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls provides hover information for symbols under the cursor"
+  },
+  {
+    "id": "semble-zls-int-006",
+    "query": "how zls finds all references to a symbol across the project",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/references.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls finds all references to a symbol across the project"
+  },
+  {
+    "id": "semble-zls-cro-007",
+    "query": "how zls handles LSP initialize and shutdown requests",
+    "category": "cross_file",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "Server.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zls handles LSP initialize and shutdown requests"
+  },
+  {
+    "id": "semble-zls-int-008",
+    "query": "how zls generates diagnostic errors and warnings",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/diagnostics.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls generates diagnostic errors and warnings"
+  },
+  {
+    "id": "semble-zls-int-009",
+    "query": "how zls provides inlay hints for parameter names and types",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/inlay_hints.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls provides inlay hints for parameter names and types"
+  },
+  {
+    "id": "semble-zls-cro-010",
+    "query": "how zls traverses the Zig AST to resolve symbol scopes",
+    "category": "cross_file",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "ast.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zls traverses the Zig AST to resolve symbol scopes"
+  },
+  {
+    "id": "semble-zls-int-011",
+    "query": "how zls provides code actions for quick fixes",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/code_actions.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls provides code actions for quick fixes"
+  },
+  {
+    "id": "semble-zls-int-012",
+    "query": "how zls computes semantic tokens for syntax highlighting",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/semantic_tokens.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls computes semantic tokens for syntax highlighting"
+  },
+  {
+    "id": "semble-zls-int-013",
+    "query": "how zls provides document symbols for the outline view",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/document_symbol.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls provides document symbols for the outline view"
+  },
+  {
+    "id": "semble-zls-int-014",
+    "query": "how zls provides signature help when calling functions",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/signature_help.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls provides signature help when calling functions"
+  },
+  {
+    "id": "semble-zls-cro-015",
+    "query": "how zls computes document scope for variable visibility",
+    "category": "cross_file",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "DocumentScope.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zls computes document scope for variable visibility"
+  },
+  {
+    "id": "semble-zls-int-016",
+    "query": "how zls configuration is loaded and validated",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "configuration.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls configuration is loaded and validated"
+  },
+  {
+    "id": "semble-zls-int-017",
+    "query": "how zls provides workspace symbol search",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "features/workspace_symbols.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls provides workspace symbol search"
+  },
+  {
+    "id": "semble-zls-int-018",
+    "query": "how zls gets doc comments for a token or node",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "analysis.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls gets doc comments for a token or node"
+  },
+  {
+    "id": "semble-zls-int-019",
+    "query": "how zls translates C headers for Zig interop",
+    "category": "intent",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "translate_c.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how zls translates C headers for Zig interop"
+  },
+  {
+    "id": "semble-zls-cro-020",
+    "query": "how zls uses trigram indexing for fast symbol lookup",
+    "category": "cross_file",
+    "repo": "zls",
+    "ground_truth": [
+      {
+        "file_path": "TrigramStore.zig",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how zls uses trigram indexing for fast symbol lookup"
+  }
+]

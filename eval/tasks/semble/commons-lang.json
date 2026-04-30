@@ -1,0 +1,329 @@
+[
+  {
+    "id": "semble-commons-lang-int-001",
+    "query": "null-safe string operations and text helpers",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/StringUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] null-safe string operations and text helpers"
+  },
+  {
+    "id": "semble-commons-lang-int-002",
+    "query": "argument validation helpers and exception rules",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/Validate.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] argument validation helpers and exception rules"
+  },
+  {
+    "id": "semble-commons-lang-cro-003",
+    "query": "reflection-based equals implementation",
+    "category": "cross_file",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/builder/EqualsBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/ClassUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] reflection-based equals implementation"
+  },
+  {
+    "id": "semble-commons-lang-int-004",
+    "query": "range object with inclusive bounds and comparator support",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/Range.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] range object with inclusive bounds and comparator support"
+  },
+  {
+    "id": "semble-commons-lang-sym-005",
+    "query": "StringUtils",
+    "category": "symbol_lookup",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/StringUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] StringUtils"
+  },
+  {
+    "id": "semble-commons-lang-cro-006",
+    "query": "reflection equals builder internals",
+    "category": "cross_file",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/builder/EqualsBuilder.java",
+        "line_start": 179,
+        "line_end": 318,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] reflection equals builder internals"
+  },
+  {
+    "id": "semble-commons-lang-int-007",
+    "query": "array utility operations and safe type conversion",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/ArrayUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] array utility operations and safe type conversion"
+  },
+  {
+    "id": "semble-commons-lang-int-008",
+    "query": "null-safe object utility methods and identity helpers",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/ObjectUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] null-safe object utility methods and identity helpers"
+  },
+  {
+    "id": "semble-commons-lang-int-009",
+    "query": "boolean conversion and parsing helpers",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/BooleanUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] boolean conversion and parsing helpers"
+  },
+  {
+    "id": "semble-commons-lang-int-010",
+    "query": "number parsing with defaults and range checks",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/math/NumberUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] number parsing with defaults and range checks"
+  },
+  {
+    "id": "semble-commons-lang-int-011",
+    "query": "exception cause chain traversal and stack trace utilities",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/exception/ExceptionUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] exception cause chain traversal and stack trace utilities"
+  },
+  {
+    "id": "semble-commons-lang-int-012",
+    "query": "toString builder for human-readable object descriptions",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/builder/ToStringBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] toString builder for human-readable object descriptions"
+  },
+  {
+    "id": "semble-commons-lang-int-013",
+    "query": "hash code builder for consistent hashCode implementation",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/builder/HashCodeBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] hash code builder for consistent hashCode implementation"
+  },
+  {
+    "id": "semble-commons-lang-int-014",
+    "query": "immutable pair container for two related values",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/tuple/Pair.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] immutable pair container for two related values"
+  },
+  {
+    "id": "semble-commons-lang-int-015",
+    "query": "triple container for three related values",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/tuple/Triple.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] triple container for three related values"
+  },
+  {
+    "id": "semble-commons-lang-int-016",
+    "query": "Java runtime and OS system property helpers",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/SystemUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Java runtime and OS system property helpers"
+  },
+  {
+    "id": "semble-commons-lang-cro-017",
+    "query": "how EqualsBuilder and HashCodeBuilder enforce value equality contracts",
+    "category": "cross_file",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/builder/EqualsBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/builder/HashCodeBuilder.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how EqualsBuilder and HashCodeBuilder enforce value equality contracts"
+  },
+  {
+    "id": "semble-commons-lang-sym-018",
+    "query": "ArrayUtils",
+    "category": "symbol_lookup",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/ArrayUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ArrayUtils"
+  },
+  {
+    "id": "semble-commons-lang-sym-019",
+    "query": "ExceptionUtils",
+    "category": "symbol_lookup",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/exception/ExceptionUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ExceptionUtils"
+  },
+  {
+    "id": "semble-commons-lang-sym-020",
+    "query": "ObjectUtils",
+    "category": "symbol_lookup",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/ObjectUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] ObjectUtils"
+  },
+  {
+    "id": "semble-commons-lang-int-021",
+    "query": "class utility methods for reflection and package navigation",
+    "category": "intent",
+    "repo": "commons-lang",
+    "ground_truth": [
+      {
+        "file_path": "src/main/java/org/apache/commons/lang3/ClassUtils.java",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] class utility methods for reflection and package navigation"
+  }
+]

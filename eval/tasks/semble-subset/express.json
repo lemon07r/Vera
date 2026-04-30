@@ -1,0 +1,326 @@
+[
+  {
+    "id": "semble-express-cro-001",
+    "query": "application initialization and default configuration",
+    "category": "cross_file",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/application.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/express.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] application initialization and default configuration"
+  },
+  {
+    "id": "semble-express-int-002",
+    "query": "request API helpers and header access",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/request.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request API helpers and header access"
+  },
+  {
+    "id": "semble-express-int-003",
+    "query": "response sending and content negotiation",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/response.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] response sending and content negotiation"
+  },
+  {
+    "id": "semble-express-cro-004",
+    "query": "template view lookup and rendering",
+    "category": "cross_file",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/view.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/application.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] template view lookup and rendering"
+  },
+  {
+    "id": "semble-express-sym-005",
+    "query": "response",
+    "category": "symbol_lookup",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/response.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] response"
+  },
+  {
+    "id": "semble-express-int-006",
+    "query": "utility functions for content type detection and MIME handling",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/utils.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] utility functions for content type detection and MIME handling"
+  },
+  {
+    "id": "semble-express-cro-007",
+    "query": "how sub-applications are mounted with use() and path prefix stripping",
+    "category": "cross_file",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/application.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how sub-applications are mounted with use() and path prefix stripping"
+  },
+  {
+    "id": "semble-express-cro-008",
+    "query": "how express creates the app function and attaches prototype methods",
+    "category": "cross_file",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/express.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/application.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how express creates the app function and attaches prototype methods"
+  },
+  {
+    "id": "semble-express-sym-009",
+    "query": "application",
+    "category": "symbol_lookup",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/application.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] application"
+  },
+  {
+    "id": "semble-express-int-010",
+    "query": "res.send body encoding and ETag generation",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/response.js",
+        "line_start": 125,
+        "line_end": 230,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] res.send body encoding and ETag generation"
+  },
+  {
+    "id": "semble-express-int-011",
+    "query": "JSON response serialization and JSONP callback support",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/response.js",
+        "line_start": 232,
+        "line_end": 320,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] JSON response serialization and JSONP callback support"
+  },
+  {
+    "id": "semble-express-cro-012",
+    "query": "how res.redirect builds the Location header and status code",
+    "category": "cross_file",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/response.js",
+        "line_start": 812,
+        "line_end": 873,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how res.redirect builds the Location header and status code"
+  },
+  {
+    "id": "semble-express-int-013",
+    "query": "cookie setting and signing on the response",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/response.js",
+        "line_start": 709,
+        "line_end": 791,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] cookie setting and signing on the response"
+  },
+  {
+    "id": "semble-express-cro-014",
+    "query": "how app.render resolves views and calls the template engine",
+    "category": "cross_file",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/application.js",
+        "line_start": 522,
+        "line_end": 596,
+        "relevance": 2
+      },
+      {
+        "file_path": "lib/view.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how app.render resolves views and calls the template engine"
+  },
+  {
+    "id": "semble-express-int-015",
+    "query": "app.set and settings storage",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/application.js",
+        "line_start": 351,
+        "line_end": 397,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] app.set and settings storage"
+  },
+  {
+    "id": "semble-express-cro-016",
+    "query": "how app.handle dispatches requests through the middleware stack",
+    "category": "cross_file",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/application.js",
+        "line_start": 152,
+        "line_end": 188,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how app.handle dispatches requests through the middleware stack"
+  },
+  {
+    "id": "semble-express-int-017",
+    "query": "content negotiation with req.accepts",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/request.js",
+        "line_start": 127,
+        "line_end": 200,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] content negotiation with req.accepts"
+  },
+  {
+    "id": "semble-express-int-018",
+    "query": "request hostname and IP address resolution behind proxies",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/request.js",
+        "line_start": 297,
+        "line_end": 400,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] request hostname and IP address resolution behind proxies"
+  },
+  {
+    "id": "semble-express-int-019",
+    "query": "static file serving with res.sendFile",
+    "category": "intent",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/response.js",
+        "line_start": 371,
+        "line_end": 431,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] static file serving with res.sendFile"
+  },
+  {
+    "id": "semble-express-sym-020",
+    "query": "view",
+    "category": "symbol_lookup",
+    "repo": "express",
+    "ground_truth": [
+      {
+        "file_path": "lib/view.js",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] view"
+  }
+]

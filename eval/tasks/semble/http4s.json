@@ -1,0 +1,308 @@
+[
+  {
+    "id": "semble-http4s-cro-001",
+    "query": "how HttpRoutes define pattern-matched HTTP request handlers",
+    "category": "cross_file",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/HttpRoutes.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how HttpRoutes define pattern-matched HTTP request handlers"
+  },
+  {
+    "id": "semble-http4s-int-002",
+    "query": "Message Request and Response HTTP message representation",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Message.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Message Request and Response HTTP message representation"
+  },
+  {
+    "id": "semble-http4s-int-003",
+    "query": "EntityDecoder for parsing request bodies",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/EntityDecoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] EntityDecoder for parsing request bodies"
+  },
+  {
+    "id": "semble-http4s-int-004",
+    "query": "EntityEncoder for serializing response bodies",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/EntityEncoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] EntityEncoder for serializing response bodies"
+  },
+  {
+    "id": "semble-http4s-int-005",
+    "query": "Headers and individual Header types",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Headers.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Headers and individual Header types"
+  },
+  {
+    "id": "semble-http4s-int-006",
+    "query": "Uri parsing and construction",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Uri.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Uri parsing and construction"
+  },
+  {
+    "id": "semble-http4s-cro-007",
+    "query": "how Kleisli and OptionT power the Http and HttpRoutes algebra",
+    "category": "cross_file",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Http.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/HttpRoutes.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how Kleisli and OptionT power the Http and HttpRoutes algebra"
+  },
+  {
+    "id": "semble-http4s-int-008",
+    "query": "Status codes and HTTP response status",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Status.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Status codes and HTTP response status"
+  },
+  {
+    "id": "semble-http4s-int-009",
+    "query": "Method HTTP verb enumeration",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Method.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Method HTTP verb enumeration"
+  },
+  {
+    "id": "semble-http4s-int-010",
+    "query": "how query parameters are extracted and decoded from URIs",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/QueryParam.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] how query parameters are extracted and decoded from URIs"
+  },
+  {
+    "id": "semble-http4s-int-011",
+    "query": "StaticFile for serving static assets",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/StaticFile.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] StaticFile for serving static assets"
+  },
+  {
+    "id": "semble-http4s-int-012",
+    "query": "Media type and content type handling",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/MediaType.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Media type and content type handling"
+  },
+  {
+    "id": "semble-http4s-cro-013",
+    "query": "how http4s HttpApp lifts routes to a cats-effect IO application",
+    "category": "cross_file",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/HttpApp.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how http4s HttpApp lifts routes to a cats-effect IO application"
+  },
+  {
+    "id": "semble-http4s-int-014",
+    "query": "cookie parsing and Set-Cookie header handling",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/headers/Set-Cookie.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] cookie parsing and Set-Cookie header handling"
+  },
+  {
+    "id": "semble-http4s-int-015",
+    "query": "MessageFailure and http4s error types",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/MessageFailure.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] MessageFailure and http4s error types"
+  },
+  {
+    "id": "semble-http4s-int-016",
+    "query": "Entity body representation and streaming",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Entity.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Entity body representation and streaming"
+  },
+  {
+    "id": "semble-http4s-int-017",
+    "query": "FormDataDecoder for parsing URL-encoded form bodies",
+    "category": "intent",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/FormDataDecoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] FormDataDecoder for parsing URL-encoded form bodies"
+  },
+  {
+    "id": "semble-http4s-sym-018",
+    "query": "HttpRoutes",
+    "category": "symbol_lookup",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/HttpRoutes.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] HttpRoutes"
+  },
+  {
+    "id": "semble-http4s-sym-019",
+    "query": "EntityDecoder",
+    "category": "symbol_lookup",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/EntityDecoder.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] EntityDecoder"
+  },
+  {
+    "id": "semble-http4s-sym-020",
+    "query": "Uri",
+    "category": "symbol_lookup",
+    "repo": "http4s",
+    "ground_truth": [
+      {
+        "file_path": "core/shared/src/main/scala/org/http4s/Uri.scala",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Uri"
+  }
+]

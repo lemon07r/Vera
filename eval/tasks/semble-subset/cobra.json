@@ -1,0 +1,332 @@
+[
+  {
+    "id": "semble-cobra-cro-001",
+    "query": "core command execution and command tree",
+    "category": "cross_file",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] core command execution and command tree"
+  },
+  {
+    "id": "semble-cobra-int-002",
+    "query": "shell completion request handling",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] shell completion request handling"
+  },
+  {
+    "id": "semble-cobra-int-003",
+    "query": "bash completion generation",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "bash_completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] bash completion generation"
+  },
+  {
+    "id": "semble-cobra-int-004",
+    "query": "positional argument validators",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "args.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] positional argument validators"
+  },
+  {
+    "id": "semble-cobra-sym-005",
+    "query": "Command",
+    "category": "symbol_lookup",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Command"
+  },
+  {
+    "id": "semble-cobra-int-006",
+    "query": "help text generation and usage template formatting",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] help text generation and usage template formatting"
+  },
+  {
+    "id": "semble-cobra-int-007",
+    "query": "zsh shell completion generation",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "zsh_completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] zsh shell completion generation"
+  },
+  {
+    "id": "semble-cobra-int-008",
+    "query": "fish shell completion generation",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "fish_completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] fish shell completion generation"
+  },
+  {
+    "id": "semble-cobra-int-009",
+    "query": "PowerShell completion generation",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "powershell_completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] PowerShell completion generation"
+  },
+  {
+    "id": "semble-cobra-cro-010",
+    "query": "how persistent flags are inherited by child commands",
+    "category": "cross_file",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how persistent flags are inherited by child commands"
+  },
+  {
+    "id": "semble-cobra-cro-011",
+    "query": "how command suggestions work for mistyped input",
+    "category": "cross_file",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how command suggestions work for mistyped input"
+  },
+  {
+    "id": "semble-cobra-cro-012",
+    "query": "how the root command traverses the tree to find the active subcommand",
+    "category": "cross_file",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how the root command traverses the tree to find the active subcommand"
+  },
+  {
+    "id": "semble-cobra-cro-013",
+    "query": "how command aliases are resolved during lookup",
+    "category": "cross_file",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how command aliases are resolved during lookup"
+  },
+  {
+    "id": "semble-cobra-int-014",
+    "query": "command hooks: PersistentPreRun, PreRun, PostRun lifecycle",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] command hooks: PersistentPreRun, PreRun, PostRun lifecycle"
+  },
+  {
+    "id": "semble-cobra-int-015",
+    "query": "error printing and exit code management",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] error printing and exit code management"
+  },
+  {
+    "id": "semble-cobra-sym-016",
+    "query": "Args",
+    "category": "symbol_lookup",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "args.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Args"
+  },
+  {
+    "id": "semble-cobra-sym-017",
+    "query": "CompletionOptions",
+    "category": "symbol_lookup",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "completions.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] CompletionOptions"
+  },
+  {
+    "id": "semble-cobra-cro-018",
+    "query": "how cobra integrates pflags for typed flag values",
+    "category": "cross_file",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how cobra integrates pflags for typed flag values"
+  },
+  {
+    "id": "semble-cobra-int-019",
+    "query": "required flags validation before command execution",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "command.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] required flags validation before command execution"
+  },
+  {
+    "id": "semble-cobra-int-020",
+    "query": "documentation generation for man pages and markdown",
+    "category": "intent",
+    "repo": "cobra",
+    "ground_truth": [
+      {
+        "file_path": "doc/md_docs.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "doc/man_docs.go",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:semantic] documentation generation for man pages and markdown"
+  }
+]

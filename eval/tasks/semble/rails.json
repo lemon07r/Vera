@@ -1,0 +1,344 @@
+[
+  {
+    "id": "semble-rails-cro-001",
+    "query": "application boot process and initialization",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/application.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "railties/lib/rails/configuration.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] application boot process and initialization"
+  },
+  {
+    "id": "semble-rails-cro-002",
+    "query": "engine configuration and load paths",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/engine/configuration.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "railties/lib/rails/application.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] engine configuration and load paths"
+  },
+  {
+    "id": "semble-rails-int-003",
+    "query": "rack integration for rails applications",
+    "category": "intent",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/rack.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] rack integration for rails applications"
+  },
+  {
+    "id": "semble-rails-int-004",
+    "query": "path management for rails apps",
+    "category": "intent",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/paths.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] path management for rails apps"
+  },
+  {
+    "id": "semble-rails-sym-005",
+    "query": "Application",
+    "category": "symbol_lookup",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/application.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Application"
+  },
+  {
+    "id": "semble-rails-sym-006",
+    "query": "Rails::Engine",
+    "category": "symbol_lookup",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/engine.rb",
+        "line_start": 348,
+        "line_end": 387,
+        "relevance": 2
+      },
+      {
+        "file_path": "railties/lib/rails/engine/configuration.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:symbol] Rails::Engine"
+  },
+  {
+    "id": "semble-rails-sym-007",
+    "query": "Rails::Paths",
+    "category": "symbol_lookup",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/paths.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Rails::Paths"
+  },
+  {
+    "id": "semble-rails-int-008",
+    "query": "railtie extension point for Rails plugins",
+    "category": "intent",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/railtie.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] railtie extension point for Rails plugins"
+  },
+  {
+    "id": "semble-rails-cro-009",
+    "query": "generator framework and base generator class",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/generators/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "railties/lib/rails/generators.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] generator framework and base generator class"
+  },
+  {
+    "id": "semble-rails-int-010",
+    "query": "application generator and default app scaffolding",
+    "category": "intent",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/generators/rails/app/app_generator.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] application generator and default app scaffolding"
+  },
+  {
+    "id": "semble-rails-int-011",
+    "query": "Rails command dispatch and subcommand routing",
+    "category": "intent",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/command.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] Rails command dispatch and subcommand routing"
+  },
+  {
+    "id": "semble-rails-cro-012",
+    "query": "initializable module for ordered initialization steps",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/initializable.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] initializable module for ordered initialization steps"
+  },
+  {
+    "id": "semble-rails-cro-013",
+    "query": "how railties are sorted by initialization dependency",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/railtie.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "railties/lib/rails/initializable.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how railties are sorted by initialization dependency"
+  },
+  {
+    "id": "semble-rails-cro-014",
+    "query": "default middleware stack configuration",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/application/default_middleware_stack.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] default middleware stack configuration"
+  },
+  {
+    "id": "semble-rails-int-015",
+    "query": "application routes reloader for development mode",
+    "category": "intent",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/application/routes_reloader.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] application routes reloader for development mode"
+  },
+  {
+    "id": "semble-rails-int-016",
+    "query": "server command and rack handler configuration",
+    "category": "intent",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/commands/server/server_command.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:semantic] server command and rack handler configuration"
+  },
+  {
+    "id": "semble-rails-sym-017",
+    "query": "Railtie",
+    "category": "symbol_lookup",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/railtie.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:symbol] Railtie"
+  },
+  {
+    "id": "semble-rails-cro-018",
+    "query": "how rake tasks are loaded and registered from railties",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/railtie.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      }
+    ],
+    "description": "[semble:architecture] how rake tasks are loaded and registered from railties"
+  },
+  {
+    "id": "semble-rails-cro-019",
+    "query": "engine middleware insertion and plugin loading",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/engine.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "railties/lib/rails/application/default_middleware_stack.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] engine middleware insertion and plugin loading"
+  },
+  {
+    "id": "semble-rails-cro-020",
+    "query": "how generators are discovered and registered",
+    "category": "cross_file",
+    "repo": "rails",
+    "ground_truth": [
+      {
+        "file_path": "railties/lib/rails/generators.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 2
+      },
+      {
+        "file_path": "railties/lib/rails/generators/base.rb",
+        "line_start": 1,
+        "line_end": 999999,
+        "relevance": 1
+      }
+    ],
+    "description": "[semble:architecture] how generators are discovered and registered"
+  }
+]
