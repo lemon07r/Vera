@@ -27,8 +27,17 @@ pub fn build_embedding_text_bounded(chunk: &Chunk, max_bytes: usize) -> String {
 }
 
 /// Build the structured text indexed by BM25.
+///
+/// Includes all metadata from the embedding text plus split identifier tokens
+/// so compound names like `parseConfig` match queries for "parse" or "config".
 pub fn build_bm25_text(chunk: &Chunk) -> String {
-    build_structured_text(chunk, 0)
+    let mut text = build_structured_text(chunk, 0);
+    let split_tokens = extract_split_identifiers(&chunk.content);
+    if !split_tokens.is_empty() {
+        text.push_str("\nTokens: ");
+        text.push_str(&split_tokens);
+    }
+    text
 }
 
 fn build_structured_text(chunk: &Chunk, max_bytes: usize) -> String {
@@ -666,6 +675,93 @@ fn is_call_keyword(candidate: &str) -> bool {
             | "where"
             | "new"
     )
+}
+
+/// Extract identifiers from code, split camelCase/PascalCase/snake_case into
+/// sub-tokens, and return them as a single space-separated string.
+///
+/// Example: code containing `parseConfig` and `get_user_by_id` produces
+/// "parse config get user by id".
+fn extract_split_identifiers(content: &str) -> String {
+    use std::collections::BTreeSet;
+
+    let mut sub_tokens = BTreeSet::new();
+
+    for token in content
+        .split(|ch: char| !ch.is_ascii_alphanumeric() && ch != '_')
+        .filter(|t| t.len() >= 4)
+    {
+        let parts = split_identifier(token);
+        if parts.len() >= 2 {
+            for part in &parts {
+                if part.len() >= 2 {
+                    sub_tokens.insert(part.to_ascii_lowercase());
+                }
+            }
+        }
+    }
+
+    sub_tokens.into_iter().collect::<Vec<_>>().join(" ")
+}
+
+/// Split a single identifier into sub-tokens via camelCase/PascalCase or
+/// snake_case boundaries. Returns the parts (lowercased). Returns a single
+/// element if no split is possible.
+///
+/// Examples:
+///   "parseConfig"      -> ["parse", "config"]
+///   "XMLParser"        -> ["xml", "parser"]
+///   "get_user_by_id"   -> ["get", "user", "by", "id"]
+///   "simple"           -> ["simple"]
+pub(crate) fn split_identifier(token: &str) -> Vec<String> {
+    // snake_case: split on underscores.
+    if token.contains('_') {
+        return token
+            .split('_')
+            .filter(|p| !p.is_empty())
+            .map(|p| p.to_ascii_lowercase())
+            .collect();
+    }
+
+    // camelCase / PascalCase: split on case transitions.
+    let chars: Vec<char> = token.chars().collect();
+    let mut parts = Vec::new();
+    let mut start = 0;
+
+    for i in 1..chars.len() {
+        let split = if chars[i].is_uppercase() && chars[i - 1].is_lowercase() {
+            // aB -> a | B
+            true
+        } else if i + 1 < chars.len()
+            && chars[i].is_uppercase()
+            && chars[i - 1].is_uppercase()
+            && chars[i + 1].is_lowercase()
+        {
+            // ABc -> A | Bc (end of acronym)
+            true
+        } else {
+            false
+        };
+
+        if split {
+            let part: String = chars[start..i].iter().collect();
+            if !part.is_empty() {
+                parts.push(part.to_ascii_lowercase());
+            }
+            start = i;
+        }
+    }
+
+    let last: String = chars[start..].iter().collect();
+    if !last.is_empty() {
+        parts.push(last.to_ascii_lowercase());
+    }
+
+    if parts.len() < 2 {
+        vec![token.to_ascii_lowercase()]
+    } else {
+        parts
+    }
 }
 
 #[cfg(test)]

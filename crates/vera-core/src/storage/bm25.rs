@@ -149,8 +149,17 @@ impl Bm25Index {
         );
         query_parser.set_field_boost(self.schema.filename, if path_weighted { 8.0 } else { 2.0 });
 
+        // Sanitize query for tantivy: strip characters that the query parser
+        // interprets as operators (e.g. `:` as field separator, `(`, `)`, etc.).
+        let sanitized: String = query_text
+            .chars()
+            .map(|c| match c {
+                ':' | '(' | ')' | '[' | ']' | '{' | '}' | '^' | '~' | '!' => ' ',
+                _ => c,
+            })
+            .collect();
         let query = query_parser
-            .parse_query(query_text)
+            .parse_query(&sanitized)
             .with_context(|| format!("failed to parse BM25 query: {query_text}"))?;
 
         let top_docs = searcher

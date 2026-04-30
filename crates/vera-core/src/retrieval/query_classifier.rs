@@ -29,19 +29,31 @@ pub struct QueryParams {
     pub rrf_k: f64,
     /// Multiplier for vector candidate fetch count relative to limit.
     pub vector_candidate_multiplier: usize,
+    /// Weight for BM25 RRF scores during fusion. The vector weight is
+    /// `1.0` (the reference). Values above 1.0 give BM25 more influence.
+    pub bm25_weight: f64,
+    /// Weight for vector RRF scores during fusion.
+    pub vector_weight: f64,
 }
 
-/// Default parameters for identifier queries (preserve current behavior).
+/// Default parameters for identifier queries: BM25 gets 2.5x weight since
+/// identifier matches are primarily lexical (exact names, snake_case, etc.).
+/// Vector search often returns loosely related code that dilutes the
+/// exact-match signal, so a strong BM25 bias is essential.
 const IDENTIFIER_PARAMS: QueryParams = QueryParams {
     rrf_k: 60.0,
     vector_candidate_multiplier: 3,
+    bm25_weight: 2.5,
+    vector_weight: 1.0,
 };
 
-/// Parameters for NL intent queries: lower RRF k to amplify vector signal,
-/// and fetch more vector candidates.
+/// Parameters for NL intent queries: balanced weights with lower RRF k to
+/// amplify vector signal, and fetch more vector candidates.
 const NL_PARAMS: QueryParams = QueryParams {
     rrf_k: 20.0,
     vector_candidate_multiplier: 5,
+    bm25_weight: 1.0,
+    vector_weight: 1.0,
 };
 
 /// Classify a query as natural language or identifier.

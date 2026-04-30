@@ -205,6 +205,12 @@ fn compute_fetch_limit(query: &str, filters: &SearchFilters, result_limit: usize
         result_limit.saturating_mul(3).max(result_limit + 20)
     };
 
+    // Path globs are applied post-retrieval, so we need a much larger pool
+    // to ensure enough matching files survive filtering.
+    if filters.path_glob.is_some() {
+        fetch_limit = fetch_limit.max(result_limit.saturating_mul(10).max(result_limit + 100));
+    }
+
     if filters.exact_paths.is_some() {
         fetch_limit = fetch_limit.max(result_limit.saturating_mul(12).max(result_limit + 200));
     }

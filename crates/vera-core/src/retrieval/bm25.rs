@@ -10,6 +10,7 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use tracing::debug;
 
+use crate::chunk_text::split_identifier;
 use crate::storage::bm25::Bm25Index;
 use crate::storage::metadata::MetadataStore;
 use crate::types::SearchResult;
@@ -38,6 +39,33 @@ pub fn search_bm25(index_dir: &Path, query: &str, limit: usize) -> Result<Vec<Se
     search_bm25_with_stores(&bm25_index, &metadata_store, query, limit)
 }
 
+/// Expand a query by appending sub-tokens from compound identifiers.
+///
+/// "parseConfig auth" becomes "parseConfig auth parse config" so BM25 can
+/// match documents where identifiers were split during indexing.
+fn expand_query_identifiers(query: &str) -> String {
+    let mut extra = Vec::new();
+    for token in query.split_whitespace() {
+        let parts = split_identifier(token);
+        if parts.len() >= 2 {
+            for part in &parts {
+                if part.len() >= 2
+                    && !query
+                        .to_ascii_lowercase()
+                        .contains(&part.to_ascii_lowercase())
+                {
+                    extra.push(part.to_ascii_lowercase());
+                }
+            }
+        }
+    }
+    if extra.is_empty() {
+        query.to_string()
+    } else {
+        format!("{query} {}", extra.join(" "))
+    }
+}
+
 /// Perform BM25 search using pre-opened stores (useful for testing and reuse).
 ///
 /// Searches the BM25 index for the given query, then hydrates each result
@@ -52,8 +80,9 @@ pub fn search_bm25_with_stores(
     // Fetch more candidates than the limit to account for missing metadata.
     let candidates = limit.saturating_mul(2).max(limit + 10);
 
+    let expanded = expand_query_identifiers(query);
     let bm25_results = bm25_index
-        .search(query, candidates)
+        .search(&expanded, candidates)
         .with_context(|| format!("BM25 search failed for query: {query}"))?;
 
     debug!(

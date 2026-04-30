@@ -17,7 +17,7 @@ use tracing::{debug, info, warn};
 
 use crate::embedding::EmbeddingProvider;
 use crate::retrieval::bm25::search_bm25;
-use crate::retrieval::query_classifier::{QueryType, classify_query};
+use crate::retrieval::query_classifier::{QueryType, classify_query, params_for_query_type};
 use crate::retrieval::ranking::is_path_weighted_query;
 use crate::retrieval::reranker::{Reranker, rerank_results};
 use crate::retrieval::vector::search_vector;
@@ -85,6 +85,8 @@ pub async fn search_hybrid(
     stored_dim: usize,
     vector_candidates: usize,
 ) -> Result<(Vec<SearchResult>, HybridTimings), HybridSearchError> {
+    let query_type = classify_query(query);
+    let query_params = params_for_query_type(query_type);
     let bm25_candidates = compute_bm25_candidates(query, limit);
     let mut timings = HybridTimings::default();
 
@@ -104,10 +106,20 @@ pub async fn search_hybrid(
             debug!(
                 bm25_count = bm25.len(),
                 vector_count = vector.len(),
-                "merging BM25 and vector results via RRF"
+                query_type = ?query_type,
+                bm25_weight = query_params.bm25_weight,
+                vector_weight = query_params.vector_weight,
+                "merging BM25 and vector results via weighted RRF"
             );
             let fusion_start = Instant::now();
-            let fused = fuse_rrf(&bm25, &vector, rrf_k, limit);
+            let fused = fuse_rrf_weighted(
+                &bm25,
+                &vector,
+                rrf_k,
+                limit,
+                query_params.bm25_weight,
+                query_params.vector_weight,
+            );
             timings.fusion = Some(fusion_start.elapsed());
             Ok((fused, timings))
         }
@@ -227,6 +239,26 @@ pub fn fuse_rrf(
     limit: usize,
 ) -> Vec<SearchResult> {
     fuse_rrf_multi(&[bm25_results, vector_results], rrf_k, limit)
+}
+
+/// Fuse BM25 and vector results with explicit per-source weights.
+///
+/// Identifier queries pass a higher BM25 weight (1.5) so lexical matches
+/// dominate; NL queries use equal weights (1.0, 1.0).
+pub fn fuse_rrf_weighted(
+    bm25_results: &[SearchResult],
+    vector_results: &[SearchResult],
+    rrf_k: f64,
+    limit: usize,
+    bm25_weight: f64,
+    vector_weight: f64,
+) -> Vec<SearchResult> {
+    fuse_rrf_multi_weighted(
+        &[bm25_results, vector_results],
+        &[bm25_weight, vector_weight],
+        rrf_k,
+        limit,
+    )
 }
 
 /// Fuse multiple ranked result lists with reciprocal rank fusion (RRF).

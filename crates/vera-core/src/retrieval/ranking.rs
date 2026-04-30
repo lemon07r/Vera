@@ -5,8 +5,6 @@
 //! config files at repo root, test/docs noise, symbol-type disambiguation, and
 //! same-file crowding for multi-file questions.
 
-use std::collections::HashSet;
-
 use crate::chunk_text::file_name;
 use crate::corpus::{ContentClass, classify_content, classify_path, content_class_label};
 use crate::retrieval::query_classifier::{QueryType, classify_query};
@@ -468,32 +466,45 @@ fn requested_symbol_types(query: &str) -> Vec<SymbolType> {
     symbol_types
 }
 
+/// Maximum chunks from the same file before saturation decay kicks in.
+const FILE_SATURATION_THRESHOLD: usize = 1;
+
+/// Multiplicative penalty per extra chunk from the same file beyond the threshold.
+/// 0.35 means each successive same-file chunk keeps 35% of its score, pushing
+/// it below results from other files in most cases.
+const FILE_SATURATION_DECAY: f64 = 0.35;
+
 fn diversify_by_file(results: Vec<SearchResult>) -> Vec<SearchResult> {
     if results.len() <= 1 {
         return results;
     }
 
-    let mut iter = results.into_iter();
-    let Some(first) = iter.next() else {
-        return Vec::new();
-    };
+    use std::collections::HashMap;
 
-    let mut output = Vec::with_capacity(1);
-    let mut remainder = Vec::new();
-    let mut seen_files = HashSet::new();
-    seen_files.insert(first.file_path.clone());
-    output.push(first);
+    let mut file_counts: HashMap<String, usize> = HashMap::new();
+    let mut scored: Vec<(f64, usize, SearchResult)> = results
+        .into_iter()
+        .enumerate()
+        .map(|(idx, result)| {
+            let count = file_counts.entry(result.file_path.clone()).or_insert(0);
+            *count += 1;
+            let effective_score = if *count > FILE_SATURATION_THRESHOLD {
+                let excess = (*count - FILE_SATURATION_THRESHOLD) as f64;
+                result.score * FILE_SATURATION_DECAY.powf(excess)
+            } else {
+                result.score
+            };
+            (effective_score, idx, result)
+        })
+        .collect();
 
-    for result in iter {
-        if seen_files.insert(result.file_path.clone()) {
-            output.push(result);
-        } else {
-            remainder.push(result);
-        }
-    }
+    scored.sort_by(|a, b| {
+        b.0.partial_cmp(&a.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(a.1.cmp(&b.1))
+    });
 
-    output.extend(remainder);
-    output
+    scored.into_iter().map(|(_, _, result)| result).collect()
 }
 
 fn stamp_rank_scores(mut results: Vec<SearchResult>) -> Vec<SearchResult> {
