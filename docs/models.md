@@ -1,19 +1,27 @@
 # Local Models
 
-Vera's local pipeline uses one embedding model plus the curated local reranker. `vera setup` downloads the selected embedding model into the Vera data directory (`$XDG_DATA_HOME/vera/models/`, or `~/.vera/models/` on existing installs) when the source is Hugging Face, and always installs the matching ONNX Runtime library into the `lib/` subdirectory.
+Vera has two local backend families:
+
+- Potion Code CPU: static embeddings through `model2vec-rs`. No ONNX Runtime.
+- Jina ONNX GPU: local embedding model plus the curated local reranker through ONNX Runtime.
+
+`vera setup` downloads model assets into the Vera data directory (`$XDG_DATA_HOME/vera/models/`, or `~/.vera/models/` on existing installs). Jina ONNX backends also install the matching ONNX Runtime library into `lib/`.
 
 ## Curated Embedding Options
 
 | Option | Command | Notes |
 | --- | --- | --- |
-| Jina v5 nano retrieval | `vera setup` | Default. Best general-purpose local choice. Faster indexing and the strongest end-to-end benchmark coverage in Vera so far. |
-| CodeRankEmbed | `vera setup --code-rank-embed` | Optional. Useful when you want a code-specific bi-encoder or you are testing without reranking. On Vera's short 6-task no-rerank check it beat the Jina preset on retrieval quality, but indexing was much slower. |
+| Potion Code | `vera setup --potion-code` | CPU-first local backend. Uses [`minishlab/potion-code-16M`](https://huggingface.co/minishlab/potion-code-16M), returns 256-dim embeddings, and skips ONNX Runtime. |
+| Jina v5 nano retrieval | `vera setup --onnx-jina-cuda` or another `--onnx-jina-*` flag | GPU local backend. Faster indexing than larger ONNX embedding models and strongest end-to-end benchmark coverage in Vera so far. |
+| CodeRankEmbed | `vera setup --onnx-jina-cuda --code-rank-embed` | Optional ONNX embedding preset. Useful when you want a code-specific bi-encoder or you are testing without reranking. On Vera's short 6-task no-rerank check it beat the Jina preset on retrieval quality, but indexing was much slower. |
 
-The local reranker stays the same for both options:
+The Jina ONNX family uses this local reranker:
 
 | Model | Role |
 | --- | --- |
 | [`jinaai/jina-reranker-v2-base-multilingual`](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual) | Local cross-encoder reranker |
+
+Potion Code currently uses vector/BM25 fusion plus Vera's deterministic ranking heuristics instead of the ONNX reranker.
 
 ## CodeRankEmbed Comparison
 
@@ -30,7 +38,7 @@ See [benchmarks.md](benchmarks.md) for the full benchmark context.
 
 ## Custom Local Embedding Models
 
-You can point Vera at a different ONNX embedding model without changing the local reranker.
+You can point Vera at a different ONNX embedding model without changing the local reranker. These flags apply to the Jina ONNX backend family, not Potion Code.
 
 ### Hugging Face Repo Or URL
 
@@ -74,7 +82,7 @@ Use this when you already downloaded or exported the model yourself.
 
 ## Required Files
 
-For a custom embedding model, Vera needs:
+For a custom ONNX embedding model, Vera needs:
 
 - an ONNX model file
 - a tokenizer file
@@ -92,13 +100,13 @@ If your model uses different names, pass the matching `--embedding-*` flags.
 
 ## Inference Speed
 
-GPU is recommended; CPU works but is slow for initial indexing. After the first index, `vera update .` only re-embeds changed files, so updates are fast even on CPU.
+Potion Code is the CPU local option. Use Jina ONNX with CUDA, ROCm, CoreML, DirectML, or OpenVINO when you have a supported GPU. After the first index, `vera update .` only re-embeds changed files, so updates are fast on any backend.
 
 | Backend | Hardware | Time | Notes |
 |---------|----------|------|-------|
 | CUDA | RTX 4080 | **~8 s** | Recommended for large repos |
 | API mode | Remote GPU | ~56 s | Requires API key, no local compute |
-| CPU | Ryzen 5 7600X3D (6c/12t) | ~6 min | Use GPU or API mode if this is too slow |
+| Jina ONNX CPU | Ryzen 5 7600X3D (6c/12t) | ~6 min | Compatibility path. Use Potion Code for CPU-only machines |
 
 ## API Mode
 
@@ -119,7 +127,7 @@ Only model calls leave your machine. Indexing, storage, and search remain local.
 
 ## Notes
 
-- These options only affect local embeddings. API mode is unchanged.
-- Query prefixes only apply to local embedding queries, not API embeddings.
+- Custom ONNX options only affect Jina ONNX local embeddings. API mode and Potion Code are unchanged.
+- Query prefixes only apply to ONNX local embedding queries, not API embeddings.
 - If you switch local embedding models, re-index the repo so the stored vectors match the active model.
 - If your network blocks CLI downloads, use [manual-install.md](manual-install.md).

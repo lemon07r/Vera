@@ -7,7 +7,7 @@ use tokio::runtime::Runtime;
 use vera_core::config::{InferenceBackend, VeraConfig};
 use vera_core::embedding::{EmbeddingError, EmbeddingProvider};
 use vera_core::indexing::{index_dir, index_repository};
-use vera_core::retrieval::search_service::execute_search;
+use vera_core::retrieval::search_service::SearchContext;
 use vera_core::types::SearchFilters;
 
 use crate::runner::ToolAdapter;
@@ -26,6 +26,7 @@ const RESULT_LIMIT: usize = 10;
 pub struct VeraBm25Adapter {
     runtime: Runtime,
     config: VeraConfig,
+    search_context: SearchContext,
 }
 
 impl VeraBm25Adapter {
@@ -36,6 +37,7 @@ impl VeraBm25Adapter {
         Ok(Self {
             runtime: Runtime::new()?,
             config,
+            search_context: SearchContext::bm25_only(),
         })
     }
 }
@@ -65,14 +67,13 @@ impl ToolAdapter for VeraBm25Adapter {
             filters.path_glob = Some(format!("{scope}/**"));
         }
 
-        match execute_search(
+        match self.runtime.block_on(self.search_context.search(
             &index_dir(repo_path),
             query,
             &self.config,
             &filters,
             RESULT_LIMIT,
-            InferenceBackend::Api,
-        ) {
+        )) {
             Ok((results, _)) => results.into_iter().map(into_retrieval_result).collect(),
             Err(err) => {
                 eprintln!(
@@ -182,16 +183,20 @@ pub struct VeraFullAdapter {
     runtime: Runtime,
     config: VeraConfig,
     backend: InferenceBackend,
+    search_context: SearchContext,
 }
 
 impl VeraFullAdapter {
     pub fn new(backend: InferenceBackend) -> anyhow::Result<Self> {
         let mut config = VeraConfig::default();
         config.adjust_for_backend(backend);
+        let runtime = Runtime::new()?;
+        let search_context = runtime.block_on(SearchContext::new(&config, backend));
         Ok(Self {
-            runtime: Runtime::new()?,
+            runtime,
             config,
             backend,
+            search_context,
         })
     }
 }
@@ -221,14 +226,13 @@ impl ToolAdapter for VeraFullAdapter {
             filters.path_glob = Some(format!("{scope}/**"));
         }
 
-        match execute_search(
+        match self.runtime.block_on(self.search_context.search(
             &index_dir(repo_path),
             query,
             &self.config,
             &filters,
             RESULT_LIMIT,
-            self.backend,
-        ) {
+        )) {
             Ok((results, _)) => results.into_iter().map(into_retrieval_result).collect(),
             Err(err) => {
                 eprintln!(
@@ -243,25 +247,26 @@ impl ToolAdapter for VeraFullAdapter {
     fn index(&self, repo_path: &str) -> (f64, u64) {
         let repo_path = Path::new(repo_path);
 
-        let (provider, model_name) =
-            match self
-                .runtime
-                .block_on(vera_core::embedding::create_dynamic_provider(
-                    &self.config,
-                    self.backend,
-                )) {
-                Ok(pair) => pair,
-                Err(err) => {
-                    eprintln!("warning: failed to create embedding provider: {err}");
-                    return (0.0, 0);
-                }
-            };
+        let Some(provider) = self.search_context.embedding_provider() else {
+            eprintln!(
+                "warning: embedding provider unavailable for {}",
+                self.backend
+            );
+            return (0.0, 0);
+        };
+        let Some(model_name) = self.search_context.model_name() else {
+            eprintln!(
+                "warning: embedding model name unavailable for {}",
+                self.backend
+            );
+            return (0.0, 0);
+        };
 
         let indexed = self.runtime.block_on(index_repository(
             repo_path,
-            &provider,
+            provider,
             &self.config,
-            &model_name,
+            model_name,
         ));
 
         match indexed {

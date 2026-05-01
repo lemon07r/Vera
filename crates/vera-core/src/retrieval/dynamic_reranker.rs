@@ -39,6 +39,7 @@ pub async fn create_dynamic_reranker(
                 .map_err(|e| anyhow::anyhow!("Failed to initialize local reranker: {e}\nHint: check network connection or manually place model at ~/.vera/models/"))?;
             Ok(Some(DynamicReranker::Local(p)))
         }
+        InferenceBackend::PotionCode => Ok(None),
         InferenceBackend::Api => match RerankerConfig::from_env() {
             Ok(cfg) => {
                 let cfg = cfg

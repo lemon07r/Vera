@@ -66,69 +66,72 @@ pub fn run(json_output: bool, probe: bool) -> anyhow::Result<()> {
         detail: backend.to_string(),
     });
 
-    if local_mode {
-        let ep = backend
-            .execution_provider()
-            .expect("local backend must include an execution provider");
-        let embedding_model = vera_core::local_models::LocalEmbeddingModelConfig::from_env()?;
-        checks.push(DoctorCheck {
-            name: "local-embedding-model",
-            status: CheckStatus::Ok,
-            detail: embedding_model.display_name(),
-        });
-        let runtime_path = vera_core::local_models::ort_library_path_for_ep(ep)?;
-        let runtime_check = vera_core::local_models::ensure_ort_runtime(Some(&runtime_path));
-        let runtime_detail = match &runtime_check {
-            Ok(()) => runtime_path.display().to_string(),
-            Err(err) => format!("{} ({})", runtime_path.display(), one_line_error(err)),
-        };
-        checks.push(DoctorCheck {
-            name: "onnx-runtime",
-            status: if runtime_check.is_ok() {
-                CheckStatus::Ok
-            } else {
-                CheckStatus::Fail
-            },
-            detail: runtime_detail,
-        });
+    match backend {
+        vera_core::config::InferenceBackend::OnnxJina(ep) => {
+            let embedding_model = vera_core::local_models::LocalEmbeddingModelConfig::from_env()?;
+            checks.push(DoctorCheck {
+                name: "local-embedding-model",
+                status: CheckStatus::Ok,
+                detail: embedding_model.display_name(),
+            });
+            let runtime_path = vera_core::local_models::ort_library_path_for_ep(ep)?;
+            let runtime_check = vera_core::local_models::ensure_ort_runtime(Some(&runtime_path));
+            let runtime_detail = match &runtime_check {
+                Ok(()) => runtime_path.display().to_string(),
+                Err(err) => format!("{} ({})", runtime_path.display(), one_line_error(err)),
+            };
+            checks.push(DoctorCheck {
+                name: "onnx-runtime",
+                status: if runtime_check.is_ok() {
+                    CheckStatus::Ok
+                } else {
+                    CheckStatus::Fail
+                },
+                detail: runtime_detail,
+            });
 
-        let model_assets =
-            vera_core::local_models::inspect_local_model_files_for_ep(ep, &embedding_model)?;
-        let present = model_assets.iter().filter(|asset| asset.exists).count();
-        checks.push(DoctorCheck {
-            name: "local-models",
-            status: if present == model_assets.len() {
-                CheckStatus::Ok
-            } else {
-                CheckStatus::Warn
-            },
-            detail: format!("{present}/{} local assets present", model_assets.len()),
-        });
-        if probe {
-            checks.extend(probe_local_backend(ep, &runtime_path, &model_assets)?);
+            let model_assets =
+                vera_core::local_models::inspect_local_model_files_for_ep(ep, &embedding_model)?;
+            checks.push(local_model_assets_check(&model_assets));
+            if probe {
+                checks.extend(probe_local_backend(ep, &runtime_path, &model_assets)?);
+            }
         }
-    } else {
-        checks.push(check_env_group(
-            "embedding-api",
-            &[
-                "EMBEDDING_MODEL_BASE_URL",
-                "EMBEDDING_MODEL_ID",
-                "EMBEDDING_MODEL_API_KEY",
-            ],
-        ));
-        checks.push(check_env_group(
-            "reranker-api",
-            &[
-                "RERANKER_MODEL_BASE_URL",
-                "RERANKER_MODEL_ID",
-                "RERANKER_MODEL_API_KEY",
-            ],
-        ));
-        if probe {
-            checks.push(skipped_check(
-                "probe",
-                "probe is only available for local ONNX backends",
+        vera_core::config::InferenceBackend::PotionCode => {
+            checks.push(DoctorCheck {
+                name: "local-embedding-model",
+                status: CheckStatus::Ok,
+                detail: vera_core::local_models::potion_code_model_name().to_string(),
+            });
+            let model_assets = vera_core::local_models::inspect_potion_code_model_files()?;
+            checks.push(local_model_assets_check(&model_assets));
+            if probe {
+                checks.extend(probe_potion_backend(&model_assets));
+            }
+        }
+        vera_core::config::InferenceBackend::Api => {
+            checks.push(check_env_group(
+                "embedding-api",
+                &[
+                    "EMBEDDING_MODEL_BASE_URL",
+                    "EMBEDDING_MODEL_ID",
+                    "EMBEDDING_MODEL_API_KEY",
+                ],
             ));
+            checks.push(check_env_group(
+                "reranker-api",
+                &[
+                    "RERANKER_MODEL_BASE_URL",
+                    "RERANKER_MODEL_ID",
+                    "RERANKER_MODEL_API_KEY",
+                ],
+            ));
+            if probe {
+                checks.push(skipped_check(
+                    "probe",
+                    "probe is only available for local backends",
+                ));
+            }
         }
     }
 
@@ -216,6 +219,42 @@ fn saved_backend_check(config: &state::StoredConfig) -> DoctorCheck {
             },
         },
     }
+}
+
+fn local_model_assets_check(
+    model_assets: &[vera_core::local_models::LocalModelAssetStatus],
+) -> DoctorCheck {
+    let present = model_assets.iter().filter(|asset| asset.exists).count();
+    DoctorCheck {
+        name: "local-models",
+        status: if present == model_assets.len() {
+            CheckStatus::Ok
+        } else {
+            CheckStatus::Warn
+        },
+        detail: format!("{present}/{} local assets present", model_assets.len()),
+    }
+}
+
+fn probe_potion_backend(
+    model_assets: &[vera_core::local_models::LocalModelAssetStatus],
+) -> Vec<DoctorCheck> {
+    let missing = missing_assets(
+        model_assets,
+        &["potion-tokenizer", "potion-model", "potion-config"],
+    );
+    if !missing.is_empty() {
+        return vec![skipped_check(
+            "probe-potion-code",
+            format!("skipped because assets are missing: {}", missing.join(", ")),
+        )];
+    }
+
+    vec![result_check(
+        "probe-potion-code",
+        "potion-code returned a finite embedding".to_string(),
+        vera_core::embedding::Model2VecProvider::probe_inference(),
+    )]
 }
 
 fn probe_local_backend(

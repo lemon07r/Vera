@@ -64,9 +64,9 @@ pub fn run(
             if let Ok(dim) = s_dim.parse::<usize>() {
                 use vera_core::embedding::EmbeddingProvider;
                 if let Some(provider_dim) = provider.expected_dim() {
-                    if provider_dim != dim {
+                    if provider_dim < dim {
                         bail!(
-                            "Dimension mismatch: index has {} dimensions but active provider expects {}. Please re-index with matching provider.",
+                            "Dimension mismatch: index has {} dimensions but active provider only returns {}. Please re-index with matching provider.",
                             dim,
                             provider_dim
                         );

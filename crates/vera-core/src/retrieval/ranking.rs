@@ -12,6 +12,7 @@ use crate::retrieval::query_utils::{
     looks_like_compound_identifier, looks_like_filename, path_depth, trim_query_token,
 };
 use crate::types::{Language, SearchFilters, SearchResult, SymbolType};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum RankingStage {
@@ -35,8 +36,12 @@ struct QueryFeatures {
     wants_config_paths: bool,
     wants_runtime_paths: bool,
     wants_archive_paths: bool,
+    wants_compat_paths: bool,
+    wants_type_declarations: bool,
+    requested_versions: Vec<String>,
     wants_multi_file_diversity: bool,
     mentions_implementation: bool,
+    mentions_definition: bool,
 }
 
 impl QueryFeatures {
@@ -125,6 +130,22 @@ impl QueryFeatures {
                 &lower,
                 &["archive", "archived", "legacy", "snapshot", "deprecated"],
             ),
+            wants_compat_paths: mentions_any(
+                &lower,
+                &[
+                    "compat",
+                    "compatibility",
+                    "legacy",
+                    "shim",
+                    "polyfill",
+                    "adapter",
+                ],
+            ),
+            wants_type_declarations: mentions_any(
+                &lower,
+                &["declaration", "declarations", ".d.ts", "types", "typings"],
+            ),
+            requested_versions: requested_versions(&cleaned_tokens),
             wants_multi_file_diversity: !is_path_weighted_query(query)
                 && (query_type == QueryType::NaturalLanguage
                     || (exact_identifier.is_some() && raw_tokens.len() <= 2)),
@@ -136,6 +157,16 @@ impl QueryFeatures {
                     "impl",
                     "mounted",
                     "registration",
+                ],
+            ),
+            mentions_definition: mentions_any(
+                &lower,
+                &[
+                    "definition",
+                    "definitions",
+                    "define",
+                    "declared",
+                    "declaration",
                 ],
             ),
             exact_filename,
@@ -167,13 +198,18 @@ pub(crate) fn apply_query_ranking_with_filters(
     }
 
     let features = QueryFeatures::from_query(query);
+    let file_relevance = file_relevance_counts(&features, &results);
     let len = results.len() as f64;
     let mut scored: Vec<(f64, usize, SearchResult)> = results
         .into_iter()
         .enumerate()
         .map(|(idx, mut result)| {
             let base_rank = 1.0 - (idx as f64 / len);
-            let prior = score_prior(&features, &result, stage, filters);
+            let same_file_hits = file_relevance
+                .get(&result.file_path)
+                .copied()
+                .unwrap_or_default();
+            let prior = score_prior(&features, &result, stage, filters, same_file_hits);
             let combined = base_rank + prior;
             result.score = combined;
             (combined, idx, result)
@@ -223,6 +259,7 @@ fn score_prior(
     result: &SearchResult,
     stage: RankingStage,
     filters: &SearchFilters,
+    same_file_hits: usize,
 ) -> f64 {
     let stage_weight = match stage {
         RankingStage::Initial => 1.0,
@@ -302,6 +339,8 @@ fn score_prior(
             }
         } else if file_stem(&result_filename).eq_ignore_ascii_case(identifier) {
             bonus += stage_weight * 0.18;
+        } else if identifier_matches_parent_dir(identifier, &file_path) {
+            bonus += stage_weight * 0.14;
         }
     }
 
@@ -333,6 +372,10 @@ fn score_prior(
                 bonus += stage_weight * symbol_bonus;
             }
         }
+        let parent_bonus = parent_dir_keyword_bonus(&file_path, &features.keywords);
+        if parent_bonus > 0.0 {
+            bonus += stage_weight * parent_bonus;
+        }
     }
 
     if !features.requested_symbol_types.is_empty()
@@ -355,6 +398,19 @@ fn score_prior(
             } else {
                 0.55
             };
+    }
+
+    if features.mentions_definition && is_definition_symbol(result.symbol_type) {
+        bonus += stage_weight
+            * if result.symbol_name.is_some() {
+                0.34
+            } else {
+                0.18
+            };
+    }
+
+    if same_file_hits >= 2 && features.query_type == QueryType::NaturalLanguage {
+        bonus += stage_weight * ((same_file_hits.min(4) - 1) as f64 * 0.08);
     }
 
     if !features.wants_test_paths && matches!(role, ContentClass::Test) {
@@ -388,6 +444,18 @@ fn score_prior(
     {
         bonus -= stage_weight * 0.38;
     }
+    if !features.wants_compat_paths && is_compat_path(&file_path) {
+        bonus -= stage_weight * 0.52;
+    } else if features.wants_compat_paths && is_compat_path(&file_path) {
+        bonus += stage_weight * 0.32;
+    }
+    if !features.wants_type_declarations && is_typescript_declaration(&file_path) {
+        bonus -= stage_weight * 0.62;
+    }
+    if is_reexport_barrel(result) && !features.mentions_definition {
+        bonus -= stage_weight * 0.85;
+    }
+    bonus += stage_weight * version_path_bonus(features, &file_path);
     if matches!(role, ContentClass::Generated) {
         bonus -= stage_weight
             * if features.wants_runtime_paths {
@@ -464,6 +532,67 @@ fn requested_symbol_types(query: &str) -> Vec<SymbolType> {
         symbol_types.push(SymbolType::Method);
     }
     symbol_types
+}
+
+fn requested_versions(tokens: &[String]) -> Vec<String> {
+    tokens
+        .iter()
+        .filter(|token| {
+            token.len() >= 2
+                && token.starts_with('v')
+                && token[1..].chars().all(|ch| ch.is_ascii_digit())
+        })
+        .cloned()
+        .collect()
+}
+
+fn file_relevance_counts(
+    features: &QueryFeatures,
+    results: &[SearchResult],
+) -> HashMap<String, usize> {
+    let mut counts = HashMap::new();
+    for result in results {
+        if result_matches_query_features(features, result) {
+            *counts.entry(result.file_path.clone()).or_insert(0) += 1;
+        }
+    }
+    counts
+}
+
+fn result_matches_query_features(features: &QueryFeatures, result: &SearchResult) -> bool {
+    if let Some(identifier) = features.exact_identifier.as_deref() {
+        if result
+            .symbol_name
+            .as_deref()
+            .is_some_and(|name| name.eq_ignore_ascii_case(identifier))
+            || file_stem(file_name(&result.file_path)).eq_ignore_ascii_case(identifier)
+        {
+            return true;
+        }
+    }
+
+    if features.keywords.is_empty() {
+        return false;
+    }
+
+    let path = result.file_path.to_ascii_lowercase();
+    let content = result.content.to_ascii_lowercase();
+    let symbol_stems = result
+        .symbol_name
+        .as_deref()
+        .map(identifier_stems)
+        .unwrap_or_default();
+    let filename_stems = identifier_stems(file_stem(file_name(&path)));
+    let parent_stems = parent_dir_stems(&path);
+
+    features.keywords.iter().any(|keyword| {
+        content.contains(keyword)
+            || symbol_stems
+                .iter()
+                .chain(filename_stems.iter())
+                .chain(parent_stems.iter())
+                .any(|stem| stem == keyword || shares_keyword_stem(stem, keyword))
+    })
 }
 
 /// Maximum chunks from the same file before saturation decay kicks in.
@@ -585,6 +714,44 @@ fn file_stem(filename: &str) -> &str {
         .unwrap_or(filename)
 }
 
+fn identifier_matches_parent_dir(identifier: &str, path: &str) -> bool {
+    parent_dir_stems(path)
+        .iter()
+        .any(|stem| stem.eq_ignore_ascii_case(identifier))
+}
+
+fn parent_dir_keyword_bonus(path: &str, keywords: &[String]) -> f64 {
+    let stems = parent_dir_stems(path);
+    if stems.is_empty() {
+        return 0.0;
+    }
+    if stems
+        .iter()
+        .any(|stem| keywords.iter().any(|keyword| keyword == stem))
+    {
+        return 0.2;
+    }
+    if stems.iter().any(|stem| {
+        keywords
+            .iter()
+            .any(|keyword| shares_keyword_stem(stem, keyword))
+    }) {
+        return 0.12;
+    }
+    0.0
+}
+
+fn parent_dir_stems(path: &str) -> Vec<String> {
+    let Some((dirs, _)) = path.rsplit_once('/') else {
+        return Vec::new();
+    };
+    dirs.split('/')
+        .rev()
+        .take(3)
+        .flat_map(identifier_stems)
+        .collect()
+}
+
 fn is_public_symbol(result: &SearchResult) -> bool {
     result.content.lines().find_map(|line| {
         let trimmed = line.trim();
@@ -621,11 +788,7 @@ fn common_prefix_len(left: &str, right: &str) -> usize {
 }
 
 fn symbol_keyword_bonus(symbol_name: &str, keywords: &[String]) -> f64 {
-    let tokens: Vec<String> = symbol_name
-        .split(|ch: char| !ch.is_ascii_alphanumeric())
-        .filter(|part| !part.is_empty())
-        .map(normalize_token)
-        .collect();
+    let tokens = identifier_stems(symbol_name);
 
     if tokens.is_empty() {
         return 0.0;
@@ -647,6 +810,131 @@ fn symbol_keyword_bonus(symbol_name: &str, keywords: &[String]) -> f64 {
     }
 
     0.0
+}
+
+fn identifier_stems(value: &str) -> Vec<String> {
+    value
+        .split(|ch: char| !ch.is_ascii_alphanumeric())
+        .flat_map(split_camel_identifier)
+        .map(|part| normalize_token(&part))
+        .filter(|part| !part.is_empty() && !is_query_stopword(part))
+        .collect()
+}
+
+fn split_camel_identifier(value: &str) -> Vec<String> {
+    if value.is_empty() {
+        return Vec::new();
+    }
+
+    let mut parts = Vec::new();
+    let mut start = 0;
+    let chars: Vec<(usize, char)> = value.char_indices().collect();
+    for idx in 1..chars.len() {
+        let (_, prev) = chars[idx - 1];
+        let (byte_idx, current) = chars[idx];
+        let boundary = (prev.is_ascii_lowercase() && current.is_ascii_uppercase())
+            || (prev.is_ascii_alphabetic() && current.is_ascii_digit())
+            || (prev.is_ascii_digit() && current.is_ascii_alphabetic());
+        if boundary {
+            parts.push(value[start..byte_idx].to_ascii_lowercase());
+            start = byte_idx;
+        }
+    }
+    parts.push(value[start..].to_ascii_lowercase());
+    parts
+}
+
+fn is_definition_symbol(symbol_type: Option<SymbolType>) -> bool {
+    matches!(
+        symbol_type,
+        Some(
+            SymbolType::Class
+                | SymbolType::Struct
+                | SymbolType::Trait
+                | SymbolType::Interface
+                | SymbolType::Enum
+                | SymbolType::Function
+                | SymbolType::Method
+                | SymbolType::Module
+        )
+    )
+}
+
+fn is_compat_path(path: &str) -> bool {
+    let tokens = tokenize_path(path);
+    contains_token(
+        &tokens,
+        &[
+            "compat",
+            "compatibility",
+            "legacy",
+            "shim",
+            "shims",
+            "polyfill",
+            "polyfills",
+        ],
+    )
+}
+
+fn is_typescript_declaration(path: &str) -> bool {
+    path.ends_with(".d.ts") || path.ends_with(".d.mts") || path.ends_with(".d.cts")
+}
+
+fn is_reexport_barrel(result: &SearchResult) -> bool {
+    let filename = file_name(&result.file_path).to_ascii_lowercase();
+    if !matches!(
+        filename.as_str(),
+        "index.ts" | "index.tsx" | "index.js" | "index.jsx" | "mod.rs"
+    ) {
+        return false;
+    }
+
+    let non_empty: Vec<&str> = result
+        .content
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with("//"))
+        .collect();
+    if non_empty.is_empty() || non_empty.len() > 24 {
+        return false;
+    }
+
+    let reexports = non_empty
+        .iter()
+        .filter(|line| {
+            line.starts_with("export ")
+                || line.starts_with("pub use ")
+                || line.starts_with("pub mod ")
+                || line.starts_with("module.exports")
+        })
+        .count();
+    reexports > 0 && reexports * 4 >= non_empty.len() * 3
+}
+
+fn version_path_bonus(features: &QueryFeatures, path: &str) -> f64 {
+    if features.requested_versions.is_empty() {
+        return 0.0;
+    }
+
+    let tokens = tokenize_path(path);
+    if tokens.iter().any(|token| {
+        features
+            .requested_versions
+            .iter()
+            .any(|version| version == token)
+    }) {
+        return 0.55;
+    }
+
+    if tokens.iter().any(|token| {
+        token.len() >= 2
+            && token.starts_with('v')
+            && token[1..].chars().all(|ch| ch.is_ascii_digit())
+    }) {
+        return -0.34;
+    }
+
+    -0.08
 }
 
 fn prefers_structural_chunks(features: &QueryFeatures) -> bool {
@@ -1103,5 +1391,155 @@ mod tests {
         );
 
         assert_eq!(ranked[0].symbol_name.as_deref(), Some("Types"));
+    }
+
+    #[test]
+    fn file_coherence_boost_promotes_repeated_relevant_file() {
+        let results = vec![
+            make_result(
+                "src/misc.rs",
+                Some("misc"),
+                Some(SymbolType::Function),
+                "pub fn misc() {}",
+            ),
+            make_result(
+                "src/auth/session.rs",
+                Some("renewSession"),
+                Some(SymbolType::Function),
+                "pub fn renew_session() {}",
+            ),
+            make_result(
+                "src/auth/session.rs",
+                Some("validateSession"),
+                Some(SymbolType::Function),
+                "pub fn validate_session() {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking(
+            "session renewal and validation flow",
+            results,
+            RankingStage::Initial,
+        );
+
+        assert_eq!(ranked[0].file_path, "src/auth/session.rs");
+    }
+
+    #[test]
+    fn parent_directory_stem_match_beats_flat_unrelated_file() {
+        let results = vec![
+            make_result(
+                "src/router.rs",
+                Some("route"),
+                Some(SymbolType::Function),
+                "pub fn route() {}",
+            ),
+            make_result(
+                "src/auth/middleware.rs",
+                Some("middleware"),
+                Some(SymbolType::Function),
+                "pub fn middleware() {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking("auth middleware routing", results, RankingStage::Initial);
+
+        assert_eq!(ranked[0].file_path, "src/auth/middleware.rs");
+    }
+
+    #[test]
+    fn compatibility_paths_are_demoted_unless_requested() {
+        let results = vec![
+            make_result(
+                "src/compat/session.rs",
+                Some("session"),
+                Some(SymbolType::Function),
+                "pub fn session() {}",
+            ),
+            make_result(
+                "src/session.rs",
+                Some("session"),
+                Some(SymbolType::Function),
+                "pub fn session() {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking("session handling", results, RankingStage::Initial);
+        assert_eq!(ranked[0].file_path, "src/session.rs");
+
+        let ranked = apply_query_ranking("legacy compat session", ranked, RankingStage::Initial);
+        assert_eq!(ranked[0].file_path, "src/compat/session.rs");
+    }
+
+    #[test]
+    fn version_intent_prefers_matching_path() {
+        let results = vec![
+            make_result(
+                "src/v3/router.rs",
+                Some("router"),
+                Some(SymbolType::Function),
+                "pub fn router() {}",
+            ),
+            make_result(
+                "src/v4/router.rs",
+                Some("router"),
+                Some(SymbolType::Function),
+                "pub fn router() {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking("v4 router", results, RankingStage::Initial);
+
+        assert_eq!(ranked[0].file_path, "src/v4/router.rs");
+    }
+
+    #[test]
+    fn declaration_files_and_reexport_barrels_are_demoted() {
+        let results = vec![
+            make_result(
+                "src/index.ts",
+                Some("index"),
+                Some(SymbolType::Module),
+                "export { Session } from './session'\nexport { Auth } from './auth'",
+            ),
+            make_result(
+                "src/session.d.ts",
+                Some("Session"),
+                Some(SymbolType::Interface),
+                "export interface Session {}",
+            ),
+            make_result(
+                "src/session.ts",
+                Some("Session"),
+                Some(SymbolType::Class),
+                "export class Session {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking("session implementation", results, RankingStage::Initial);
+
+        assert_eq!(ranked[0].file_path, "src/session.ts");
+    }
+
+    #[test]
+    fn definition_queries_boost_symbol_definitions() {
+        let results = vec![
+            make_result(
+                "src/parser.rs",
+                Some("PARSER"),
+                Some(SymbolType::Variable),
+                "static PARSER: Parser = Parser::new();",
+            ),
+            make_result(
+                "src/parser.rs",
+                Some("Parser"),
+                Some(SymbolType::Struct),
+                "pub struct Parser {}",
+            ),
+        ];
+
+        let ranked = apply_query_ranking("Parser definition", results, RankingStage::Initial);
+
+        assert_eq!(ranked[0].symbol_type, Some(SymbolType::Struct));
     }
 }

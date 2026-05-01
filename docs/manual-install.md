@@ -4,7 +4,11 @@ Use this when Vera cannot download ONNX Runtime or model files directly, for exa
 
 ## 1. Download The Files In A Browser
 
-For the default local stack, download:
+For Potion Code CPU, download:
+
+- [`minishlab/potion-code-16M`](https://huggingface.co/minishlab/potion-code-16M)
+
+For the Jina ONNX stack, download:
 
 - ONNX Runtime for your backend from the [Microsoft ONNX Runtime releases](https://github.com/microsoft/onnxruntime/releases)
 - [`jinaai/jina-embeddings-v5-text-nano-retrieval`](https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval)
@@ -25,6 +29,7 @@ Default paths:
 | --- | --- |
 | ONNX Runtime CPU | `<vera-data>/lib/` |
 | ONNX Runtime GPU backend | `<vera-data>/lib/<backend>/` such as `<vera-data>/lib/cuda/` |
+| Potion Code | `<vera-data>/models/minishlab/potion-code-16M/` |
 | Jina embeddings | `<vera-data>/models/jinaai/jina-embeddings-v5-text-nano-retrieval/` |
 | CodeRankEmbed | `<vera-data>/models/Zenabius/CodeRankEmbed-onnx/` |
 | Local reranker | `<vera-data>/models/jinaai/jina-reranker-v2-base-multilingual/` |
@@ -33,6 +38,7 @@ Expected filenames for the curated presets:
 
 | Model | Files |
 | --- | --- |
+| Potion Code | `tokenizer.json`, `model.safetensors`, `config.json` |
 | Jina embeddings | `onnx/model_quantized.onnx`, `onnx/model_quantized.onnx_data`, `tokenizer.json` (`vera setup --onnx-jina-coreml` and `vera repair --onnx-jina-coreml` use `onnx/model_fp16.onnx` and `onnx/model_fp16.onnx_data` instead) |
 | CodeRankEmbed | `onnx/model_quantized.onnx`, `tokenizer.json` |
 | Jina reranker | `onnx/model_quantized.onnx`, `tokenizer.json` (`vera setup --onnx-jina-coreml` and `vera repair --onnx-jina-coreml` use `onnx/model_fp16.onnx` instead) |
@@ -42,6 +48,8 @@ If you want to keep a custom embedding model somewhere else, skip copying it int
 ## 3. Re-run Setup Or Repair
 
 ```bash
+vera setup --potion-code
+# or
 vera setup --onnx-jina-cuda
 # or
 vera setup --onnx-jina-cuda --code-rank-embed

@@ -1,6 +1,6 @@
 # Installation Guide
 
-Complete setup instructions for Vera. For the short version, see the [Quick Start](../README.md#quick-start) in the README.
+For the short path, use the [Quick Start](../README.md#quick-start) in the README.
 
 ## Install the Binary
 
@@ -40,9 +40,9 @@ CPU, CUDA, ROCm, and OpenVINO images available. See [docker.md](docker.md).
 
 ## Set Up a Backend
 
-Vera's index and search always run locally. The "backend" only controls where embedding and reranking models run. There are two modes:
+Vera's index and search always run locally. The "backend" only controls where embedding and reranking models run.
 
-### API Mode (recommended)
+### API Mode
 
 Models run on a remote server. No downloads, no GPU required, works on any hardware. You just need an API key from any OpenAI-compatible provider.
 
@@ -78,22 +78,31 @@ vera setup --api
 
 Only model calls leave your machine. Indexing, storage, and search remain local.
 
-### Local Mode
+### CPU Local Mode
 
-Models run on your machine using ONNX Runtime. Vera downloads two small models (~100 MB total) and auto-detects your GPU. No API key needed, fully offline after setup.
+Potion Code runs on CPU with static embeddings. It does not need ONNX Runtime or a GPU.
+
+```bash
+vera setup --potion-code
+```
+
+Use this for CPU-only machines when you want local model calls. The interactive `vera setup` wizard selects Potion Code when it does not detect a supported GPU.
+
+### GPU Local Mode
+
+Models run on your machine using ONNX Runtime. Vera downloads the Jina embedding model and the local reranker, then uses your GPU provider. No API key needed, fully offline after setup.
 
 **Pick the right command for your hardware:**
 
 | You have | Command | What happens |
 |----------|---------|-------------|
 | Not sure | `vera setup` | Interactive wizard auto-detects your hardware |
+| CPU only | `vera setup --potion-code` | Uses Potion Code static embeddings |
 | Apple Silicon (M1/M2/M3/M4) | `vera setup --onnx-jina-coreml` | Uses CoreML GPU acceleration |
 | NVIDIA GPU | `vera setup --onnx-jina-cuda` | Uses CUDA. Fastest local option |
 | AMD GPU (Linux) | `vera setup --onnx-jina-rocm` | Uses ROCm |
 | Intel GPU (Linux) | `vera setup --onnx-jina-openvino` | Uses OpenVINO |
 | DirectX 12 GPU (Windows) | `vera setup --onnx-jina-directml` | Uses DirectML |
-
-> **Note:** Local mode on CPU (without a GPU) works but is slow for initial indexing. If you don't have a GPU, API mode is the better choice. After the first index, `vera update .` only re-embeds changed files, so incremental updates are fast even on CPU.
 
 For custom ONNX models, GPU-specific tuning, and inference speed comparisons, see [models.md](models.md).
 
@@ -101,7 +110,7 @@ For custom ONNX models, GPU-specific tuning, and inference speed comparisons, se
 
 ```bash
 vera doctor          # checks config, models, and connectivity
-vera doctor --probe  # deeper ONNX runtime diagnostics
+vera doctor --probe  # deeper local backend diagnostics
 ```
 
 ## Index and Search
@@ -190,7 +199,7 @@ vera uninstall   # removes config dir, skill files, PATH shim
 ## Troubleshooting
 
 - Run `vera doctor` to diagnose issues.
-- Run `vera doctor --probe` for deeper ONNX diagnostics.
+- Run `vera doctor --probe` for deeper local backend diagnostics.
 - Wrong backend? Run `vera setup` again with a different flag.
-- Slow indexing on CPU? Switch to `--api` mode or use a GPU backend.
+- Slow Jina indexing on CPU? Switch to `--potion-code`, `--api`, or a GPU backend.
 - See [troubleshooting.md](troubleshooting.md) for more.

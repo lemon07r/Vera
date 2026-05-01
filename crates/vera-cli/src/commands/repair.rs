@@ -16,7 +16,7 @@ pub fn run(backend: Option<InferenceBackend>, api: bool, json_output: bool) -> a
     } else {
         vera_core::config::resolve_backend(None)
     };
-    let local_embedding_model = if effective_backend.is_local() {
+    let local_embedding_model = if effective_backend.is_onnx() {
         state::saved_local_embedding_model()?
             .or_else(|| Some(vera_core::local_models::LocalEmbeddingModelConfig::default()))
     } else {

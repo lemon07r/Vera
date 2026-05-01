@@ -24,7 +24,7 @@ pub(crate) struct SetupReport {
     indexed_path: Option<String>,
 }
 
-/// `backend`: Some(OnnxJina(..)) for local, None + api=true for API, None + api=false defaults to local CPU.
+/// `backend`: Some(local backend) for local, None + api=true for API, None + api=false defaults to auto-detect.
 pub fn run(
     backend: Option<InferenceBackend>,
     api: bool,
@@ -48,17 +48,17 @@ pub fn run(
     } else if json_output || yes {
         let detected = detect_gpu();
         if !json_output {
-            eprintln!("Auto-detected backend: {detected}. Use a --onnx-jina-* flag to override.");
+            eprintln!("Auto-detected backend: {detected}. Use a backend flag to override.");
         }
         detected
     } else {
         prompt_backend()?
     };
-    if !effective_backend.is_local() && embedding_flags.any_set() {
+    if !effective_backend.is_onnx() && embedding_flags.any_set() {
         bail!("custom local embedding flags can only be used with local ONNX backends");
     }
     let local_embedding_model = effective_backend
-        .is_local()
+        .is_onnx()
         .then(|| resolve_local_embedding_model(&embedding_flags))
         .transpose()?;
 
@@ -92,7 +92,7 @@ fn run_wizard() -> anyhow::Result<()> {
     cliclack::log::step("Step 1: Backend")?;
     let effective_backend = prompt_backend_select()?;
     let local_embedding_model = effective_backend
-        .is_local()
+        .is_onnx()
         .then(LocalEmbeddingModelConfig::default);
 
     if effective_backend == InferenceBackend::Api {
@@ -152,38 +152,54 @@ pub(crate) fn configure_backend(
     let onnx_runtime_ready;
     let mut local_embedding_summary = None;
 
-    if let InferenceBackend::OnnxJina(ep) = effective_backend {
-        let local_embedding_model = local_embedding_model.unwrap_or_default();
-        let rt = tokio::runtime::Runtime::new()
-            .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
-        let prefetched = rt.block_on(vera_core::local_models::prepare_local_models_for_ep(
-            ep,
-            &local_embedding_model,
-        ))?;
-        models_prefetched = prefetched.len();
-        // Use the downloaded library path (first prefetched file) for the readiness check.
-        onnx_runtime_ready = Some(
-            vera_core::local_models::ensure_ort_runtime(prefetched.first().map(|p| p.as_path()))
+    match effective_backend {
+        InferenceBackend::OnnxJina(ep) => {
+            let local_embedding_model = local_embedding_model.unwrap_or_default();
+            let rt = tokio::runtime::Runtime::new()
+                .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
+            let prefetched = rt.block_on(vera_core::local_models::prepare_local_models_for_ep(
+                ep,
+                &local_embedding_model,
+            ))?;
+            models_prefetched = prefetched.len();
+            // Use the downloaded library path (first prefetched file) for the readiness check.
+            onnx_runtime_ready = Some(
+                vera_core::local_models::ensure_ort_runtime(
+                    prefetched.first().map(|p| p.as_path()),
+                )
                 .is_ok(),
-        );
-        state::save_backend(effective_backend)?;
-        state::save_local_embedding_model(&local_embedding_model)?;
-        state::apply_saved_env_force()?;
-        local_embedding_summary = Some(local_embedding_model.display_name());
-    } else {
-        let embedding = read_required_api_env(
-            "EMBEDDING_MODEL_BASE_URL",
-            "EMBEDDING_MODEL_ID",
-            "EMBEDDING_MODEL_API_KEY",
-        )?;
-        let reranker = read_optional_api_env(
-            "RERANKER_MODEL_BASE_URL",
-            "RERANKER_MODEL_ID",
-            "RERANKER_MODEL_API_KEY",
-        )?;
-        state::save_api_setup(&embedding, reranker.as_ref())?;
-        state::apply_saved_env_force()?;
-        onnx_runtime_ready = None;
+            );
+            state::save_backend(effective_backend)?;
+            state::save_local_embedding_model(&local_embedding_model)?;
+            state::apply_saved_env_force()?;
+            local_embedding_summary = Some(local_embedding_model.display_name());
+        }
+        InferenceBackend::PotionCode => {
+            let rt = tokio::runtime::Runtime::new()
+                .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
+            rt.block_on(vera_core::local_models::ensure_potion_code_assets())?;
+            models_prefetched = vera_core::local_models::inspect_potion_code_model_files()?.len();
+            onnx_runtime_ready = None;
+            state::save_backend(effective_backend)?;
+            state::apply_saved_env_force()?;
+            local_embedding_summary =
+                Some(vera_core::local_models::potion_code_model_name().to_string());
+        }
+        InferenceBackend::Api => {
+            let embedding = read_required_api_env(
+                "EMBEDDING_MODEL_BASE_URL",
+                "EMBEDDING_MODEL_ID",
+                "EMBEDDING_MODEL_API_KEY",
+            )?;
+            let reranker = read_optional_api_env(
+                "RERANKER_MODEL_BASE_URL",
+                "RERANKER_MODEL_ID",
+                "RERANKER_MODEL_API_KEY",
+            )?;
+            state::save_api_setup(&embedding, reranker.as_ref())?;
+            state::apply_saved_env_force()?;
+            onnx_runtime_ready = None;
+        }
     }
 
     if state::load_saved_config()?.install_method.is_none() {
@@ -227,14 +243,12 @@ pub(crate) fn configure_backend(
                 println!("  Embedding model:      {model}");
             }
             println!("  Prefetched model files: {}", report.models_prefetched);
-            println!(
-                "  ONNX Runtime ready:   {}",
-                if report.onnx_runtime_ready == Some(true) {
-                    "yes"
-                } else {
-                    "no"
-                }
-            );
+            if let Some(ready) = report.onnx_runtime_ready {
+                println!(
+                    "  ONNX Runtime ready:   {}",
+                    if ready { "yes" } else { "no" }
+                );
+            }
         }
         if let Some(path) = report.indexed_path.as_deref() {
             println!("  Indexed path:         {path}");
@@ -251,7 +265,7 @@ pub(crate) fn configure_backend(
 }
 
 /// Probe the system for a usable GPU and return the best local backend.
-/// Falls back to CPU if nothing is detected.
+/// Falls back to Potion Code on CPU if nothing is detected.
 fn detect_gpu() -> InferenceBackend {
     // NVIDIA: check for nvidia-smi or vendor ID (0x10de) in sysfs
     let has_nvidia = std::process::Command::new("nvidia-smi")
@@ -310,7 +324,7 @@ fn detect_gpu() -> InferenceBackend {
         return InferenceBackend::OnnxJina(OnnxExecutionProvider::DirectMl);
     }
 
-    InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu)
+    InferenceBackend::PotionCode
 }
 
 /// Show an interactive backend selection menu. Auto-detect is the default.
@@ -329,7 +343,9 @@ fn prompt_backend_select() -> anyhow::Result<InferenceBackend> {
         InferenceBackend::OnnxJina(OnnxExecutionProvider::Rocm) => "AMD GPU detected",
         InferenceBackend::OnnxJina(OnnxExecutionProvider::OpenVino) => "Intel GPU detected",
         InferenceBackend::OnnxJina(OnnxExecutionProvider::DirectMl) => "DirectX 12 GPU assumed",
-        _ => "no GPU detected, will use CPU",
+        InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu) => "Jina ONNX CPU selected",
+        InferenceBackend::PotionCode => "no GPU detected, will use Potion CPU",
+        InferenceBackend::Api => "API mode",
     };
 
     let backend: InferenceBackend = cliclack::select("Select a backend")
@@ -342,6 +358,11 @@ fn prompt_backend_select() -> anyhow::Result<InferenceBackend> {
             InferenceBackend::Api,
             "API mode",
             "remote OpenAI-compatible endpoints",
+        )
+        .item(
+            InferenceBackend::PotionCode,
+            "Potion Code CPU",
+            "CPU-only machines",
         )
         .item(
             InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda),
@@ -370,8 +391,8 @@ fn prompt_backend_select() -> anyhow::Result<InferenceBackend> {
         )
         .item(
             InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu),
-            "CPU",
-            "slow, not recommended",
+            "Jina ONNX CPU",
+            "compatibility path",
         )
         .interact()?;
 

@@ -10,7 +10,7 @@ use anyhow::Result;
 use crate::config::{InferenceBackend, VeraConfig};
 use crate::types::{SearchFilters, SearchResult};
 
-use super::search_service::{SearchTimings, execute_search};
+use super::search_service::{SearchContext, SearchTimings};
 
 /// Run an iterative (multi-hop) search.
 ///
@@ -27,10 +27,33 @@ pub fn execute_iterative_search(
     backend: InferenceBackend,
     hops: usize,
 ) -> Result<(Vec<SearchResult>, SearchTimings)> {
+    let rt = tokio::runtime::Runtime::new()?;
+    let context = rt.block_on(SearchContext::new(config, backend));
+    rt.block_on(execute_iterative_search_with_context(
+        &context,
+        index_dir,
+        query,
+        config,
+        filters,
+        result_limit,
+        hops,
+    ))
+}
+
+pub async fn execute_iterative_search_with_context(
+    context: &SearchContext,
+    index_dir: &Path,
+    query: &str,
+    config: &VeraConfig,
+    filters: &SearchFilters,
+    result_limit: usize,
+    hops: usize,
+) -> Result<(Vec<SearchResult>, SearchTimings)> {
     let fetch_per_hop = result_limit;
 
-    let (initial_results, timings) =
-        execute_search(index_dir, query, config, filters, fetch_per_hop, backend)?;
+    let (initial_results, timings) = context
+        .search(index_dir, query, config, filters, fetch_per_hop)
+        .await?;
 
     if hops == 0 || initial_results.is_empty() {
         return Ok((initial_results, timings));
@@ -64,14 +87,9 @@ pub fn execute_iterative_search(
         .collect();
 
     for symbol in &follow_up_symbols {
-        let (hop_results, _) = execute_search(
-            index_dir,
-            symbol,
-            config,
-            filters,
-            fetch_per_hop / 2,
-            backend,
-        )?;
+        let (hop_results, _) = context
+            .search(index_dir, symbol, config, filters, fetch_per_hop / 2)
+            .await?;
 
         for r in hop_results {
             let key = result_key(&r);

@@ -12,6 +12,8 @@ use tracing::warn;
 
 use crate::chunk_text::file_name;
 use crate::config::{InferenceBackend, VeraConfig};
+use crate::embedding::{CachedEmbeddingProvider, DynamicProvider, EmbeddingProvider};
+use crate::retrieval::dynamic_reranker::DynamicReranker;
 use crate::retrieval::hybrid::compute_vector_candidates;
 use crate::retrieval::query_classifier::{QueryType, classify_query, params_for_query_type};
 use crate::retrieval::query_utils::{
@@ -35,6 +37,219 @@ pub struct SearchTimings {
     pub total: Option<Duration>,
 }
 
+/// Reusable search dependencies for a process or command invocation.
+///
+/// Local backends can take hundreds of milliseconds or seconds to initialize.
+/// Keeping the provider and reranker here lets CLI multi-query search, deep
+/// search, MCP, and eval reuse loaded models across repeated queries.
+pub struct SearchContext {
+    provider: Option<CachedEmbeddingProvider<DynamicProvider>>,
+    model_name: Option<String>,
+    provider_error: Option<String>,
+    reranker: Option<DynamicReranker>,
+}
+
+impl SearchContext {
+    pub async fn new(config: &VeraConfig, backend: InferenceBackend) -> Self {
+        let (provider, model_name, provider_error) =
+            match crate::embedding::create_dynamic_provider(config, backend).await {
+                Ok((provider, model_name)) => (
+                    Some(CachedEmbeddingProvider::new(provider, 512)),
+                    Some(model_name),
+                    None,
+                ),
+                Err(err) => {
+                    warn!(
+                        "Failed to create embedding provider ({}), using BM25-only search",
+                        err
+                    );
+                    (None, None, Some(err.to_string()))
+                }
+            };
+
+        let reranker = if provider.is_some() {
+            crate::retrieval::create_dynamic_reranker(config, backend)
+                .await
+                .unwrap_or_else(|err| {
+                    warn!("Failed to create reranker ({})", err);
+                    None
+                })
+        } else {
+            None
+        };
+
+        Self {
+            provider,
+            model_name,
+            provider_error,
+            reranker,
+        }
+    }
+
+    pub fn bm25_only() -> Self {
+        Self {
+            provider: None,
+            model_name: None,
+            provider_error: None,
+            reranker: None,
+        }
+    }
+
+    pub fn embedding_provider(&self) -> Option<&CachedEmbeddingProvider<DynamicProvider>> {
+        self.provider.as_ref()
+    }
+
+    pub fn model_name(&self) -> Option<&str> {
+        self.model_name.as_deref()
+    }
+
+    pub async fn search(
+        &self,
+        index_dir: &Path,
+        query: &str,
+        config: &VeraConfig,
+        filters: &SearchFilters,
+        result_limit: usize,
+    ) -> Result<(Vec<SearchResult>, SearchTimings)> {
+        let total_start = Instant::now();
+        let fetch_limit = compute_fetch_limit(query, filters, result_limit);
+
+        let Some(provider) = self.provider.as_ref() else {
+            if let Some(error) = self.provider_error.as_deref() {
+                warn!(
+                    "embedding provider unavailable ({}), using BM25-only search",
+                    error
+                );
+            }
+            return run_bm25_only(
+                index_dir,
+                query,
+                filters,
+                fetch_limit,
+                result_limit,
+                total_start,
+            );
+        };
+
+        let mut stored_dim = config.embedding.max_stored_dim;
+
+        // Check metadata mismatch
+        let metadata_path = index_dir.join("metadata.db");
+        if let Ok(metadata_store) = crate::storage::metadata::MetadataStore::open(&metadata_path) {
+            if let (Some(s_model), Some(s_dim)) = (
+                metadata_store.get_index_meta("model_name").unwrap_or(None),
+                metadata_store
+                    .get_index_meta("embedding_dim")
+                    .unwrap_or(None),
+            ) {
+                if let Some(model_name) = self.model_name.as_deref() {
+                    if !crate::config::model_names_match(&s_model, model_name) {
+                        warn!(
+                            "Index model '{}' does not match active model '{}'; using BM25-only search",
+                            s_model, model_name
+                        );
+                        return run_bm25_only(
+                            index_dir,
+                            query,
+                            filters,
+                            fetch_limit,
+                            result_limit,
+                            total_start,
+                        );
+                    }
+                }
+                if let Ok(dim) = s_dim.parse::<usize>() {
+                    if let Some(provider_dim) = provider.expected_dim() {
+                        if provider_dim < dim {
+                            warn!(
+                                "Index dimension {} exceeds provider dimension {}; using BM25-only search",
+                                dim, provider_dim
+                            );
+                            return run_bm25_only(
+                                index_dir,
+                                query,
+                                filters,
+                                fetch_limit,
+                                result_limit,
+                                total_start,
+                            );
+                        }
+                    }
+                    stored_dim = dim;
+                }
+            }
+        }
+
+        // Create optional reranker.
+        let reranker_enabled = self.reranker.is_some() && !should_skip_reranking(query, filters);
+
+        // Classify query to adapt fusion parameters.
+        let query_type = classify_query(query);
+        let query_params = params_for_query_type(query_type);
+        let rrf_k = query_params.rrf_k;
+        let vector_candidates = effective_vector_candidates(fetch_limit, query_params);
+        let rerank_candidates = effective_rerank_candidates(
+            config.retrieval.rerank_candidates,
+            fetch_limit,
+            query,
+            filters,
+        );
+
+        let ranking_stage = if reranker_enabled {
+            RankingStage::PostRerank
+        } else {
+            RankingStage::Initial
+        };
+
+        let (results, hybrid_timings) = if reranker_enabled {
+            let reranker = self
+                .reranker
+                .as_ref()
+                .expect("reranker_enabled requires an initialized reranker");
+            search_hybrid_reranked(
+                index_dir,
+                provider,
+                reranker,
+                query,
+                fetch_limit,
+                rrf_k,
+                stored_dim,
+                rerank_candidates.max(fetch_limit),
+                vector_candidates,
+            )
+            .await?
+        } else {
+            search_hybrid(
+                index_dir,
+                provider,
+                query,
+                fetch_limit,
+                rrf_k,
+                stored_dim,
+                vector_candidates,
+            )
+            .await?
+        };
+
+        let mut timings = SearchTimings {
+            embedding: hybrid_timings.embedding,
+            bm25: hybrid_timings.bm25,
+            vector: hybrid_timings.vector,
+            fusion: hybrid_timings.fusion,
+            reranking: hybrid_timings.reranking,
+            ..Default::default()
+        };
+
+        let aug_start = Instant::now();
+        let results =
+            augment_exact_match_candidates(index_dir, query, results, ranking_stage, filters)?;
+        timings.augmentation = Some(aug_start.elapsed());
+
+        timings.total = Some(total_start.elapsed());
+        Ok((apply_filters(results, filters, result_limit), timings))
+    }
+}
+
 /// Execute a search against the index at `index_dir`.
 ///
 /// Attempts hybrid search (BM25 + vector + optional reranking). Falls
@@ -47,150 +262,9 @@ pub fn execute_search(
     result_limit: usize,
     backend: InferenceBackend,
 ) -> Result<(Vec<SearchResult>, SearchTimings)> {
-    let total_start = Instant::now();
-    let fetch_limit = compute_fetch_limit(query, filters, result_limit);
     let rt = tokio::runtime::Runtime::new()?;
-
-    // Try to create embedding provider for hybrid search.
-    let (provider, model_name) =
-        match rt.block_on(crate::embedding::create_dynamic_provider(config, backend)) {
-            Ok(res) => res,
-            Err(e) => {
-                warn!(
-                    "Failed to create embedding provider ({}), using BM25-only search",
-                    e
-                );
-                return run_bm25_only(
-                    index_dir,
-                    query,
-                    filters,
-                    fetch_limit,
-                    result_limit,
-                    total_start,
-                );
-            }
-        };
-
-    let mut stored_dim = config.embedding.max_stored_dim;
-
-    // Check metadata mismatch
-    let metadata_path = index_dir.join("metadata.db");
-    if let Ok(metadata_store) = crate::storage::metadata::MetadataStore::open(&metadata_path) {
-        if let (Some(s_model), Some(s_dim)) = (
-            metadata_store.get_index_meta("model_name").unwrap_or(None),
-            metadata_store
-                .get_index_meta("embedding_dim")
-                .unwrap_or(None),
-        ) {
-            if !crate::config::model_names_match(&s_model, &model_name) {
-                warn!(
-                    "Index model '{}' does not match active model '{}'; using BM25-only search",
-                    s_model, model_name
-                );
-                return run_bm25_only(
-                    index_dir,
-                    query,
-                    filters,
-                    fetch_limit,
-                    result_limit,
-                    total_start,
-                );
-            }
-            if let Ok(dim) = s_dim.parse::<usize>() {
-                use crate::embedding::EmbeddingProvider;
-                if let Some(provider_dim) = provider.expected_dim() {
-                    if provider_dim != dim {
-                        warn!(
-                            "Index dimension {} does not match provider dimension {}; using BM25-only search",
-                            dim, provider_dim
-                        );
-                        return run_bm25_only(
-                            index_dir,
-                            query,
-                            filters,
-                            fetch_limit,
-                            result_limit,
-                            total_start,
-                        );
-                    }
-                }
-                stored_dim = dim;
-            }
-        }
-    }
-
-    let provider = crate::embedding::CachedEmbeddingProvider::new(provider, 512);
-
-    // Create optional reranker.
-    let reranker = rt
-        .block_on(crate::retrieval::create_dynamic_reranker(config, backend))
-        .unwrap_or_else(|e| {
-            warn!("Failed to create reranker ({})", e);
-            None
-        });
-    let reranker_enabled = reranker.is_some() && !should_skip_reranking(query, filters);
-
-    // Classify query to adapt fusion parameters.
-    let query_type = classify_query(query);
-    let query_params = params_for_query_type(query_type);
-    let rrf_k = query_params.rrf_k;
-    let vector_candidates = effective_vector_candidates(fetch_limit, query_params);
-    let rerank_candidates = effective_rerank_candidates(
-        config.retrieval.rerank_candidates,
-        fetch_limit,
-        query,
-        filters,
-    );
-
-    let ranking_stage = if reranker_enabled {
-        RankingStage::PostRerank
-    } else {
-        RankingStage::Initial
-    };
-
-    let (results, hybrid_timings) = if reranker_enabled {
-        let reranker = reranker
-            .as_ref()
-            .expect("reranker_enabled requires an initialized reranker");
-        rt.block_on(search_hybrid_reranked(
-            index_dir,
-            &provider,
-            reranker,
-            query,
-            fetch_limit,
-            rrf_k,
-            stored_dim,
-            rerank_candidates.max(fetch_limit),
-            vector_candidates,
-        ))?
-    } else {
-        rt.block_on(search_hybrid(
-            index_dir,
-            &provider,
-            query,
-            fetch_limit,
-            rrf_k,
-            stored_dim,
-            vector_candidates,
-        ))?
-    };
-
-    let mut timings = SearchTimings {
-        embedding: hybrid_timings.embedding,
-        bm25: hybrid_timings.bm25,
-        vector: hybrid_timings.vector,
-        fusion: hybrid_timings.fusion,
-        reranking: hybrid_timings.reranking,
-        ..Default::default()
-    };
-
-    let aug_start = Instant::now();
-    let results =
-        augment_exact_match_candidates(index_dir, query, results, ranking_stage, filters)?;
-    timings.augmentation = Some(aug_start.elapsed());
-
-    timings.total = Some(total_start.elapsed());
-    Ok((apply_filters(results, filters, result_limit), timings))
+    let context = rt.block_on(SearchContext::new(config, backend));
+    rt.block_on(context.search(index_dir, query, config, filters, result_limit))
 }
 
 /// Compute how many candidates to keep through fusion before final truncation.
@@ -570,12 +644,48 @@ fn chunk_to_result(chunk: crate::types::Chunk) -> SearchResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::storage::bm25::{Bm25Document, Bm25Index};
     use crate::storage::metadata::MetadataStore;
     use crate::types::{Chunk, Language};
+    use std::ffi::OsString;
+    use std::sync::Mutex;
     use tempfile::tempdir;
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+    const EMBEDDING_ENV_KEYS: [&str; 3] = [
+        "EMBEDDING_MODEL_BASE_URL",
+        "EMBEDDING_MODEL_ID",
+        "EMBEDDING_MODEL_API_KEY",
+    ];
+
+    fn set_test_embedding_env(model_id: &str) -> Vec<(&'static str, Option<OsString>)> {
+        let saved = EMBEDDING_ENV_KEYS
+            .iter()
+            .map(|key| (*key, std::env::var_os(key)))
+            .collect::<Vec<_>>();
+        unsafe {
+            std::env::set_var("EMBEDDING_MODEL_BASE_URL", "http://127.0.0.1:0");
+            std::env::set_var("EMBEDDING_MODEL_ID", model_id);
+            std::env::set_var("EMBEDDING_MODEL_API_KEY", "dummy-key");
+        }
+        saved
+    }
+
+    fn restore_test_env(saved: Vec<(&'static str, Option<OsString>)>) {
+        unsafe {
+            for (key, value) in saved {
+                if let Some(value) = value {
+                    std::env::set_var(key, value);
+                } else {
+                    std::env::remove_var(key);
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_dimension_mismatch_and_inference() {
+        let _env_guard = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
         let dir = tempdir().unwrap();
         let index_dir = dir.path();
 
@@ -618,12 +728,8 @@ mod tests {
         }
 
         // 2. Test metadata-dimension inference path (API provider returns None for expected_dim)
-        // Set up dummy environment variables for API provider to bypass missing keys error
-        unsafe {
-            std::env::set_var("EMBEDDING_MODEL_BASE_URL", "http://127.0.0.1:0");
-            std::env::set_var("EMBEDDING_MODEL_ID", "dummy-api-model");
-            std::env::set_var("EMBEDDING_MODEL_API_KEY", "dummy-key");
-        }
+        // Set up dummy environment variables for API provider construction.
+        let saved_env = set_test_embedding_env("dummy-api-model");
 
         store
             .set_index_meta("model_name", "dummy-api-model")
@@ -643,6 +749,60 @@ mod tests {
             crate::config::InferenceBackend::Api,
         );
         assert!(res.is_ok(), "Expected Ok but got {:?}", res);
+        restore_test_env(saved_env);
+    }
+
+    #[test]
+    fn model_metadata_mismatch_falls_back_to_bm25() {
+        let _env_guard = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let saved_env = set_test_embedding_env("active-api-model");
+        let dir = tempdir().unwrap();
+        let index_dir = dir.path();
+
+        let store = MetadataStore::open(&index_dir.join("metadata.db")).unwrap();
+        store
+            .insert_chunks(&[Chunk {
+                id: "auth:0".to_string(),
+                file_path: "src/auth.rs".to_string(),
+                line_start: 1,
+                line_end: 4,
+                content: "pub fn authenticate_user() -> bool { true }".to_string(),
+                language: Language::Rust,
+                symbol_type: Some(SymbolType::Function),
+                symbol_name: Some("authenticate_user".to_string()),
+            }])
+            .unwrap();
+        store.set_index_meta("model_name", "indexed-model").unwrap();
+        store.set_index_meta("embedding_dim", "64").unwrap();
+
+        let bm25 = Bm25Index::open(&index_dir.join("bm25")).unwrap();
+        bm25.insert_batch(&[Bm25Document {
+            chunk_id: "auth:0",
+            file_path: "src/auth.rs",
+            content: "pub fn authenticate_user() -> bool { true }",
+            symbol_name: Some("authenticate_user"),
+            language: "rust",
+        }])
+        .unwrap();
+
+        let mut config = VeraConfig::default();
+        config.embedding.timeout_secs = 1;
+        config.embedding.max_retries = 0;
+        let filters = SearchFilters::default();
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let context = rt.block_on(SearchContext::new(
+            &config,
+            crate::config::InferenceBackend::Api,
+        ));
+
+        let (results, timings) = rt
+            .block_on(context.search(index_dir, "authenticate user", &config, &filters, 10))
+            .unwrap();
+
+        assert_eq!(results[0].file_path, "src/auth.rs");
+        assert!(timings.bm25.is_some());
+        assert!(timings.vector.is_none());
+        restore_test_env(saved_env);
     }
 
     #[test]

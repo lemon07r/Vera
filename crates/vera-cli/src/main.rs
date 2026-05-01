@@ -152,18 +152,20 @@ enum Commands {
     /// optional project indexing in one guided flow.
     #[command(long_about = "Interactive first-time setup wizard.\n\n\
                       Walks through three steps:\n  \
-                      1. Backend selection (ONNX runtime + GPU, or API mode)\n  \
+                      1. Backend selection (Potion CPU, ONNX runtime + GPU, or API mode)\n  \
                       2. Agent skill installation (choose scope and agents)\n  \
                       3. Optional project indexing\n\n\
                       For backend-only changes, use `vera backend`. For skill-only \
                       changes, use `vera agent install`.\n\n\
                       Pass flags to skip the interactive wizard:\n  \
+                      vera setup --potion-code         # CPU-only local mode\n  \
                       vera setup --onnx-jina-cuda      # NVIDIA GPU, skip wizard\n  \
                       vera setup --api                 # API mode from env vars\n  \
                       vera setup --yes                 # Auto-detect GPU, no prompts\n\n\
                       Examples:\n  \
                       vera setup                       # Full interactive wizard\n  \
-                      vera setup --onnx-jina-cuda --index .   # GPU + index, no wizard")]
+                      vera setup --potion-code --index .       # CPU + index, no wizard\n  \
+                      vera setup --onnx-jina-cuda --index .    # GPU + index, no wizard")]
     Setup {
         #[command(flatten)]
         backend: helpers::LocalBackendFlags,
@@ -180,12 +182,11 @@ enum Commands {
         yes: bool,
     },
 
-    /// Select and manage the ONNX runtime and model backend.
+    /// Select and manage the model backend.
     ///
     /// Use this to switch between GPU providers, change embedding models,
     /// or reconfigure API mode without running the full setup wizard.
-    #[command(
-        long_about = "Select and manage the ONNX runtime and model backend.\n\n\
+    #[command(long_about = "Select and manage the model backend.\n\n\
                       This is the focused backend configuration command. It handles \
                       runtime selection, model downloads, and API credential persistence \
                       without touching agent skills or project indexes.\n\n\
@@ -193,11 +194,11 @@ enum Commands {
                       GPU as the default.\n\n\
                       Examples:\n  \
                       vera backend                     # Interactive backend selection\n  \
+                      vera backend --potion-code        # CPU-only local mode\n  \
                       vera backend --onnx-jina-cuda    # NVIDIA GPU (skip menu)\n  \
                       vera backend --code-rank-embed   # Switch to CodeRankEmbed model\n  \
                       vera backend --api               # Persist API credentials from env\n  \
-                      vera backend --yes               # Auto-detect GPU, no prompts"
-    )]
+                      vera backend --yes               # Auto-detect GPU, no prompts")]
     Backend {
         #[command(flatten)]
         backend: helpers::LocalBackendFlags,
@@ -219,15 +220,15 @@ enum Commands {
         long_about = "Inspect the current Vera setup for common configuration issues.\n\n\
                       Checks the persisted config, effective mode, local runtime or \
                       API environment variables, and whether the current repository \
-                      has a `.vera/` index. `--probe` adds a deeper read-only ONNX \
-                      session probe and never downloads or repairs missing assets.\n\n\
+                      has a `.vera/` index. `--probe` adds a deeper read-only local \
+                      backend probe and never downloads or repairs missing assets.\n\n\
                       Examples:\n  \
                       vera doctor\n  \
                       vera doctor --probe\n  \
                       vera doctor --json"
     )]
     Doctor {
-        /// Run a deeper read-only probe of local ONNX session init.
+        /// Run a deeper read-only probe of local backend init.
         #[arg(long, visible_alias = "deep")]
         probe: bool,
     },
@@ -237,13 +238,14 @@ enum Commands {
     /// Re-fetches missing local runtime/model assets for the selected local
     /// backend, or re-persists API configuration from the current environment.
     #[command(long_about = "Repair the configured Vera backend.\n\n\
-                      For local ONNX backends, this re-fetches missing runtime and \
+                      For local backends, this re-fetches missing runtime and \
                       model assets for the selected backend. For API mode, it re-saves \
                       the current API environment variables into Vera's config.\n\n\
                       This is a write operation. Use `vera doctor --probe` for a read-only \
                       diagnostic check.\n\n\
                       Examples:\n  \
                       vera repair\n  \
+                      vera repair --potion-code\n  \
                       vera repair --onnx-jina-cuda\n  \
                       vera repair --api")]
     Repair {
@@ -990,6 +992,30 @@ mod tests {
                 assert!(!backend.local);
             }
             _ => panic!("expected Index command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_potion_code_flag() {
+        let cli = Cli::parse_from(["vera", "setup", "--potion-code", "--yes"]);
+        match cli.command {
+            Commands::Setup { backend, .. } => {
+                assert!(backend.potion_code);
+                assert_eq!(
+                    backend.resolve(),
+                    vera_core::config::InferenceBackend::PotionCode
+                );
+            }
+            _ => panic!("expected Setup command"),
+        }
+    }
+
+    #[test]
+    fn cli_parses_potion_cpu_alias() {
+        let cli = Cli::parse_from(["vera", "repair", "--potion-cpu"]);
+        match cli.command {
+            Commands::Repair { backend, .. } => assert!(backend.potion_code),
+            _ => panic!("expected Repair command"),
         }
     }
 

@@ -9,7 +9,7 @@
 //! - `find_references` — exact callers or callees from the persisted call graph
 //! - `explain_path` — explain why a path is or is not indexed
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use serde::Serialize;
 use serde_json::Value;
@@ -19,6 +19,13 @@ use crate::watcher::WatchHandle;
 
 /// Global watcher handle. Kept alive for the lifetime of the MCP server process.
 static WATCHER: Mutex<Option<WatchHandle>> = Mutex::new(None);
+static SEARCH_CONTEXT: Mutex<Option<CachedSearchContext>> = Mutex::new(None);
+static SEARCH_RUNTIME: OnceLock<Result<tokio::runtime::Runtime, String>> = OnceLock::new();
+
+struct CachedSearchContext {
+    key: String,
+    context: Arc<vera_core::retrieval::search_service::SearchContext>,
+}
 
 /// Default total output budget for MCP responses (chars).
 const MCP_OUTPUT_BUDGET: usize = 20_000;
@@ -617,6 +624,14 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
         Ok(index_dir) => index_dir,
         Err(err) => return err,
     };
+    let rt = match search_runtime() {
+        Ok(rt) => rt,
+        Err(err) => return err,
+    };
+    let search_context = match cached_search_context(rt, &config, backend) {
+        Ok(context) => context,
+        Err(err) => return err,
+    };
 
     // Run each query, collect all results.
     let mut all_results: Vec<vera_core::types::SearchResult> = Vec::new();
@@ -632,14 +647,13 @@ fn handle_search_code(args: &Value) -> ToolCallResult {
             Some(i) => format!("intent: {i} | {query}"),
             None => query.clone(),
         };
-        match vera_core::retrieval::search_service::execute_search(
+        match rt.block_on(search_context.search(
             &index_dir,
             &effective_query,
             &config,
             &filters,
             per_query_limit,
-            backend,
-        ) {
+        )) {
             Ok((results, _timings)) => all_results.extend(results),
             Err(e) => return ToolCallResult::error(format!("Search failed: {e}")),
         }
@@ -710,6 +724,45 @@ fn create_runtime_and_provider() -> Result<
         .map_err(|e| ToolCallResult::error(format!("Failed to create embedding provider: {e}")))?;
 
     Ok((rt, provider, config, model_name))
+}
+
+fn search_runtime() -> Result<&'static tokio::runtime::Runtime, ToolCallResult> {
+    SEARCH_RUNTIME
+        .get_or_init(|| tokio::runtime::Runtime::new().map_err(|err| err.to_string()))
+        .as_ref()
+        .map_err(|err| ToolCallResult::error(format!("Failed to create runtime: {err}")))
+}
+
+fn cached_search_context(
+    rt: &tokio::runtime::Runtime,
+    config: &vera_core::config::VeraConfig,
+    backend: vera_core::config::InferenceBackend,
+) -> Result<Arc<vera_core::retrieval::search_service::SearchContext>, ToolCallResult> {
+    let key = search_context_key(config, backend);
+    let mut guard = SEARCH_CONTEXT.lock().unwrap_or_else(|e| e.into_inner());
+
+    if let Some(cached) = guard.as_ref().filter(|cached| cached.key == key) {
+        return Ok(Arc::clone(&cached.context));
+    }
+
+    let context = Arc::new(
+        rt.block_on(vera_core::retrieval::search_service::SearchContext::new(
+            config, backend,
+        )),
+    );
+    *guard = Some(CachedSearchContext {
+        key,
+        context: Arc::clone(&context),
+    });
+    Ok(context)
+}
+
+fn search_context_key(
+    config: &vera_core::config::VeraConfig,
+    backend: vera_core::config::InferenceBackend,
+) -> String {
+    let config_json = serde_json::to_string(config).unwrap_or_default();
+    format!("{backend}|{config_json}")
 }
 
 /// Resolve an optional path argument to a validated directory path.
@@ -1067,6 +1120,18 @@ mod tests {
         );
         // Should fail (either auto-index fails or embedding provider fails).
         assert!(result.is_error);
+    }
+
+    #[test]
+    fn cached_search_context_reuses_context_for_same_key() {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let config = vera_core::config::VeraConfig::default();
+        let backend = vera_core::config::InferenceBackend::Api;
+
+        let first = cached_search_context(&rt, &config, backend).unwrap();
+        let second = cached_search_context(&rt, &config, backend).unwrap();
+
+        assert!(Arc::ptr_eq(&first, &second));
     }
 
     #[test]

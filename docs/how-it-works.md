@@ -58,7 +58,7 @@ The top fused candidates are sent to a cross-encoder reranker. Unlike embeddings
 
 This is the most expensive stage but also the most impactful. Reranking lifts MRR@10 from 0.39 to 0.60, a 54% improvement in how often the best result appears at the top.
 
-With local models, the reranker runs on-device via ONNX Runtime. With API mode, it calls your configured endpoint. Obvious filename and path-dominant queries can skip reranking when lexical evidence is already decisive.
+With Jina ONNX local models, the reranker runs on-device via ONNX Runtime. Potion Code uses deterministic ranking heuristics instead of the ONNX reranker. With API mode, reranking calls your configured endpoint. Obvious filename and path-dominant queries can skip reranking when lexical evidence is already decisive.
 
 Large candidate sets are batched automatically to stay within the reranker's request limits. Oversized documents are truncated at newline boundaries before scoring. See [features.md](features.md#cross-encoder-reranking) for configuration details.
 
@@ -67,7 +67,7 @@ Large candidate sets are batched automatically to stay within the reranker's req
 Everything lives in two places:
 
 - **`.vera/`** in the project root. SQLite metadata (chunks, file hashes, file-level index state), Tantivy BM25 index, and sqlite-vec vector store. One directory per project.
-- **`$XDG_DATA_HOME/vera/models/`** (or `~/.vera/models/` on existing installs): cached ONNX models (only in local mode). Downloaded once by `vera setup`.
+- **`$XDG_DATA_HOME/vera/models/`** (or `~/.vera/models/` on existing installs): cached local model assets. Downloaded once by `vera setup`.
 
 The index is a single SQLite database file plus a Tantivy directory. No external services, no daemons, no background processes.
 

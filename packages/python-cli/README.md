@@ -15,7 +15,7 @@ pip install vera-ai
 ## Quick Start
 
 ```bash
-vera-ai setup --api
+vera-ai setup --potion-code
 vera-ai index .
 vera-ai search "authentication logic"
 ```
@@ -27,7 +27,8 @@ vera-ai search "authentication logic"
 | Task | Command |
 |------|---------|
 | Use the interactive setup wizard | `vera-ai setup` |
-| Use API mode (recommended) | `vera-ai setup --api` |
+| Use CPU-only local mode | `vera-ai setup --potion-code` |
+| Use API mode | `vera-ai setup --api` |
 | Use a local NVIDIA backend | `vera-ai setup --onnx-jina-cuda` |
 | Search semantically | `vera-ai search "authentication middleware"` |
 | Search only changed files | `vera-ai search "authentication middleware" --changed` |
@@ -38,7 +39,7 @@ vera-ai search "authentication logic"
 | Keep the index up to date | `vera-ai update .` |
 | Watch for file changes | `vera-ai watch .` |
 | Diagnose setup issues | `vera-ai doctor` |
-| Run the deeper ONNX probe | `vera-ai doctor --probe` |
+| Run the deeper local probe | `vera-ai doctor --probe` |
 | Repair missing local assets | `vera-ai repair` |
 | Inspect binary upgrades | `vera-ai upgrade` |
 | Install agent skills | `vera-ai agent install` |
@@ -53,4 +54,4 @@ For the full backend matrix, model options, Docker setup, and troubleshooting, s
 - **Git-aware scopes and index debugging**: `--changed` / `--since` / `--base`, `explain-path`, and index health in `vera-ai stats`
 - **Markdown codeblock output** by default with file paths, line ranges, and optional symbol info (use `--json` for compact JSON; `--raw` works with `vera-ai search`, `vera-ai grep`, and `vera-ai references`; `--timing` works with `vera-ai search` and `vera-ai grep`, before or after the subcommand)
 
-For full documentation, including custom local ONNX embedding models and manual install steps, see the [GitHub repo](https://github.com/lemon07r/Vera).
+For full documentation, including local model options and manual install steps, see the [GitHub repo](https://github.com/lemon07r/Vera).

@@ -21,6 +21,9 @@ pub mod local_provider;
 
 pub use local_provider::LocalEmbeddingProvider;
 
+pub mod model2vec_provider;
+pub use model2vec_provider::Model2VecProvider;
+
 /// Test helpers for creating mock embedding providers.
 #[cfg(test)]
 pub(crate) mod test_helpers {

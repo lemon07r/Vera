@@ -39,7 +39,8 @@ bunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai inst
 **2. Set up models** (pick one)
 ```bash
 vera setup                       # Interactive wizard (auto-detects your hardware)
-vera setup --api                 # API mode: works everywhere, no GPU needed (recommended)
+vera setup --potion-code         # CPU-only local mode
+vera setup --api                 # Remote OpenAI-compatible API mode
 vera setup --onnx-jina-coreml    # Apple Silicon (M1/M2/M3/M4)
 vera setup --onnx-jina-cuda      # NVIDIA GPU
 vera setup --onnx-jina-rocm      # AMD GPU (ROCm, Linux)
@@ -79,14 +80,15 @@ Vera itself is always local: the index lives in `.vera/` per project, config and
 | You have | Run this | What happens |
 |----------|----------|-------------|
 | Not sure | `vera setup` | Interactive wizard auto-detects your hardware |
-| Any hardware | `vera setup --api` | Models run remotely via any OpenAI-compatible API. No GPU needed. **Recommended.** |
+| CPU only | `vera setup --potion-code` | Downloads Potion Code static embeddings. No ONNX Runtime needed |
+| Remote models | `vera setup --api` | Models run via any OpenAI-compatible API |
 | Apple Silicon (M1/M2/M3/M4) | `vera setup --onnx-jina-coreml` | Downloads local models, uses CoreML GPU acceleration |
 | NVIDIA GPU | `vera setup --onnx-jina-cuda` | Downloads local models, uses CUDA. Fastest local option |
 | AMD GPU (Linux) | `vera setup --onnx-jina-rocm` | Downloads local models, uses ROCm |
 | Intel GPU (Linux) | `vera setup --onnx-jina-openvino` | Downloads local models, uses OpenVINO |
 | DirectX 12 GPU (Windows) | `vera setup --onnx-jina-directml` | Downloads local models, uses DirectML |
 
-API mode works with any OpenAI-compatible endpoint and needs no local compute. Local mode downloads two curated ONNX models and auto-detects your GPU; a GPU is recommended since CPU-only indexing is slow. After the first index, `vera update .` only re-embeds changed files, so incremental updates are fast on any backend. Full details: [docs/models.md](docs/models.md).
+API mode works with any OpenAI-compatible endpoint and needs no local compute. Potion Code is the CPU-first local backend. Jina ONNX is the GPU local backend and includes the local reranker. After the first index, `vera update .` only re-embeds changed files, so incremental updates are fast on any backend. Full details: [docs/models.md](docs/models.md).
 
 For step-by-step instructions, API provider options, Docker, building from source, and troubleshooting, see the full [Installation Guide](docs/installation.md).
 

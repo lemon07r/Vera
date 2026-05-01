@@ -1,0 +1,3236 @@
+{
+  "tool": "semble",
+  "tasks": 320,
+  "aggregate": {
+    "recall_at_1": 0.6630208333333333,
+    "recall_at_5": 0.9026041666666667,
+    "recall_at_10": 0.9479166666666666,
+    "mrr": 0.8223375496031746,
+    "ndcg": 0.8310622380108181,
+    "latency_p50_ms": 1.4336579988594167,
+    "latency_p95_ms": 15.409440999064827,
+    "index_time_secs": 26.055608831000427
+  },
+  "per_category": {
+    "cross_file": {
+      "recall_at_1": 0.5566666666666666,
+      "recall_at_10": 0.9233333333333333,
+      "ndcg": 0.783535680290742,
+      "task_count": 100
+    },
+    "intent": {
+      "recall_at_1": 0.6550632911392406,
+      "recall_at_10": 0.9588607594936709,
+      "ndcg": 0.8290771548304839,
+      "task_count": 158
+    },
+    "symbol_lookup": {
+      "recall_at_1": 0.8548387096774194,
+      "recall_at_10": 0.9596774193548387,
+      "ndcg": 0.9127767366317926,
+      "task_count": 62
+    }
+  },
+  "per_task": [
+    {
+      "task_id": "semble-fastapi-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.3333333333333333,
+      "recall_at_5": 0.3333333333333333,
+      "recall_at_10": 0.3333333333333333,
+      "mrr": 1.0,
+      "ndcg": 0.6387878864795979,
+      "latency_ms": 1.6944139970291872
+    },
+    {
+      "task_id": "semble-fastapi-int-002",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.4170933196716592,
+      "latency_ms": 2.4566879983467516
+    },
+    {
+      "task_id": "semble-fastapi-cro-003",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.66967181649423,
+      "latency_ms": 1.7335770025965758
+    },
+    {
+      "task_id": "semble-fastapi-int-004",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8597186998521972,
+      "latency_ms": 1.4517830022668932
+    },
+    {
+      "task_id": "semble-fastapi-int-005",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 0.5,
+      "ndcg": 0.23981246656813146,
+      "latency_ms": 19.156156002281932
+    },
+    {
+      "task_id": "semble-fastapi-int-006",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8868854556705132,
+      "latency_ms": 1.6013569984352216
+    },
+    {
+      "task_id": "semble-fastapi-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.4558309994754381
+    },
+    {
+      "task_id": "semble-fastapi-int-008",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.38009376671593426,
+      "latency_ms": 1.4242300021578558
+    },
+    {
+      "task_id": "semble-fastapi-int-009",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.125,
+      "ndcg": 0.31546487678572877,
+      "latency_ms": 2.4963840005511884
+    },
+    {
+      "task_id": "semble-fastapi-int-010",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.5760280002723448
+    },
+    {
+      "task_id": "semble-fastapi-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8868854556705132,
+      "latency_ms": 1.9848740012093913
+    },
+    {
+      "task_id": "semble-fastapi-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.5939529985189438
+    },
+    {
+      "task_id": "semble-fastapi-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.5672074169568709,
+      "latency_ms": 17.459369002608582
+    },
+    {
+      "task_id": "semble-fastapi-cro-014",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 0.2,
+      "ndcg": 0.420778603571465,
+      "latency_ms": 2.193951000663219
+    },
+    {
+      "task_id": "semble-fastapi-cro-015",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9502344167898356,
+      "latency_ms": 2.4375929970119614
+    },
+    {
+      "task_id": "semble-fastapi-sym-016",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.38009376671593426,
+      "latency_ms": 15.409440999064827
+    },
+    {
+      "task_id": "semble-fastapi-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 16.116441998747177
+    },
+    {
+      "task_id": "semble-fastapi-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 15.157794001424918
+    },
+    {
+      "task_id": "semble-fastapi-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 16.340497000783216
+    },
+    {
+      "task_id": "semble-fastapi-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 15.113621000637067
+    },
+    {
+      "task_id": "semble-flask-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.5672074169568709,
+      "latency_ms": 1.1519740000949241
+    },
+    {
+      "task_id": "semble-flask-int-002",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 0.8829849975882098
+    },
+    {
+      "task_id": "semble-flask-int-003",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7861409976612777
+    },
+    {
+      "task_id": "semble-flask-int-004",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7360050003626384
+    },
+    {
+      "task_id": "semble-flask-int-005",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7899279989942443
+    },
+    {
+      "task_id": "semble-flask-int-006",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7249949994729832
+    },
+    {
+      "task_id": "semble-flask-int-007",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8104269982140977
+    },
+    {
+      "task_id": "semble-flask-int-008",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7552419992862269
+    },
+    {
+      "task_id": "semble-flask-int-009",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8456239993392956
+    },
+    {
+      "task_id": "semble-flask-int-010",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8721749982214533
+    },
+    {
+      "task_id": "semble-flask-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8597186998521972,
+      "latency_ms": 0.9829640002863016
+    },
+    {
+      "task_id": "semble-flask-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9238850086262381,
+      "latency_ms": 1.0357749997638166
+    },
+    {
+      "task_id": "semble-flask-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.7601875334318685,
+      "latency_ms": 0.987292001809692
+    },
+    {
+      "task_id": "semble-flask-cro-014",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9203449990309309
+    },
+    {
+      "task_id": "semble-flask-cro-015",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9502344167898356,
+      "latency_ms": 1.288023002416594
+    },
+    {
+      "task_id": "semble-flask-sym-016",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8597186998521972,
+      "latency_ms": 5.838320998009294
+    },
+    {
+      "task_id": "semble-flask-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.060696999862557
+    },
+    {
+      "task_id": "semble-flask-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 5.558029999519931
+    },
+    {
+      "task_id": "semble-flask-int-019",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.7601875334318685,
+      "latency_ms": 0.714785997843137
+    },
+    {
+      "task_id": "semble-flask-int-020",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5174418337467067,
+      "latency_ms": 0.69335499938461
+    },
+    {
+      "task_id": "semble-flask-cro-021",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9502344167898356,
+      "latency_ms": 1.0425769978610333
+    },
+    {
+      "task_id": "semble-requests-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.089635999960592
+    },
+    {
+      "task_id": "semble-requests-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8697699995536823
+    },
+    {
+      "task_id": "semble-requests-int-003",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7740879991615657
+    },
+    {
+      "task_id": "semble-requests-int-004",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.6486599995696452
+    },
+    {
+      "task_id": "semble-requests-cro-005",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9238850086262381,
+      "latency_ms": 0.7593500013172161
+    },
+    {
+      "task_id": "semble-requests-int-006",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7743590031168424
+    },
+    {
+      "task_id": "semble-requests-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7411849983327556
+    },
+    {
+      "task_id": "semble-requests-int-008",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9238850086262381,
+      "latency_ms": 0.6937959988135844
+    },
+    {
+      "task_id": "semble-requests-int-009",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.746576002711663
+    },
+    {
+      "task_id": "semble-requests-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8095250013866462
+    },
+    {
+      "task_id": "semble-requests-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9502344167898356,
+      "latency_ms": 6.19617099800962
+    },
+    {
+      "task_id": "semble-requests-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8744179976929445
+    },
+    {
+      "task_id": "semble-requests-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8597186998521972,
+      "latency_ms": 0.8319479966303334
+    },
+    {
+      "task_id": "semble-requests-cro-014",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8224499979405664
+    },
+    {
+      "task_id": "semble-requests-cro-015",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9160869994957466
+    },
+    {
+      "task_id": "semble-requests-sym-016",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.150193003122695
+    },
+    {
+      "task_id": "semble-requests-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.564412000239827
+    },
+    {
+      "task_id": "semble-requests-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 4.937022000376601
+    },
+    {
+      "task_id": "semble-requests-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.363271000533132
+    },
+    {
+      "task_id": "semble-requests-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.601873002888169
+    },
+    {
+      "task_id": "semble-express-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8955796649110442,
+      "latency_ms": 1.2710000009974465
+    },
+    {
+      "task_id": "semble-express-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1268669986748137
+    },
+    {
+      "task_id": "semble-express-int-003",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0194430033152457
+    },
+    {
+      "task_id": "semble-express-cro-004",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0060179993161
+    },
+    {
+      "task_id": "semble-express-sym-005",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0586270000203513
+    },
+    {
+      "task_id": "semble-express-int-006",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.1544689987204038
+    },
+    {
+      "task_id": "semble-express-cro-007",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2524249978014268
+    },
+    {
+      "task_id": "semble-express-cro-008",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8597186998521972,
+      "latency_ms": 1.3096729999233503
+    },
+    {
+      "task_id": "semble-express-sym-009",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9832040013861842
+    },
+    {
+      "task_id": "semble-express-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9508539988019038
+    },
+    {
+      "task_id": "semble-express-int-011",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1010180023731664
+    },
+    {
+      "task_id": "semble-express-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0688770016713534
+    },
+    {
+      "task_id": "semble-express-int-013",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.987753999652341
+    },
+    {
+      "task_id": "semble-express-cro-014",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9502344167898356,
+      "latency_ms": 1.1093739994976204
+    },
+    {
+      "task_id": "semble-express-int-015",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2109060007787775
+    },
+    {
+      "task_id": "semble-express-cro-016",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2440390019037295
+    },
+    {
+      "task_id": "semble-express-int-017",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0960289982904214
+    },
+    {
+      "task_id": "semble-express-int-018",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1777629988500848
+    },
+    {
+      "task_id": "semble-express-int-019",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.316659000731306
+    },
+    {
+      "task_id": "semble-express-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8774339985393453
+    },
+    {
+      "task_id": "semble-zod-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 15.56257199990796
+    },
+    {
+      "task_id": "semble-zod-cro-002",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.6728219998185523
+    },
+    {
+      "task_id": "semble-zod-int-003",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 14.298533998953644
+    },
+    {
+      "task_id": "semble-zod-int-004",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 13.718154001253424
+    },
+    {
+      "task_id": "semble-zod-int-005",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.23369899665704
+    },
+    {
+      "task_id": "semble-zod-int-006",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 13.022253999224631
+    },
+    {
+      "task_id": "semble-zod-int-007",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.4344817381527212,
+      "latency_ms": 1.5154130014707334
+    },
+    {
+      "task_id": "semble-zod-int-008",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.6683139983797446
+    },
+    {
+      "task_id": "semble-zod-int-009",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.43067655807339306,
+      "latency_ms": 1.723618999676546
+    },
+    {
+      "task_id": "semble-zod-cro-010",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.5672074169568709,
+      "latency_ms": 14.15881900175009
+    },
+    {
+      "task_id": "semble-zod-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 0.2,
+      "ndcg": 0.2940806813328203,
+      "latency_ms": 14.410337000299478
+    },
+    {
+      "task_id": "semble-zod-int-012",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.43067655807339306,
+      "latency_ms": 2.935535998403793
+    },
+    {
+      "task_id": "semble-zod-int-013",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 0.5,
+      "ndcg": 0.4796249331362629,
+      "latency_ms": 2.167459999327548
+    },
+    {
+      "task_id": "semble-zod-int-014",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.2,
+      "ndcg": 0.38685280723454163,
+      "latency_ms": 12.265288998605683
+    },
+    {
+      "task_id": "semble-zod-int-015",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.7520019973744638
+    },
+    {
+      "task_id": "semble-zod-int-016",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.2,
+      "ndcg": 0.38685280723454163,
+      "latency_ms": 20.62059299714747
+    },
+    {
+      "task_id": "semble-zod-int-017",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.43067655807339306,
+      "latency_ms": 1.8429249976179563
+    },
+    {
+      "task_id": "semble-zod-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 11.655802998575382
+    },
+    {
+      "task_id": "semble-zod-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 11.070413002016721
+    },
+    {
+      "task_id": "semble-zod-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 13.301764000061667
+    },
+    {
+      "task_id": "semble-axios-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.7601875334318685,
+      "latency_ms": 1.5625329979229718
+    },
+    {
+      "task_id": "semble-axios-int-002",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.7074887171046738,
+      "latency_ms": 1.040563001879491
+    },
+    {
+      "task_id": "semble-axios-int-003",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.2303430012252647
+    },
+    {
+      "task_id": "semble-axios-cro-004",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.66967181649423,
+      "latency_ms": 1.1208060022909194
+    },
+    {
+      "task_id": "semble-axios-sym-005",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.917301001318265
+    },
+    {
+      "task_id": "semble-axios-sym-006",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.039507002948085
+    },
+    {
+      "task_id": "semble-axios-sym-007",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.364984001062112
+    },
+    {
+      "task_id": "semble-axios-int-008",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2186509993625805
+    },
+    {
+      "task_id": "semble-axios-int-009",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1493900019559078
+    },
+    {
+      "task_id": "semble-axios-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.3392199980444275
+    },
+    {
+      "task_id": "semble-axios-int-011",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.43067655807339306,
+      "latency_ms": 1.2138919992139563
+    },
+    {
+      "task_id": "semble-axios-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 1.3615520001621917
+    },
+    {
+      "task_id": "semble-axios-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.7601875334318685,
+      "latency_ms": 1.2832640022679698
+    },
+    {
+      "task_id": "semble-axios-int-014",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1252240001340397
+    },
+    {
+      "task_id": "semble-axios-int-015",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0589480007183738
+    },
+    {
+      "task_id": "semble-axios-cro-016",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.16666666666666666,
+      "ndcg": 0.3974821851969962,
+      "latency_ms": 1.3867999987269286
+    },
+    {
+      "task_id": "semble-axios-int-017",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.4751069975318387
+    },
+    {
+      "task_id": "semble-axios-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.015881000872469
+    },
+    {
+      "task_id": "semble-axios-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.07717499951832
+    },
+    {
+      "task_id": "semble-axios-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.157916999654844
+    },
+    {
+      "task_id": "semble-tokio-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 0.2,
+      "ndcg": 0.14704034066641014,
+      "latency_ms": 4.39607600128511
+    },
+    {
+      "task_id": "semble-tokio-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.024348999839276
+    },
+    {
+      "task_id": "semble-tokio-cro-003",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.5778320012032054
+    },
+    {
+      "task_id": "semble-tokio-cro-004",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.38009376671593426,
+      "latency_ms": 3.2906500018725637
+    },
+    {
+      "task_id": "semble-tokio-int-005",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.1013949990447145
+    },
+    {
+      "task_id": "semble-tokio-cro-006",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.1166030019230675
+    },
+    {
+      "task_id": "semble-tokio-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 3.9444799986085854
+    },
+    {
+      "task_id": "semble-tokio-cro-008",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 3.7683560003642924
+    },
+    {
+      "task_id": "semble-tokio-int-009",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.6855870017025154
+    },
+    {
+      "task_id": "semble-tokio-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.281846998812398
+    },
+    {
+      "task_id": "semble-tokio-int-011",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.0762369967997074
+    },
+    {
+      "task_id": "semble-tokio-int-012",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.214248997916002
+    },
+    {
+      "task_id": "semble-tokio-sym-013",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 22.219855000003008
+    },
+    {
+      "task_id": "semble-tokio-sym-014",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 17.542957000841852
+    },
+    {
+      "task_id": "semble-tokio-sym-015",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 19.080641999607906
+    },
+    {
+      "task_id": "semble-tokio-sym-016",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 18.059846999676665
+    },
+    {
+      "task_id": "semble-tokio-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 20.12672599812504
+    },
+    {
+      "task_id": "semble-tokio-int-018",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9238850086262381,
+      "latency_ms": 2.0464799999899697
+    },
+    {
+      "task_id": "semble-tokio-cro-019",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.8716890008363407
+    },
+    {
+      "task_id": "semble-tokio-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 22.234161999222124
+    },
+    {
+      "task_id": "semble-serde-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.154539997514803
+    },
+    {
+      "task_id": "semble-serde-cro-002",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0923910012934357
+    },
+    {
+      "task_id": "semble-serde-cro-003",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 0.8280099973489996
+    },
+    {
+      "task_id": "semble-serde-int-004",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.16666666666666666,
+      "ndcg": 0.3562071871080222,
+      "latency_ms": 0.9358839997730684
+    },
+    {
+      "task_id": "semble-serde-int-005",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.125,
+      "ndcg": 0.31546487678572877,
+      "latency_ms": 1.2197130017739255
+    },
+    {
+      "task_id": "semble-serde-int-006",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.2,
+      "ndcg": 0.38685280723454163,
+      "latency_ms": 1.0762310012069065
+    },
+    {
+      "task_id": "semble-serde-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 9.205005997500848
+    },
+    {
+      "task_id": "semble-serde-cro-008",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.3607709988718852
+    },
+    {
+      "task_id": "semble-serde-cro-009",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.7601875334318685,
+      "latency_ms": 1.7953240021597594
+    },
+    {
+      "task_id": "semble-serde-cro-010",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.7670009983703494
+    },
+    {
+      "task_id": "semble-serde-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.527676999103278
+    },
+    {
+      "task_id": "semble-serde-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 11.498633997689467
+    },
+    {
+      "task_id": "semble-serde-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.4831420012342278
+    },
+    {
+      "task_id": "semble-serde-cro-014",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 12.096828999347053
+    },
+    {
+      "task_id": "semble-serde-int-015",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.7360010024276562
+    },
+    {
+      "task_id": "semble-serde-int-016",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.5689749998273328
+    },
+    {
+      "task_id": "semble-serde-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 7.367211001110263
+    },
+    {
+      "task_id": "semble-serde-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.254570998862619
+    },
+    {
+      "task_id": "semble-serde-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 7.352052001806442
+    },
+    {
+      "task_id": "semble-serde-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.587160998606123
+    },
+    {
+      "task_id": "semble-axum-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.8685030008782633
+    },
+    {
+      "task_id": "semble-axum-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1871119968418498
+    },
+    {
+      "task_id": "semble-axum-cro-003",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 12.844657998357434
+    },
+    {
+      "task_id": "semble-axum-int-004",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2589869984367397
+    },
+    {
+      "task_id": "semble-axum-int-005",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.4278980015660636
+    },
+    {
+      "task_id": "semble-axum-int-006",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.1040030003641732
+    },
+    {
+      "task_id": "semble-axum-cro-007",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.43067655807339306,
+      "latency_ms": 9.133800998824881
+    },
+    {
+      "task_id": "semble-axum-int-008",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.5194920015346725
+    },
+    {
+      "task_id": "semble-axum-int-009",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.278764997550752
+    },
+    {
+      "task_id": "semble-axum-cro-010",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.14285714285714285,
+      "ndcg": 0.3333333333333333,
+      "latency_ms": 1.4500899997074157
+    },
+    {
+      "task_id": "semble-axum-int-011",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.4490579997072928
+    },
+    {
+      "task_id": "semble-axum-int-012",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 7.829286001651781
+    },
+    {
+      "task_id": "semble-axum-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 8.527882000635145
+    },
+    {
+      "task_id": "semble-axum-int-014",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 8.461946999887004
+    },
+    {
+      "task_id": "semble-axum-int-015",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.3123390017426573
+    },
+    {
+      "task_id": "semble-axum-int-016",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 1.3733939995290712
+    },
+    {
+      "task_id": "semble-axum-int-017",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2162760031060316
+    },
+    {
+      "task_id": "semble-axum-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 7.0249810014502145
+    },
+    {
+      "task_id": "semble-axum-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 6.4559320016996935
+    },
+    {
+      "task_id": "semble-axum-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 5.508805999852484
+    },
+    {
+      "task_id": "semble-gin-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0821420000866055
+    },
+    {
+      "task_id": "semble-gin-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.6712829999742098
+    },
+    {
+      "task_id": "semble-gin-int-003",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8336210012203082
+    },
+    {
+      "task_id": "semble-gin-int-004",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 0.9027410014823545
+    },
+    {
+      "task_id": "semble-gin-cro-005",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9072278740982787,
+      "latency_ms": 0.8630369993625209
+    },
+    {
+      "task_id": "semble-gin-cro-006",
+      "category": "cross_file",
+      "recall_at_1": 0.3333333333333333,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8599797111848092,
+      "latency_ms": 7.052061999274883
+    },
+    {
+      "task_id": "semble-gin-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8949570001277607
+    },
+    {
+      "task_id": "semble-gin-int-008",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7644090001122095
+    },
+    {
+      "task_id": "semble-gin-int-009",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7845379986974876
+    },
+    {
+      "task_id": "semble-gin-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8803990021988284
+    },
+    {
+      "task_id": "semble-gin-int-011",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 0.8338910010934342
+    },
+    {
+      "task_id": "semble-gin-int-012",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.0629960015648976
+    },
+    {
+      "task_id": "semble-gin-int-013",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.7601875334318685,
+      "latency_ms": 1.0179199998674449
+    },
+    {
+      "task_id": "semble-gin-cro-014",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9610529996280093
+    },
+    {
+      "task_id": "semble-gin-cro-015",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8606019982835278
+    },
+    {
+      "task_id": "semble-gin-int-016",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 1.0892360005527735
+    },
+    {
+      "task_id": "semble-gin-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.839483001182089
+    },
+    {
+      "task_id": "semble-gin-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.825602999015246
+    },
+    {
+      "task_id": "semble-gin-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.745946000388358
+    },
+    {
+      "task_id": "semble-gin-cro-020",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9729150006023701
+    },
+    {
+      "task_id": "semble-cobra-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1844059990835376
+    },
+    {
+      "task_id": "semble-cobra-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7567749998997897
+    },
+    {
+      "task_id": "semble-cobra-int-003",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9502344167898356,
+      "latency_ms": 0.7633380009792745
+    },
+    {
+      "task_id": "semble-cobra-int-004",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 0.6595999984710943
+    },
+    {
+      "task_id": "semble-cobra-sym-005",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 8.13901400033501
+    },
+    {
+      "task_id": "semble-cobra-int-006",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9301239988417365
+    },
+    {
+      "task_id": "semble-cobra-int-007",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7304649989237078
+    },
+    {
+      "task_id": "semble-cobra-int-008",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.71614800253883
+    },
+    {
+      "task_id": "semble-cobra-int-009",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 8.32745200023055
+    },
+    {
+      "task_id": "semble-cobra-cro-010",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8121600003505591
+    },
+    {
+      "task_id": "semble-cobra-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8912299999792594
+    },
+    {
+      "task_id": "semble-cobra-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.017078997392673
+    },
+    {
+      "task_id": "semble-cobra-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.7950370018079411
+    },
+    {
+      "task_id": "semble-cobra-int-014",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 16.66206600202713
+    },
+    {
+      "task_id": "semble-cobra-int-015",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 0.9482179993938189
+    },
+    {
+      "task_id": "semble-cobra-sym-016",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 5.789948998426553
+    },
+    {
+      "task_id": "semble-cobra-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 7.830828999431105
+    },
+    {
+      "task_id": "semble-cobra-cro-018",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8596810002927668
+    },
+    {
+      "task_id": "semble-cobra-int-019",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8754800001042895
+    },
+    {
+      "task_id": "semble-cobra-int-020",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.8597186998521972,
+      "latency_ms": 0.9132520026469138
+    },
+    {
+      "task_id": "semble-gson-int-001",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 16.36151600177982
+    },
+    {
+      "task_id": "semble-gson-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.5915879994281568
+    },
+    {
+      "task_id": "semble-gson-cro-003",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.634558997466229
+    },
+    {
+      "task_id": "semble-gson-sym-004",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 10.098429997015046
+    },
+    {
+      "task_id": "semble-gson-sym-005",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 8.845354001095984
+    },
+    {
+      "task_id": "semble-gson-int-006",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.3218370004324242
+    },
+    {
+      "task_id": "semble-gson-int-007",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.284095000301022
+    },
+    {
+      "task_id": "semble-gson-int-008",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0405329994682688
+    },
+    {
+      "task_id": "semble-gson-int-009",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.3722230032726657
+    },
+    {
+      "task_id": "semble-gson-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2385589980112854
+    },
+    {
+      "task_id": "semble-gson-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.6060550005931873
+    },
+    {
+      "task_id": "semble-gson-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.38009376671593426,
+      "latency_ms": 1.6492079994350206
+    },
+    {
+      "task_id": "semble-gson-int-013",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.4732440031366423
+    },
+    {
+      "task_id": "semble-gson-int-014",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.4336579988594167
+    },
+    {
+      "task_id": "semble-gson-int-015",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.502128998254193
+    },
+    {
+      "task_id": "semble-gson-cro-016",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.4344817381527212,
+      "latency_ms": 1.4477449985861313
+    },
+    {
+      "task_id": "semble-gson-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 9.856851000222377
+    },
+    {
+      "task_id": "semble-gson-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 8.702152001205832
+    },
+    {
+      "task_id": "semble-gson-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 10.377619000792038
+    },
+    {
+      "task_id": "semble-gson-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 9.082673001103103
+    },
+    {
+      "task_id": "semble-curl-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.38009376671593426,
+      "latency_ms": 7.055660000332864
+    },
+    {
+      "task_id": "semble-curl-int-002",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.1111111111111111,
+      "ndcg": 0.3010299956639812,
+      "latency_ms": 4.136945000936976
+    },
+    {
+      "task_id": "semble-curl-cro-003",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.2656560031464323
+    },
+    {
+      "task_id": "semble-curl-cro-004",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.731239001150243
+    },
+    {
+      "task_id": "semble-curl-int-005",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 3.772684001887683
+    },
+    {
+      "task_id": "semble-curl-int-006",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 2.959141002065735
+    },
+    {
+      "task_id": "semble-curl-cro-007",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.16666666666666666,
+      "ndcg": 0.3562071871080222,
+      "latency_ms": 3.8670329995511565
+    },
+    {
+      "task_id": "semble-curl-cro-008",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 4.105796000658302
+    },
+    {
+      "task_id": "semble-curl-int-009",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.32832499750657
+    },
+    {
+      "task_id": "semble-curl-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.3105319996830076
+    },
+    {
+      "task_id": "semble-curl-int-011",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 3.015758000401547
+    },
+    {
+      "task_id": "semble-curl-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 0.9238850086262381,
+      "latency_ms": 4.408028999023372
+    },
+    {
+      "task_id": "semble-curl-int-013",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 4.073744999914197
+    },
+    {
+      "task_id": "semble-curl-cro-014",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.14285714285714285,
+      "ndcg": 0.3333333333333333,
+      "latency_ms": 3.6622449988499284
+    },
+    {
+      "task_id": "semble-curl-cro-015",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.4744352910551497,
+      "latency_ms": 3.965200001402991
+    },
+    {
+      "task_id": "semble-curl-int-016",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.2,
+      "ndcg": 0.38685280723454163,
+      "latency_ms": 2.8973240005143452
+    },
+    {
+      "task_id": "semble-curl-int-017",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 2.4388050005654804
+    },
+    {
+      "task_id": "semble-curl-int-018",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.070645998173859
+    },
+    {
+      "task_id": "semble-curl-int-019",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 2.7375619974918664
+    },
+    {
+      "task_id": "semble-curl-cro-020",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.125,
+      "ndcg": 0.31546487678572877,
+      "latency_ms": 1.9760169998335186
+    },
+    {
+      "task_id": "semble-fmtlib-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.432116001524264
+    },
+    {
+      "task_id": "semble-fmtlib-cro-002",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9949470004357863
+    },
+    {
+      "task_id": "semble-fmtlib-int-003",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9999760004575364
+    },
+    {
+      "task_id": "semble-fmtlib-int-004",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0085520007123705
+    },
+    {
+      "task_id": "semble-fmtlib-int-005",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0353630023018923
+    },
+    {
+      "task_id": "semble-fmtlib-int-006",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9289720001106616
+    },
+    {
+      "task_id": "semble-fmtlib-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8824329997878522
+    },
+    {
+      "task_id": "semble-fmtlib-int-008",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8569849997002166
+    },
+    {
+      "task_id": "semble-fmtlib-int-009",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0328780008421745
+    },
+    {
+      "task_id": "semble-fmtlib-int-010",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9020210018206853
+    },
+    {
+      "task_id": "semble-fmtlib-int-011",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.924072002817411
+    },
+    {
+      "task_id": "semble-fmtlib-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 0.8954180011642165
+    },
+    {
+      "task_id": "semble-fmtlib-int-013",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0079809981107246
+    },
+    {
+      "task_id": "semble-fmtlib-int-014",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.25,
+      "ndcg": 0.43067655807339306,
+      "latency_ms": 0.9410640013811644
+    },
+    {
+      "task_id": "semble-fmtlib-int-015",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8451029971183743
+    },
+    {
+      "task_id": "semble-fmtlib-int-016",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 0.9287310022045858
+    },
+    {
+      "task_id": "semble-fmtlib-int-017",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0274589985783678
+    },
+    {
+      "task_id": "semble-fmtlib-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.8015299972612411
+    },
+    {
+      "task_id": "semble-fmtlib-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 9.140784000919666
+    },
+    {
+      "task_id": "semble-fmtlib-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 9.190027001750423
+    },
+    {
+      "task_id": "semble-sinatra-int-001",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.5863480002735741
+    },
+    {
+      "task_id": "semble-sinatra-cro-002",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 1.2355729995761067
+    },
+    {
+      "task_id": "semble-sinatra-int-003",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.16246399920783
+    },
+    {
+      "task_id": "semble-sinatra-int-004",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.05859800169128
+    },
+    {
+      "task_id": "semble-sinatra-int-005",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.227747998200357
+    },
+    {
+      "task_id": "semble-sinatra-int-006",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1326680032652803
+    },
+    {
+      "task_id": "semble-sinatra-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1697980007738806
+    },
+    {
+      "task_id": "semble-sinatra-int-008",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.1068889980379026
+    },
+    {
+      "task_id": "semble-sinatra-cro-009",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.342434999969555
+    },
+    {
+      "task_id": "semble-sinatra-int-010",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.061041999491863
+    },
+    {
+      "task_id": "semble-sinatra-sym-011",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 15.865746001509251
+    },
+    {
+      "task_id": "semble-sinatra-sym-012",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.4595559438886381,
+      "latency_ms": 10.338053998566465
+    },
+    {
+      "task_id": "semble-sinatra-sym-013",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 10.047192001366057
+    },
+    {
+      "task_id": "semble-sinatra-sym-014",
+      "category": "symbol_lookup",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "latency_ms": 10.293709998222766
+    },
+    {
+      "task_id": "semble-sinatra-sym-015",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.600266002351418
+    },
+    {
+      "task_id": "semble-sinatra-cro-016",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.38009376671593426,
+      "latency_ms": 1.1563529988052323
+    },
+    {
+      "task_id": "semble-sinatra-cro-017",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0853479980141856
+    },
+    {
+      "task_id": "semble-sinatra-int-018",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0634270001901314
+    },
+    {
+      "task_id": "semble-sinatra-cro-019",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.4380569991772063
+    },
+    {
+      "task_id": "semble-sinatra-sym-020",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 6.144071001472184
+    },
+    {
+      "task_id": "semble-phoenix-cro-001",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.5,
+      "ndcg": 0.6309297535714575,
+      "latency_ms": 1.5825509981368668
+    },
+    {
+      "task_id": "semble-phoenix-int-002",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1991239989583846
+    },
+    {
+      "task_id": "semble-phoenix-cro-003",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.215996002429165
+    },
+    {
+      "task_id": "semble-phoenix-int-004",
+      "category": "intent",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0072800032503437
+    },
+    {
+      "task_id": "semble-phoenix-cro-005",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1491290024423506
+    },
+    {
+      "task_id": "semble-phoenix-int-006",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 11.570270002266625
+    },
+    {
+      "task_id": "semble-phoenix-int-007",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 0.9750690005603246
+    },
+    {
+      "task_id": "semble-phoenix-int-008",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.0324679969926365
+    },
+    {
+      "task_id": "semble-phoenix-cro-009",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.306517999182688
+    },
+    {
+      "task_id": "semble-phoenix-cro-010",
+      "category": "cross_file",
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.201929000671953
+    },
+    {
+      "task_id": "semble-phoenix-cro-011",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1624449980445206
+    },
+    {
+      "task_id": "semble-phoenix-cro-012",
+      "category": "cross_file",
+      "recall_at_1": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.3333333333333333,
+      "ndcg": 0.5,
+      "latency_ms": 1.0214370013272855
+    },
+    {
+      "task_id": "semble-phoenix-cro-013",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.3113270033500157
+    },
+    {
+      "task_id": "semble-phoenix-int-014",
+      "category": "intent",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.1370760003046598
+    },
+    {
+      "task_id": "semble-phoenix-int-015",
+      "category": "intent",
+      "recall_at_1": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.14285714285714285,
+      "ndcg": 0.3333333333333333,
+      "latency_ms": 1.3686259990208782
+    },
+    {
+      "task_id": "semble-phoenix-cro-016",
+      "category": "cross_file",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 1.2716119999822695
+    },
+    {
+      "task_id": "semble-phoenix-sym-017",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 7.498710001527797
+    },
+    {
+      "task_id": "semble-phoenix-sym-018",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 10.738963999756379
+    },
+    {
+      "task_id": "semble-phoenix-sym-019",
+      "category": "symbol_lookup",
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "latency_ms": 9.317718999227509
+    }
+  ]
+}

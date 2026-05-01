@@ -154,16 +154,23 @@ Use this as the default structural workflow. Use `vera references` for exact cal
 
 Indexing, storage, and search always stay on your machine. The backend choice only affects where embeddings and reranking run:
 
-- **Local mode**: `vera setup` downloads curated ONNX models. The full pipeline (BM25 + vector + rerank) runs without external calls.
+- **Potion Code CPU**: `vera setup --potion-code` downloads static code embeddings and runs without ONNX Runtime.
+- **Jina ONNX GPU**: `vera setup --onnx-jina-cuda` or another `--onnx-jina-*` flag downloads curated ONNX models. The full pipeline (BM25 + vector + rerank) runs without external calls.
 - **API mode**: Point at any OpenAI-compatible endpoint (remote APIs or local servers like llama.cpp). Only model calls leave your machine. Query prefixes for asymmetric embedding models (Qwen3, CodeRankEmbed, E5, BGE) are auto-detected from the model ID. Override with `EMBEDDING_QUERY_PREFIX` for unsupported models. See [llama-cpp-setup.md](llama-cpp-setup.md) for a step-by-step guide.
 
 ### Curated Local Models
 
-Two quantized ONNX models ship with local mode:
+Potion Code is the CPU-first local model:
 
 | Model | Role |
 |-------|------|
-| [jina-embeddings-v5-text-nano-retrieval](https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval) | Default embedding model |
+| [minishlab/potion-code-16M](https://huggingface.co/minishlab/potion-code-16M) | Static code embedding model |
+
+The Jina ONNX backends use these local models:
+
+| Model | Role |
+|-------|------|
+| [jina-embeddings-v5-text-nano-retrieval](https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval) | Embedding model |
 | [jina-reranker-v2-base-multilingual](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual) | Cross-encoder reranker |
 
 An optional [CodeRankEmbed](https://huggingface.co/Zenabius/CodeRankEmbed-onnx) preset is available for embedding-heavy or no-rerank experiments. Details: [models.md](models.md).
@@ -174,6 +181,7 @@ Auto-detected during setup. Supported backends:
 
 | Flag | Hardware |
 |------|----------|
+| `--potion-code` | CPU-only local inference |
 | `--onnx-jina-cuda` | NVIDIA (CUDA 12+) |
 | `--onnx-jina-rocm` | AMD (Linux, ROCm) |
 | `--onnx-jina-directml` | Any DirectX 12 GPU (Windows) |
@@ -188,7 +196,7 @@ Local ONNX indexing shapes micro-batches from actual token lengths rather than u
 
 ### Custom Local Embeddings
 
-Swap the local embedding model without changing the rest of the pipeline. Point at a Hugging Face repo, a direct URL, or a local directory with custom pooling, query prefix, and dimension settings. The local reranker stays on the curated Jina model.
+Swap the Jina ONNX embedding model without changing the rest of that pipeline. Point at a Hugging Face repo, a direct URL, or a local directory with custom pooling, query prefix, and dimension settings. The local reranker stays on the curated Jina model.
 
 ## Output and Integration
 
@@ -249,11 +257,11 @@ During setup, Vera offers to add a usage snippet to your project's agent config 
 
 ### Backend Management
 
-`vera backend` manages the ONNX runtime and model backend separately from the full setup wizard. Switch GPU backends, swap embedding models, or reconfigure API endpoints without re-running setup.
+`vera backend` manages the model backend separately from the full setup wizard. Switch GPU backends, pick Potion Code CPU, swap ONNX embedding models, or reconfigure API endpoints without re-running setup.
 
 ### Diagnostics
 
-`vera doctor` reports the saved and active backend, installed version, and checks GitHub for newer releases. `--probe` adds a deeper read-only ONNX session check. `--json` outputs machine-readable diagnostics. `vera repair` re-fetches missing local assets.
+`vera doctor` reports the saved and active backend, installed version, and checks GitHub for newer releases. `--probe` adds a deeper read-only local backend check. `--json` outputs machine-readable diagnostics. `vera repair` re-fetches missing local assets.
 
 ### Self-Updating
 

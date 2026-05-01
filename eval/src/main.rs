@@ -282,9 +282,23 @@ fn run_report(
                 &corpus.benchmark_roots,
             )
         }
+        "vera-potion" => {
+            let corpus = load_verified_corpus(corpus_path)?;
+            ensure_task_repos_known(tasks, &corpus.repo_paths)?;
+            let vera = vera_adapter::VeraFullAdapter::new(
+                vera_core::config::InferenceBackend::PotionCode,
+            )?;
+            runner::run_benchmark_scoped(
+                &vera,
+                tasks,
+                &corpus.repo_paths,
+                &corpus.repo_shas,
+                &corpus.benchmark_roots,
+            )
+        }
         other => {
             anyhow::bail!(
-                "Unknown tool '{}'. Available: vera-bm25, vera-cuda, vera-cpu, mock-perfect, mock-partial.",
+                "Unknown tool '{}'. Available: vera-bm25, vera-cuda, vera-cpu, vera-potion, mock-perfect, mock-partial.",
                 other
             );
         }

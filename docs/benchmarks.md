@@ -94,6 +94,26 @@ Quantized note:
 - the dynamic sequence-aware scaler keeps the same aggregate metrics as `oom-fix-jina-cuda-onnx-quantized-embed`, then trims quantized indexing time on every benchmark repo in the same 21-task run (`ripgrep 13.08s -> 12.96s`, `fastify 15.24s -> 14.57s`, `turborepo 55.28s -> 54.71s`, `flask 6.37s -> 5.82s`)
 - the scaler now also persists learned GPU windows across runs in `~/.vera/adaptive-batch-scaler.json`; when you compare cold indexing throughput, clear that file first or run all candidates against the same warmed state
 
+### Semble 320-Task Subset
+
+This subset tracks the Semble benchmark while keeping tuning runs short enough to repeat. It covers 320 tasks across 16 repos. Treat it as a gap report, not a win claim. The full 1,251-task suite is the gate for any Semble parity or win statement.
+
+| Tool | Backend | Recall@1 | Recall@10 | MRR | nDCG@10 | Search p50 | Search p95 | Index time |
+|------|---------|----------|-----------|-----|---------|------------|------------|------------|
+| Semble | Potion Code CPU | 0.6630 | 0.9479 | 0.8223 | **0.8311** | **1.43 ms** | **15.41 ms** | 26.06 s |
+| Vera | BM25 ranked | 0.5214 | 0.8438 | 0.6949 | 0.7108 | 2.91 ms | 9.28 ms | **12.51 s** |
+| Vera | Potion Code CPU | 0.5010 | 0.8500 | 0.6700 | 0.6944 | 14.30 ms | 53.27 ms | 17.27 s |
+| Vera | Jina CUDA ONNX | 0.5276 | 0.8578 | 0.7058 | 0.7233 | 23.50 ms | 6236.60 ms | 151.20 s |
+
+The Jina CUDA run uses CUDA ONNX Runtime via `ORT_DYLIB_PATH`. Do not run this lane against the CPU ONNX Runtime when comparing latency.
+
+Artifacts:
+
+- [Semble subset baseline](../benchmarks/results/semble/2026-04-29-semble-subset.json)
+- [Vera BM25 subset](../benchmarks/results/semble/2026-05-01-vera-bm25-subset.json)
+- [Vera Potion subset](../benchmarks/results/semble/2026-05-01-vera-potion-subset.json)
+- [Vera Jina CUDA subset](../benchmarks/results/semble/2026-05-01-vera-cuda-subset.json)
+
 ### Optional CodeRankEmbed Preset
 
 Vera now ships CodeRankEmbed as an optional local embedding preset. This is the short no-rerank sanity check used to decide whether it was worth exposing as a first-class option:

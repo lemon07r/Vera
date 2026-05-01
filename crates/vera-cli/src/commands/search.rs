@@ -4,9 +4,9 @@ use anyhow::bail;
 use std::io::Write;
 use std::path::Path;
 use std::time::{Duration, Instant};
-use vera_core::config::InferenceBackend;
-use vera_core::retrieval::search_service::SearchTimings;
-use vera_core::types::SearchResult;
+use vera_core::config::{InferenceBackend, VeraConfig};
+use vera_core::retrieval::search_service::{SearchContext, SearchTimings};
+use vera_core::types::{SearchFilters, SearchResult};
 
 use crate::helpers::{load_runtime_config, output_results, prepare_indexed_search};
 
@@ -39,29 +39,25 @@ pub fn run(
 
     let (index_dir, filters) =
         prepare_indexed_search(&config.indexing, filters, git_scope.as_ref())?;
+    let rt = tokio::runtime::Runtime::new()
+        .map_err(|e| anyhow::anyhow!("failed to create async runtime: {e}"))?;
+    let search_context = rt.block_on(SearchContext::new(&config, backend));
+
+    let runner = SearchRunner {
+        rt: &rt,
+        search_context: &search_context,
+        index_dir: &index_dir,
+        config: &config,
+        filters: &filters,
+        result_limit,
+        deep,
+    };
 
     let (results, timings) = if queries.len() == 1 {
         let effective_query = apply_intent(&queries[0], intent);
-        execute_query(
-            &index_dir,
-            &effective_query,
-            &config,
-            &filters,
-            result_limit,
-            backend,
-            deep,
-        )?
+        runner.execute_query(&effective_query)?
     } else {
-        execute_multi_query_search(
-            &index_dir,
-            &queries,
-            intent,
-            &config,
-            &filters,
-            result_limit,
-            backend,
-            deep,
-        )?
+        runner.execute_multi_query_search(&queries, intent)?
     };
 
     output_results(
@@ -79,85 +75,80 @@ pub fn run(
     Ok(())
 }
 
-fn execute_query(
-    index_dir: &Path,
-    query: &str,
-    config: &vera_core::config::VeraConfig,
-    filters: &vera_core::types::SearchFilters,
+struct SearchRunner<'a> {
+    rt: &'a tokio::runtime::Runtime,
+    search_context: &'a SearchContext,
+    index_dir: &'a Path,
+    config: &'a VeraConfig,
+    filters: &'a SearchFilters,
     result_limit: usize,
-    backend: InferenceBackend,
     deep: bool,
-) -> anyhow::Result<(Vec<SearchResult>, SearchTimings)> {
-    if deep {
-        vera_core::retrieval::rag_fusion::execute_deep_search(
-            index_dir,
-            query,
-            config,
-            filters,
-            result_limit,
-            backend,
-        )
-    } else {
-        vera_core::retrieval::search_service::execute_search(
-            index_dir,
-            query,
-            config,
-            filters,
-            result_limit,
-            backend,
-        )
-    }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn execute_multi_query_search(
-    index_dir: &Path,
-    queries: &[String],
-    intent: Option<&str>,
-    config: &vera_core::config::VeraConfig,
-    filters: &vera_core::types::SearchFilters,
-    result_limit: usize,
-    backend: InferenceBackend,
-    deep: bool,
-) -> anyhow::Result<(Vec<SearchResult>, SearchTimings)> {
-    let overall_start = Instant::now();
-    let per_query_limit = compute_per_query_limit(result_limit);
-    let mut timings = SearchTimings::default();
-    let mut weights = Vec::with_capacity(queries.len());
-    let mut result_sets = Vec::with_capacity(queries.len());
-
-    for query in queries {
-        let effective_query = apply_intent(query, intent);
-        let (results, query_timings) = execute_query(
-            index_dir,
-            &effective_query,
-            config,
-            filters,
-            per_query_limit,
-            backend,
-            deep,
-        )?;
-        merge_timings(&mut timings, &query_timings);
-        result_sets.push(results);
-        weights.push(1.0);
+impl SearchRunner<'_> {
+    fn execute_query(&self, query: &str) -> anyhow::Result<(Vec<SearchResult>, SearchTimings)> {
+        if self.deep {
+            self.rt.block_on(
+                vera_core::retrieval::rag_fusion::execute_deep_search_with_context(
+                    self.search_context,
+                    self.index_dir,
+                    query,
+                    self.config,
+                    self.filters,
+                    self.result_limit,
+                ),
+            )
+        } else {
+            self.rt.block_on(self.search_context.search(
+                self.index_dir,
+                query,
+                self.config,
+                self.filters,
+                self.result_limit,
+            ))
+        }
     }
 
-    let slices: Vec<&[SearchResult]> = result_sets.iter().map(Vec::as_slice).collect();
-    let fused = vera_core::retrieval::fuse_rrf_multi_weighted(
-        &slices,
-        &weights,
-        config.retrieval.rrf_k,
-        result_limit,
-    );
-    let fused = vera_core::retrieval::search_service::augment_multi_query_exact_matches(
-        index_dir,
-        queries,
-        fused,
-        filters,
-        result_limit,
-    )?;
-    timings.total = Some(overall_start.elapsed());
-    Ok((fused, timings))
+    fn execute_multi_query_search(
+        &self,
+        queries: &[String],
+        intent: Option<&str>,
+    ) -> anyhow::Result<(Vec<SearchResult>, SearchTimings)> {
+        let overall_start = Instant::now();
+        let per_query_limit = compute_per_query_limit(self.result_limit);
+        let mut timings = SearchTimings::default();
+        let mut weights = Vec::with_capacity(queries.len());
+        let mut result_sets = Vec::with_capacity(queries.len());
+
+        for query in queries {
+            let effective_query = apply_intent(query, intent);
+            let query_runner = SearchRunner {
+                result_limit: per_query_limit,
+                ..*self
+            };
+            let (results, query_timings) = query_runner.execute_query(&effective_query)?;
+            merge_timings(&mut timings, &query_timings);
+            result_sets.push(results);
+            weights.push(1.0);
+        }
+
+        let slices: Vec<&[SearchResult]> = result_sets.iter().map(Vec::as_slice).collect();
+        let fused = vera_core::retrieval::fuse_rrf_multi_weighted(
+            &slices,
+            &weights,
+            self.config.retrieval.rrf_k,
+            self.result_limit,
+        );
+        let fused = vera_core::retrieval::search_service::augment_multi_query_exact_matches(
+            self.index_dir,
+            queries,
+            fused,
+            self.filters,
+            self.result_limit,
+        )?;
+        timings.total = Some(overall_start.elapsed());
+        Ok((fused, timings))
+    }
 }
 
 fn normalize_queries(queries: &[String]) -> Vec<String> {

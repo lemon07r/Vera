@@ -192,11 +192,18 @@ pub enum InferenceBackend {
     Api,
     /// Use local ONNX models with the specified execution provider.
     OnnxJina(OnnxExecutionProvider),
+    /// Use the CPU-first Potion Code static embedding model.
+    PotionCode,
 }
 
 impl InferenceBackend {
-    /// True if this backend uses local ONNX inference.
+    /// True if this backend uses local inference.
     pub fn is_local(self) -> bool {
+        matches!(self, Self::OnnxJina(_) | Self::PotionCode)
+    }
+
+    /// True if this backend uses local ONNX inference.
+    pub fn is_onnx(self) -> bool {
         matches!(self, Self::OnnxJina(_))
     }
 
@@ -204,7 +211,7 @@ impl InferenceBackend {
     pub fn execution_provider(self) -> Option<OnnxExecutionProvider> {
         match self {
             Self::OnnxJina(ep) => Some(ep),
-            Self::Api => None,
+            Self::Api | Self::PotionCode => None,
         }
     }
 }
@@ -214,6 +221,7 @@ impl fmt::Display for InferenceBackend {
         match self {
             Self::Api => write!(f, "api"),
             Self::OnnxJina(ep) => write!(f, "onnx-jina-{ep}"),
+            Self::PotionCode => write!(f, "potion-code-cpu"),
         }
     }
 }
@@ -229,6 +237,7 @@ impl FromStr for InferenceBackend {
             "onnx-jina-directml" => Ok(Self::OnnxJina(OnnxExecutionProvider::DirectMl)),
             "onnx-jina-coreml" => Ok(Self::OnnxJina(OnnxExecutionProvider::CoreMl)),
             "onnx-jina-openvino" => Ok(Self::OnnxJina(OnnxExecutionProvider::OpenVino)),
+            "potion-code-cpu" | "potion-code" | "potion-cpu" => Ok(Self::PotionCode),
             other => Err(format!("unknown backend: {other}")),
         }
     }
@@ -257,6 +266,11 @@ impl VeraConfig {
     /// still shapes the actual micro-batches from sequence length at runtime.
     pub fn adjust_for_backend(&mut self, backend: InferenceBackend) {
         match backend {
+            InferenceBackend::PotionCode => {
+                self.embedding.batch_size = 1024;
+                self.embedding.max_concurrent_requests = 1;
+                self.embedding.max_stored_dim = self.embedding.max_stored_dim.min(256);
+            }
             InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu) => {
                 self.embedding.batch_size = 4;
                 self.embedding.max_concurrent_requests = 1;
@@ -531,6 +545,16 @@ mod tests {
         );
         assert_eq!(backend.to_string(), "onnx-jina-openvino");
         assert!(backend.is_local());
+    }
+
+    #[test]
+    fn potion_code_backend_round_trip() {
+        let backend = InferenceBackend::from_str("potion-code-cpu").unwrap();
+        assert_eq!(backend, InferenceBackend::PotionCode);
+        assert_eq!(backend.to_string(), "potion-code-cpu");
+        assert!(backend.is_local());
+        assert!(!backend.is_onnx());
+        assert_eq!(backend.execution_provider(), None);
     }
 
     #[test]

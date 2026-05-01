@@ -64,6 +64,9 @@ impl SearchFilterArgs {
 
 #[derive(Debug, Clone, Default, Args)]
 pub struct LocalBackendFlags {
+    /// Use Potion Code static embeddings on CPU.
+    #[arg(long = "potion-code", visible_alias = "potion-cpu", group = "backend")]
+    pub potion_code: bool,
     /// Use local ONNX models on CPU.
     #[arg(long = "onnx-jina-cpu", group = "backend")]
     pub onnx_jina_cpu: bool,
@@ -154,7 +157,8 @@ pub fn prepare_indexed_search(
 
 impl LocalBackendFlags {
     pub fn any_set(&self) -> bool {
-        self.onnx_jina_cpu
+        self.potion_code
+            || self.onnx_jina_cpu
             || self.onnx_jina_cuda
             || self.onnx_jina_rocm
             || self.onnx_jina_directml
@@ -244,7 +248,9 @@ impl LocalEmbeddingModelFlags {
 /// Resolve an `InferenceBackend` from the per-command boolean flags.
 pub fn resolve_backend_flags(flags: &LocalBackendFlags) -> vera_core::config::InferenceBackend {
     use vera_core::config::{InferenceBackend, OnnxExecutionProvider};
-    let explicit = if flags.onnx_jina_cpu || flags.local {
+    let explicit = if flags.potion_code {
+        Some(InferenceBackend::PotionCode)
+    } else if flags.onnx_jina_cpu || flags.local {
         Some(InferenceBackend::OnnxJina(OnnxExecutionProvider::Cpu))
     } else if flags.onnx_jina_cuda {
         Some(InferenceBackend::OnnxJina(OnnxExecutionProvider::Cuda))

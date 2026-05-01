@@ -23,6 +23,13 @@ const EMBEDDING_MAX_LENGTH: usize = 512;
 const CODERANK_EMBEDDING_REPO: &str = "Zenabius/CodeRankEmbed-onnx";
 const CODERANK_QUERY_PREFIX: &str = "Represent this query for searching relevant code:";
 
+pub const POTION_CODE_REPO: &str = "minishlab/potion-code-16M";
+pub const POTION_CODE_TOKENIZER_FILE: &str = "tokenizer.json";
+pub const POTION_CODE_MODEL_FILE: &str = "model.safetensors";
+pub const POTION_CODE_CONFIG_FILE: &str = "config.json";
+pub const POTION_CODE_DIM: usize = 256;
+pub const POTION_CODE_MAX_LENGTH: usize = 512;
+
 pub const LOCAL_EMBEDDING_REPO_ENV: &str = "VERA_LOCAL_EMBEDDING_REPO";
 pub const LOCAL_EMBEDDING_DIR_ENV: &str = "VERA_LOCAL_EMBEDDING_DIR";
 pub const LOCAL_EMBEDDING_ONNX_FILE_ENV: &str = "VERA_LOCAL_EMBEDDING_ONNX_FILE";
@@ -2306,6 +2313,42 @@ pub fn configured_local_model_name() -> String {
     LocalEmbeddingModelConfig::from_env()
         .map(|config| config.model_identity())
         .unwrap_or_else(|_| EMBEDDING_REPO.to_string())
+}
+
+pub fn potion_code_model_dir() -> Result<PathBuf> {
+    Ok(vera_home_dir()?.join("models").join(POTION_CODE_REPO))
+}
+
+pub fn potion_code_model_name() -> &'static str {
+    POTION_CODE_REPO
+}
+
+pub async fn ensure_potion_code_assets() -> Result<PathBuf> {
+    ensure_model_file(POTION_CODE_REPO, POTION_CODE_TOKENIZER_FILE).await?;
+    ensure_model_file(POTION_CODE_REPO, POTION_CODE_MODEL_FILE).await?;
+    ensure_model_file(POTION_CODE_REPO, POTION_CODE_CONFIG_FILE).await?;
+    potion_code_model_dir()
+}
+
+pub fn inspect_potion_code_model_files() -> Result<Vec<LocalModelAssetStatus>> {
+    let model_dir = potion_code_model_dir()?;
+    let files = [
+        ("potion-tokenizer", POTION_CODE_TOKENIZER_FILE),
+        ("potion-model", POTION_CODE_MODEL_FILE),
+        ("potion-config", POTION_CODE_CONFIG_FILE),
+    ];
+
+    Ok(files
+        .into_iter()
+        .map(|(name, file)| {
+            let path = model_dir.join(file);
+            LocalModelAssetStatus {
+                name,
+                exists: path.exists(),
+                path,
+            }
+        })
+        .collect())
 }
 
 pub async fn ensure_local_embedding_assets(
