@@ -3,6 +3,7 @@ secrets.env
 .env.*
 !.env.example
 /AGENTS.md
+/HANDOFF.md
 response.md
 .junie/
 .bench/
