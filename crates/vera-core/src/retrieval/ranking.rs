@@ -318,12 +318,17 @@ fn score_prior(
             .as_deref()
             .is_some_and(|name| name.eq_ignore_ascii_case(identifier))
         {
-            bonus += stage_weight
-                * if features.query_word_count <= 2 {
-                    0.7
-                } else {
-                    0.55
-                };
+            // Symbol name matches the query identifier. This is the strongest
+            // signal: developers searching "Axios" want the Axios class definition.
+            let is_definition_chunk = is_definition_symbol(result.symbol_type);
+            let base_symbol_bonus = if features.query_word_count <= 2 {
+                if is_definition_chunk { 1.6 } else { 0.7 }
+            } else if is_definition_chunk {
+                1.2
+            } else {
+                0.55
+            };
+            bonus += stage_weight * base_symbol_bonus;
             bonus += stage_weight * if depth <= 2.0 { 0.18 } else { 0.05 };
             if features.requested_symbol_types.contains(&SymbolType::Class)
                 && is_internal_definition_path(&file_path)
@@ -337,10 +342,14 @@ fn score_prior(
             {
                 bonus += stage_weight * 0.28;
             }
+            // Extra boost when the file stem also matches (e.g., Axios in Axios.js).
+            if file_stem(&result_filename).eq_ignore_ascii_case(identifier) {
+                bonus += stage_weight * 0.45;
+            }
         } else if file_stem(&result_filename).eq_ignore_ascii_case(identifier) {
-            bonus += stage_weight * 0.18;
+            bonus += stage_weight * 0.35;
         } else if identifier_matches_parent_dir(identifier, &file_path) {
-            bonus += stage_weight * 0.14;
+            bonus += stage_weight * 0.22;
         }
     }
 
@@ -409,8 +418,28 @@ fn score_prior(
             };
     }
 
+    // Boost definition chunks for NL queries when their symbol name overlaps
+    // query keywords. Definitions are more useful than incidental mentions.
+    if features.query_type == QueryType::NaturalLanguage
+        && is_definition_symbol(result.symbol_type)
+        && result.symbol_name.is_some()
+    {
+        if let Some(symbol_name) = result.symbol_name.as_deref() {
+            let sym_stems = identifier_stems(symbol_name);
+            let overlap = features.keywords.iter().any(|kw| {
+                sym_stems
+                    .iter()
+                    .any(|s| s == kw || shares_keyword_stem(s, kw))
+            });
+            if overlap {
+                bonus += stage_weight * 0.45;
+            }
+        }
+    }
+
     if same_file_hits >= 2 && features.query_type == QueryType::NaturalLanguage {
-        bonus += stage_weight * ((same_file_hits.min(4) - 1) as f64 * 0.08);
+        let coherence = ((same_file_hits.min(5) - 1) as f64 * 0.12).min(0.48);
+        bonus += stage_weight * coherence;
     }
 
     if !features.wants_test_paths && matches!(role, ContentClass::Test) {
@@ -722,23 +751,26 @@ fn identifier_matches_parent_dir(identifier: &str, path: &str) -> bool {
 
 fn parent_dir_keyword_bonus(path: &str, keywords: &[String]) -> f64 {
     let stems = parent_dir_stems(path);
-    if stems.is_empty() {
+    if stems.is_empty() || keywords.is_empty() {
         return 0.0;
     }
-    if stems
+
+    let matched = keywords
         .iter()
-        .any(|stem| keywords.iter().any(|keyword| keyword == stem))
-    {
-        return 0.2;
+        .filter(|keyword| {
+            stems
+                .iter()
+                .any(|stem| stem == keyword.as_str() || shares_keyword_stem(stem, keyword))
+        })
+        .count();
+
+    if matched == 0 {
+        return 0.0;
     }
-    if stems.iter().any(|stem| {
-        keywords
-            .iter()
-            .any(|keyword| shares_keyword_stem(stem, keyword))
-    }) {
-        return 0.12;
-    }
-    0.0
+
+    // Scale bonus by how many query keywords match the directory hierarchy.
+    let ratio = matched as f64 / keywords.len() as f64;
+    0.15 + ratio * 0.35
 }
 
 fn parent_dir_stems(path: &str) -> Vec<String> {
@@ -777,7 +809,12 @@ fn looks_like_impl_block(result: &SearchResult) -> bool {
 }
 
 fn shares_keyword_stem(left: &str, right: &str) -> bool {
-    common_prefix_len(left, right) >= 6
+    // Use minimum 4-char prefix overlap so short stems like "route" match
+    // "routing" and "depend" matches "dependency". Longer words use longer
+    // thresholds to avoid false positives.
+    let shorter = left.len().min(right.len());
+    let threshold = if shorter <= 5 { 4 } else { 5 };
+    common_prefix_len(left, right) >= threshold
 }
 
 fn common_prefix_len(left: &str, right: &str) -> usize {
@@ -1126,6 +1163,8 @@ mod tests {
 
     #[test]
     fn natural_language_queries_promote_file_diversity() {
+        // When multiple files have similar relevance, diversity should
+        // interleave them rather than clustering same-file results.
         let results = vec![
             make_result(
                 "src/router.ts",
@@ -1135,15 +1174,15 @@ mod tests {
             ),
             make_result(
                 "src/router.ts",
-                Some("mount_routes"),
+                Some("add_route"),
                 Some(SymbolType::Function),
-                "export function mount_routes() {}",
+                "export function add_route() {}",
             ),
             make_result(
-                "src/app.ts",
-                Some("create_app"),
+                "src/blueprint.ts",
+                Some("create_blueprint"),
                 Some(SymbolType::Function),
-                "export function create_app() {}",
+                "export function create_blueprint() {}",
             ),
         ];
 
@@ -1153,7 +1192,10 @@ mod tests {
             RankingStage::Initial,
         );
 
-        assert_eq!(ranked[1].file_path, "src/app.ts");
+        // blueprint.ts matches the query keyword "blueprint", so diversity
+        // should interleave it between the two router.ts chunks.
+        assert_eq!(ranked[0].file_path, "src/router.ts");
+        assert_eq!(ranked[1].file_path, "src/blueprint.ts");
     }
 
     #[test]

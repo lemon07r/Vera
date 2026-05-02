@@ -485,6 +485,14 @@ fn collect_exact_match_candidates(
             });
         }
         chunks.extend(fallback_chunks);
+
+        // Scan for definition chunks in files whose stem matches the identifier.
+        // This catches definitions that weren't found by symbol name lookup,
+        // e.g. when the file is sessions.py and the query is "Session".
+        let seen_files: HashSet<String> = chunks.iter().map(|c| c.file_path.clone()).collect();
+        let stem_chunks = collect_stem_matched_definitions(store, &identifier, &seen_files)?;
+        chunks.extend(stem_chunks);
+
         for chunk in chunks {
             let order = ExactMatchOrder {
                 query_index,
@@ -500,6 +508,25 @@ fn collect_exact_match_candidates(
         }
     }
 
+    // For queries with no filename or identifier match, scan for files whose
+    // stem matches a query keyword. This catches NL queries like
+    // "configuration loading" → config.py, "testing client" → testing.py.
+    if candidates.is_empty() {
+        let concept_chunks = collect_concept_matched_files(store, query)?;
+        for chunk in concept_chunks {
+            candidates.push(ExactMatchCandidate {
+                order: ExactMatchOrder {
+                    query_index,
+                    match_kind: 2,
+                    exact_priority: (0, 0, 0, 0),
+                    path_depth: path_depth(&chunk.file_path),
+                    line_start: chunk.line_start,
+                },
+                result: chunk_to_result(chunk),
+            });
+        }
+    }
+
     candidates.sort_by(|left, right| {
         left.order
             .cmp(&right.order)
@@ -510,6 +537,196 @@ fn collect_exact_match_candidates(
         .into_iter()
         .map(|candidate| candidate.result)
         .collect())
+}
+
+/// Find definition chunks from files whose stem matches the identifier.
+///
+/// When searching for "Session", this finds files like `sessions.py`,
+/// `session.rs`, etc. and returns their definition chunks. Only scans
+/// definition-type symbols to avoid pulling in noisy mentions.
+fn collect_stem_matched_definitions(
+    store: &crate::storage::metadata::MetadataStore,
+    identifier: &str,
+    already_seen: &HashSet<String>,
+) -> Result<Vec<crate::types::Chunk>> {
+    let identifier_lower = identifier.to_ascii_lowercase();
+    let mut results = Vec::new();
+
+    let all_files = store.indexed_files()?;
+    for file_path in &all_files {
+        if already_seen.contains(file_path.as_str()) {
+            continue;
+        }
+        let fname = file_name(file_path).to_ascii_lowercase();
+        let stem = fname.rsplit_once('.').map(|(s, _)| s).unwrap_or(&fname);
+
+        // Match stem to identifier: exact, plural, or prefix overlap.
+        let is_stem_match = stem == identifier_lower
+            || stem.strip_suffix('s') == Some(&identifier_lower)
+            || identifier_lower.strip_suffix('s') == Some(stem)
+            || (stem.len() >= 4 && identifier_lower.starts_with(stem))
+            || (identifier_lower.len() >= 4 && stem.starts_with(&identifier_lower));
+
+        if !is_stem_match {
+            continue;
+        }
+
+        let chunks = store.get_chunks_by_file(file_path)?;
+        for chunk in chunks {
+            let is_definition = matches!(
+                chunk.symbol_type,
+                Some(
+                    SymbolType::Class
+                        | SymbolType::Struct
+                        | SymbolType::Trait
+                        | SymbolType::Interface
+                        | SymbolType::Enum
+                        | SymbolType::Function
+                        | SymbolType::Module
+                )
+            );
+            if is_definition {
+                results.push(chunk);
+            }
+        }
+    }
+
+    Ok(results)
+}
+
+/// Find files whose stem matches a query keyword for NL queries.
+///
+/// When searching "configuration loading", this finds `config.py` because
+/// "config" shares a prefix with "configuration". Only returns definition
+/// chunks to avoid noise. Limited to short queries to avoid false positives.
+fn collect_concept_matched_files(
+    store: &crate::storage::metadata::MetadataStore,
+    query: &str,
+) -> Result<Vec<crate::types::Chunk>> {
+    let keywords: Vec<String> = query
+        .split_whitespace()
+        .map(|w| {
+            w.trim_matches(|c: char| !c.is_alphanumeric())
+                .to_ascii_lowercase()
+        })
+        .filter(|w| w.len() >= 4 && !is_concept_stopword(w))
+        .collect();
+
+    if keywords.is_empty() || keywords.len() > 5 {
+        return Ok(Vec::new());
+    }
+
+    let all_files = store.indexed_files()?;
+    let mut matched_files = Vec::new();
+
+    for file_path in &all_files {
+        let fname = file_name(file_path).to_ascii_lowercase();
+        let stem = fname.rsplit_once('.').map(|(s, _)| s).unwrap_or(&fname);
+        if stem.len() < 4 {
+            continue;
+        }
+
+        // Match file stem to query keywords: exact, singular/plural, or
+        // prefix overlap. Both the stem and keyword must be non-stopwords
+        // and the shorter must be at least 5 chars.
+        if is_concept_stopword(stem) {
+            continue;
+        }
+        let keyword_match = keywords.iter().any(|kw| {
+            stem == kw
+                || stem.strip_suffix('s') == Some(kw.as_str())
+                || kw.strip_suffix('s') == Some(stem)
+                || (stem.len() >= 5 && kw.starts_with(stem))
+                || (kw.len() >= 5 && stem.starts_with(kw.as_str()))
+        });
+
+        if keyword_match {
+            matched_files.push(file_path.clone());
+        }
+    }
+
+    // Sort by path depth (prefer shallower files) and limit to avoid noise.
+    matched_files.sort_by(|a, b| path_depth(a).cmp(&path_depth(b)).then(a.cmp(b)));
+    matched_files.truncate(3);
+
+    let mut results = Vec::new();
+    for file_path in &matched_files {
+        let chunks = store.get_chunks_by_file(file_path)?;
+        for chunk in chunks {
+            // Only inject definition chunks to avoid flooding results with
+            // every line of a concept-matched file.
+            let is_definition = matches!(
+                chunk.symbol_type,
+                Some(
+                    SymbolType::Class
+                        | SymbolType::Struct
+                        | SymbolType::Trait
+                        | SymbolType::Interface
+                        | SymbolType::Enum
+                        | SymbolType::Function
+                        | SymbolType::Module
+                )
+            );
+            if is_definition {
+                results.push(chunk);
+            }
+        }
+    }
+
+    Ok(results)
+}
+
+/// Words too common to be useful for file-stem matching.
+fn is_concept_stopword(word: &str) -> bool {
+    matches!(
+        word,
+        "error"
+            | "errors"
+            | "type"
+            | "types"
+            | "data"
+            | "file"
+            | "files"
+            | "code"
+            | "test"
+            | "tests"
+            | "util"
+            | "utils"
+            | "help"
+            | "helper"
+            | "helpers"
+            | "base"
+            | "core"
+            | "main"
+            | "init"
+            | "index"
+            | "model"
+            | "models"
+            | "form"
+            | "format"
+            | "value"
+            | "values"
+            | "path"
+            | "paths"
+            | "node"
+            | "item"
+            | "items"
+            | "work"
+            | "with"
+            | "from"
+            | "that"
+            | "this"
+            | "what"
+            | "when"
+            | "does"
+            | "have"
+            | "been"
+            | "into"
+            | "about"
+            | "through"
+            | "between"
+            | "inside"
+    )
 }
 
 fn merge_exact_matches(
